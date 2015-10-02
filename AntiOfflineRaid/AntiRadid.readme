@@ -1,0 +1,35 @@
+BuildingOwner plugin se brine da se sve zgrade èuvaju u DataStore-u, po lokaciji i ownershipu
+
+AntiRaid mehanizam æe koristiti taj DataStore library da bi odredio je li zgrada rejdable ili ne.
+
+Svakom igraèu treba dodijeliti php flag
+pvp flag je aktivan 15 minuta nakon zadnjeg engejða, u kojem je on bio napadaè ili napadnuti.
+U sluèaju da je igraè u trajbu, flag se odnosi na cijeli tribe
+flag se aktivira i ako doðe do napada na njegove graðevine (od odreðenih tipova oružja)
+
+Ako je flag aktivan, graðevine je moguæe uništavati
+Ako flat nije aktivan, igraè se može odlogirati i odmah po logoutu æe njegove graðevine biti zaštiæene.
+
+
+1. Metoda za flegiranje aktivnih igraèa
+ - Na hurteven.player ili hurteven.building owned by player
+    - provjeri je li igraè online i je li flegan
+        -> ako je online, a nije flegan, flegaj ga za pvp
+        -> ako nije online, javi napadaèu da je igraè offline i da nije moguæe oštetiti njegove graðevine
+           - popravi graðevinu za kolièinu dmg-a koji je nanesen prilikom napada
+
+
+           TODO
+            - riješi pitanje èlanova TRIBE-a
+            - dodati check za kad je player zadnji put bio online i ako > 48 sati, protekcija ne funkcioniraž
+
+
+Checkovi:
+
+both players online, does pvp flagging works?
+attacker online, victim offline_:
+OK     if offline player is flagged, can online player damage building
+OK     if offline player is not flagged, can online player damage building
+     if victim in tribe, victim online, Tribe member flagged, damage to buildins?
+žžž2q3w1     if victim in tribe, victim offline, tribe flagged, damage to builinds?
+     if victim in tribe, victim offline, tribe not flagged, damage to buildings?
