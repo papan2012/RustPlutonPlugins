@@ -117,7 +117,7 @@ class AdminCommands:
         return False
 
     def Teleport(self, Player, Location):
-        Player.basePlayer.StartSleeping()
+        #Player.basePlayer.StartSleeping()
         Player.basePlayer.transform.position = Location
         Player.basePlayer.ClientRPCPlayer(None, Player.basePlayer, "ForcePositionTo", Location)
         Player.basePlayer.SetPlayerFlag(BasePlayer.PlayerFlags.ReceivingSnapshot, True)
@@ -238,43 +238,34 @@ class AdminCommands:
         Player = cmd.User
         args = cmd.quotedArgs
         if cmd.cmd == "duty":
-            if not Player.Admin:
-                Player.MessageFrom(self.Sysname, "You aren't an admin!")
-                return
-            if self.IsonDuty(Player):
-                DataStore.Remove("Duty", Player.SteamID)
-                Server.BroadcastFrom(self.Sysname, Player.Name + " is off duty.")
-                if self.LogDuty:
-                    Plugin.Log("DutyLog", Player.Name + " off duty.")
-            else:
-                DataStore.Add("Duty", Player.SteamID, True)
-                Server.BroadcastFrom(self.Sysname, Player.Name + " is on duty. Let him know if you need anything.")
-                if self.LogDuty:
-                    Plugin.Log("DutyLog", Player.Name + " on duty.")
+            # if not Player.Admin:
+            #     Player.MessageFrom(self.Sysname, "You aren't an admin!")
+            #     return
+            # if self.IsonDuty(Player):
+            #     DataStore.Remove("Duty", Player.SteamID)
+            #     Server.BroadcastFrom(self.Sysname, Player.Name + " is off duty.")
+            #     if self.LogDuty:
+            #         Plugin.Log("DutyLog", Player.Name + " off duty.")
+            # else:
+            DataStore.Add("Duty", Player.SteamID, True)
+            Server.BroadcastFrom(self.Sysname, Player.Name + " is on duty. Let him know if you need anything.")
+            if self.LogDuty:
+                Plugin.Log("DutyLog", Player.Name + " on duty.")
         elif cmd.cmd == "tpto":
-            if not Player.Admin:
-                Player.MessageFrom(self.Sysname, "You aren't an admin!")
-                return
             if len(args) == 0:
                 Player.MessageFrom(self.Sysname, "Usage: /tpto name")
                 return
-            if not self.IsonDuty(Player):
-                Player.MessageFrom(self.Sysname, "You aren't on duty!")
-                return
             pl = self.CheckV(Player, args, 3)
+            target = Find.Player(str.join(' '.args))
             if pl is not None:
                 if "offlineplayer" in str(pl).lower():
                     loc = Vector3(pl.X, pl.Y, pl.Z)
                     self.Teleport(Player, loc)
                 else:
-                    self.Teleport(Player, pl.Location)
+                    self.Teleport(Player, target.Location)
+                    #self.Teleport(Player, pl.Location)
+
         elif cmd.cmd == "tphere":
-            if not Player.Admin:
-                Player.MessageFrom(self.Sysname, "You aren't an admin!")
-                return
-            if not self.IsonDuty(Player):
-                Player.MessageFrom(self.Sysname, "You aren't on duty!")
-                return
             if len(args) == 0:
                 Player.MessageFrom(self.Sysname, "Usage: /tphere name")
                 return
@@ -407,12 +398,6 @@ class AdminCommands:
                 x._item.RepairCondition(x._item.maxCondition)
             Player.MessageFrom(self.Sysname, "Repaired All!")
         elif cmd.cmd == "give":
-            if not Player.Admin:
-                Player.MessageFrom(self.Sysname, "You aren't an admin!")
-                return
-            if not self.IsonDuty(Player):
-                Player.MessageFrom(self.Sysname, "You aren't on duty!")
-                return
             if len(args) <= 1:
                 Player.MessageFrom(self.Sysname, "Usage: /give playername item amount")
                 return
@@ -433,12 +418,6 @@ class AdminCommands:
                 item = args[1]
                 pl.Inventory.Add(item, num)
         elif cmd.cmd == "i":
-            if not Player.Admin:
-                Player.MessageFrom(self.Sysname, "You aren't an admin!")
-                return
-            if not self.IsonDuty(Player):
-                Player.MessageFrom(self.Sysname, "You aren't on duty!")
-                return
             num = 1
             if len(args) == 0:
                 Player.MessageFrom(self.Sysname, "Usage: /i item amount")
