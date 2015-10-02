@@ -31,19 +31,20 @@ class AntiOfflineRaid():
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
             victimData = DataStore.Get('Players', victimID)
-            victim = Find.Player(victimID)
-            if not victim:
-                playerOffline = True
-            else:
-                victim = Find.Player(victimID)
-                playerOffline = False
+            victim = Find.Player(str(victimID))
 
-            building = HurtEvent.Victim
+            Util.Log(victimID+' '+str(victim) + victimData['name'])
+
+            if not victim:
+                 playerOffline = True
+            else:
+                 victim = Find.Player(victimID)
+                 playerOffline = False
 
 
             damageAmounts = HurtEvent.DamageAmounts
-            if attacker and attacker.SteamID != victimID and not self.checkPVPFlag(attacker):
-                Util.Log("PVB - Flaging attacker")
+            if attacker and attacker.SteamID != victimID and not self.checkPVPFlag(attacker.SteamID):
+                Util.Log("PVB - Flaging attacker" + attacker.Name)
                 self.flagPlayerPVP(attacker)
 
 
@@ -57,8 +58,8 @@ class AntiOfflineRaid():
 
             elif not playerOffline and self.checkPVPFlag(victimID) and attacker.SteamID != victimID:
                 # if victim is active, and not flagged
-                Util.Log("PVB - Flaging victim")
-                if self.checkPVPFlag(victim):
+                Util.Log("PVB - Flaging victim "+ str(victim))
+                if self.checkPVPFlag(victimID):
                     self.flagPlayerPVP(victim)
 
 
@@ -73,11 +74,11 @@ class AntiOfflineRaid():
             # players can hurt themself and not beeing flagged (CHANGE to !=)
             if attackerID != victimID:
                 #Server.Broadcast("Player "+HurtEvent.Victim.Name+ " was damaged by "+HurtEvent.Attacker.Name)
-                if not self.checkPVPFlag(attacker):
-                    Util.Log("PVP Flag attacker")
+                if not self.checkPVPFlag(attackerID):
+                    Util.Log("PVP Flag attacker "+attacker.Name)
                     self.flagPlayerPVP(attacker)
-                if not self.checkPVPFlag(victim):
-                    Util.Log("PVP Flag victim")
+                if not self.checkPVPFlag(victimID):
+                    Util.Log("PVP Flag victim "+victim.Name)
                     self.flagPlayerPVP(victim)
 
 
@@ -126,9 +127,11 @@ class AntiOfflineRaid():
         timer.Kill()
         data = timer.Args
 
-        playerID = Find.Player(data['SteamID'])
-        Util.Log('Unflaging player'+str(playerID))
-        self.flaggedPlayers.remove(playerID)
+        playerID = data['SteamID']
+        playerName = DataStore.Get("Players", plyerID)
+        Util.Log('Unflaging player '+str(playerID)+playerName)
+        if playerID in self.flaggedPlayers:
+            self.flaggedPlayers.remove(playerID)
 
     def notifyPlayer(self, player):
         if player not in self.notifiedPlayers:
@@ -145,8 +148,8 @@ class AntiOfflineRaid():
         player = data['player']
         self.notifiedPlayers.remove(player)
 
-    def checkPVPFlag(self, player):
-        if player in self.flaggedPlayers:
+    def checkPVPFlag(self, playerID):
+        if playerID in self.flaggedPlayers:
             return True
         else:
             return False
@@ -159,6 +162,9 @@ class AntiOfflineRaid():
         :return: bool
         '''
         playerData = DataStore.Get('Players', playerID)
+        Util.Log('PlayerID'+ str(DataStore.Get('Players', playerID)))
+        Util.Log("lastonline"+ str(playerData['lastonline']))
+
 
         #if time player is online is greater then offline protect timer, stop prottecting
         if (time.time() - playerData['lastonline']) > self.offlineProtectionTimeout:
@@ -166,11 +172,14 @@ class AntiOfflineRaid():
         else:
             return True
 
-    def On_PlayerDisconnected(self, player):
-        # Refreshes timers in case of player disconnect under timer
-        if player in self.flaggedPlayers:
-            self.flaggedPlayers.remove(player)
-            self.flagPlayerPVP(player)
+    # def On_PlayerDisconnected(self, player):
+    #     # Refreshes timers in case of player disconnect under timer
+    #     # TODO provjeri radi li
+    #     # ovo ce trebati napraviti preko reference na timer. Ako postoji timer, ubij ga i podesi novi
+    #     # fakat TODO
+    #     if player.SteamID in self.flaggedPlayers:
+    #         self.flaggedPlayers.remove(player.SteamID)
+    #         self.flagPlayerPVP(player)
 
 
     def On_Command(self, cmd):
@@ -179,7 +188,7 @@ class AntiOfflineRaid():
         args = str.join(' ', cmd.args)
 
         if command == 'flag':
-            if self.checkPVPFlag(player):
+            if self.checkPVPFlag(player.SteamID):
                 player.MessageFrom("AOR", "You are flagged, your buildings won't be protected if you go offline until you're flagged!")
             else:
                 player.MessageFrom("AOR", "You are not flagged")
