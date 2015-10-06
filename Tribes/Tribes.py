@@ -51,10 +51,10 @@ class PlayerData():
             DataStore.Add("Players", self.playerID, self.playerData)
             tribe = TribeData('Ronins')
             tribe.addMember(self.playerID)
+            DataStore.Save()
 
         else:
             self.playerData = DataStore.Get('Players', player.SteamID)
-
 
     def changePlayerData(self, playerID, valuesToChange):
         '''
@@ -63,9 +63,11 @@ class PlayerData():
         playerData = DataStore.Get('Players', playerID)
         for key in valuesToChange.keys():
             playerData[key] = valuesToChange[key]
+        DataStore.Save()
 
     def removePlayerFromDataStore(self, playerID):
         DataStore.Remove("Players", playerID)
+        DataStore.Save()
 
 
 ###
@@ -110,6 +112,7 @@ class TribeData():
             tribeData['tribeMembers'].append(creatorID)
         DataStore.Add('Tribes', self.tribeName, tribeData)
         self.tribeData = DataStore.Get('Tribes', self.tribeName)
+        DataStore.Save()
 
 
     def getTribeData(self):
@@ -119,14 +122,19 @@ class TribeData():
         return DataStore.Get('Tribes', self.tribeName)
 
     def addMember(self, recruitID):
-        self.tribeData['tribeMembers'].append(recruitID)
+        if recruitID not in self.tribeData['tribeMembers']:
+            self.tribeData['tribeMembers'].append(recruitID)
+        DataStore.Save()
 
     def removeMember(self, memberID):
         if memberID in self.tribeData['tribeMembers']:
+            Util.Log(str(self.tribeData['tribeMembers']))
             self.tribeData['tribeMembers'].remove(str(memberID))
+            Util.Log(str(self.tribeData['tribeMembers']))
             return True
         else:
             return False
+        DataStore.Save()
 
     def promoteMember(self, memberID, rank):
         pass
@@ -137,14 +145,11 @@ class TribeData():
     def RemoveFriend(self, friendID):
         pass
 
-    def tribeNotifications(self, notification):
+    def tribeMessages(self, playerName, message):
         for memberID in self.tribeData['tribeMembers']:
-            member = Server.FindPlayer(memberID)
-            member.MessageFrom("Tribes", notification)
-
-
-
-
+            if Server.FindPlayer(memberID):
+                member = Server.FindPlayer(memberID)
+                member.MessageFrom('TM from '+playerName, message)
 
 
 ######
@@ -158,6 +163,14 @@ class Tribes:
 
     def On_PluginInit(self):
         self.tribeList = self._update_tribe_list()
+        self.commands ={'trcreate': (self.createTribe, " - Create a tribe, 3-10 chars"),
+                   'trlist': (self.listTribes, " - List tribes"),
+                   'trinvite': (self.invitToTribe, " - PlayerName - Invite player to your tribe"),
+                   'traccept': (self.acceptTribeInvite, " - Accept tribe invite"),
+                   'trdetails': (self.getTribeDetails, " - Get tribe details"),
+                   'trleave' : (self.leaveTribe, "- leave your tribe"),
+                   'trdeny': (self.denyInvite, " - deny tribe invite")
+                   }
 
 
     '''
@@ -186,6 +199,7 @@ class Tribes:
 
         #TribeName limited to 10 chars
         self._update_tribe_list()
+        tribeslist = DataStore.Keys("Tribes")
 
         creator = cmd.User
         playerD = PlayerData(creator)
@@ -197,7 +211,7 @@ class Tribes:
             creator.MessageFrom("Tribes", "TribeName is shorter than 3 characters.")
         elif tribeName in self.tribeList:
             creator.MessageFrom("Tribes", "Tribe with name \""+tribeName+"\" already exists")
-        elif playerD.playerData['tribe'] != 'Ronins':
+        elif playerD.playerData['tribe'] != 'Ronins' or playerD.playerData['tribe'] not in tribeslist:
             creator.MessageFrom("Tribes", "You're already in in tribe "+playerD.playerData['tribe'])
         else:
             #removing player from Ronins tribe
@@ -259,8 +273,8 @@ class Tribes:
             remCurTribe.removeMember(player.SteamID)
             tribeAccept = TribeData(newTribe)
             playerD.playerData['tribe'] = newTribe
-            tribeAccept.tribeNotifications("Player "+player.Name+" joined your Tribe")
-            player.MessageFrom("You have joined the tribe \""+newTribe+"\"")
+            tribeAccept.tribeMessages(playerD.playerData['tribe'], "Player "+player.Name+" joined your Tribe")
+            player.Message("You have joined the tribe \""+str(newTribe)+"\"")
             tribeAccept.addMember(player.SteamID)
         else:
             player.MessageFrom("Tribes", "No pending invites!")
@@ -274,34 +288,38 @@ class Tribes:
         if tribeData:
             player.MessageFrom("Tribe members of tribe", playerTribe)
             for i, playerID in enumerate(tribeData.tribeData['tribeMembers']):
-                playerD = Server.FindPlayer(playerID)
-                player.MessageFrom(str(i+1), playerD.Name)
+                playerD = DataStore.Get('Players', playerID)
+                player.MessageFrom(str(i+1), playerD['name'])
         else:
-            player.MessageFrom("Tribes", "Unable to get tribe details for tribe "+playerTribe)
-
+            player.Message("Unable to get tribe details for tribe "+playerTribe)
 
     def leaveTribe(self, cmd):
         player = cmd.User
         playerD = PlayerData(player)
+        Util.Log(str(playerD))
         currentTribe = playerD.playerData['tribe']
 
         if currentTribe == 'Ronins':
             player.MessageFrom("Tribes", "You're just a Ronin! Where can you go?")
         else:
+            Util.Log(str(player.SteamID))
             playerTD = TribeData(currentTribe)
             playerTD.removeMember(player.SteamID)
-            playerTD.tribeNotifications("Player "+player.Name+" left your tribe!")
+            playerTD.tribeMessages(playerD.playerData['tribe'], "Player "+player.Name+" left your tribe!")
             playerD = PlayerData(player)
             playerD.playerData['tribe'] = 'Ronins'
             playerNTD = TribeData('Ronins')
+            Util.Log(str(playerNTD))
             playerNTD.addMember(player.SteamID)
             player.MessageFrom("Tribes:", "You have left the tribe \""+currentTribe+"\"")
             if len(playerTD.tribeData['tribeMembers']) == 0 and playerTD.tribeName != 'Ronin':
                 DataStore.Remove('Tribes', playerTD.tribeName)
                 player.MessageFrom("Tribes", "Tribe \""+currentTribe+"\" disbanded.")
 
-    def denyInvite(self):
-        pass
+    def denyInvite(self, cmd):
+        playerID = cmd.User.SteamID
+        playerData = PlayerData(playerID)
+        playerData['pendingInvites'] = ''
 
 
     '''
@@ -314,32 +332,41 @@ class Tribes:
             All function calls here need to accept cmd Instance
         '''
 
-        commands ={'trcreate': (self.createTribe, " - Create a tribe, 3-10 chars"),
-                   'trlist': (self.listTribes, " - List tribes"),
-                   'trinvite': (self.invitToTribe, " - PlayerName - Invite player to your tribe"),
-                   'traccept': (self.acceptTribeInvite, "TribeName  - Accept tribe invite"),
-                   'trdetails': (self.getTribeDetails, " - Get tribe details"),
-                   'trleave' : (self.leaveTribe, "- leave your tribe"),
-                   'trdeny': (self.denyInvite, " - deny tribe invite")
-                   }
-
         command = cmd.cmd
 
-        if command in commands.keys():
-            commands[command][0](cmd)
-        elif command == 'trhelp':
-            for key in commands.keys():
-                Util.Log(str(key))
-                cmd.User.MessageFrom("Tribes", '/'+key +' '+ commands[key][1])
-        elif command == 'help':
+        if command in self.commands.keys():
+            self.commands[command][0](cmd)
+        if command == 'trhelp':
+            for key in self.commands.keys():
+                cmd.User.MessageFrom('Tribes',"/"+ str(key)+str(self.commands[key][1]))
+            cmd.User.MessageFrom('Tribes',"/tm - send message to members of your tribe" )
+
+        if command == 'help':
+            cmd.User.Message("Type /rules to see server rules")
             cmd.User.Message("Type /trhelp for help with Tribe mod commands")
             cmd.User.Message("Type /aor for help with AntiOfflineRaid")
+            cmd.User.Message("Type /who or /players to see who's online")
+
+        if command == 'tm':
+            player = cmd.User
+            playerData = PlayerData(player)
+            ptribe = playerData.playerData['tribe']
+            pTribe = TribeData(ptribe)
+            message = ' '.join((cmd.args)[0:])
+            pTribe.tribeMessages(player.Name, message)
 
 
 
     def On_PlayerConnected(self, player):
         con_player = PlayerData(player)
         con_player.playerData['lastonline'] = time.time()
+        #chek if player name has changed
+        if con_player.playerData['name'] != player.Name:
+            con_player.playerData['name'] = player.Name
+        DataStore.Save()
+        player.Message(str(len(Server.ActivePlayers))+" online, "+str(len(Server.SleepingPlayers))+" sleepers.")
+        player.Message("Type /help to list available commands")
+
 
     def On_PlayerDisconnected(self, player):
         con_player = PlayerData(player)

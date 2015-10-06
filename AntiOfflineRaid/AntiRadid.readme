@@ -28,8 +28,9 @@ Checkovi:
 
 both players online, does pvp flagging works?
 attacker online, victim offline_:
-OK     if offline player is flagged, can online player damage building
-OK     if offline player is not flagged, can online player damage building
-     if victim in tribe, victim online, Tribe member flagged, damage to buildins?
-žžž2q3w1     if victim in tribe, victim offline, tribe flagged, damage to builinds?
-     if victim in tribe, victim offline, tribe not flagged, damage to buildings?
+#   attacker and victim flagged when attacked and both online
+#   if offline player is flagged, can online player damage building
+    if offline player is not flagged, can online player damage building
+    if victim in tribe, victim online, Tribe member flagged, damage to buildins?
+    if victim in tribe, victim offline, tribe flagged, damage to builinds?
+    if victim in tribe, victim offline, tribe not flagged, damage to buildings?

@@ -15,8 +15,9 @@ class AntiOfflineRaid():
     def On_PluginInit(self):
         self.flaggedPlayers = []
         self.notifiedPlayers = []
-        self.timerLenght = 900
+        self.timerLenght = 900000
         self.nofityTimer = 60
+        #self.offlineProtectionTimeout = 120
         self.offlineProtectionTimeout = 86400
 
     def On_CombatEntityHurt(self, HurtEvent):
@@ -25,83 +26,91 @@ class AntiOfflineRaid():
         :return:
         Detects if building part was damaged and get its location and owner
         '''
-
-        if HurtEvent.Attacker and HurtEvent.Attacker.IsPlayer() and HurtEvent.Victim.IsBuildingPart():
+        ignoredDamagesList = ['ElectricShock', 'Heat', 'Cold']
+        if HurtEvent.Attacker and HurtEvent.Attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList:
             attacker = HurtEvent.Attacker
+            attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
-            victimID = DataStore.Get("BuildingPartOwner", victimLocation)
-            victimData = DataStore.Get('Players', victimID)
-            victim = Find.Player(str(victimID))
+            if attacker and attacker.IsPlayer() and HurtEvent.Victim.IsBuildingPart():
+                victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
-            Util.Log(victimID+' '+str(victim) + victimData['name'])
+                victimData = DataStore.Get('Players', victimID)
+                victim = Server.FindPlayer(str(victimID))
+                #Util.Log("victim "+str(victimID)+str(victimData['name']))
 
-            if not victim:
-                 playerOffline = True
-            else:
-                 victim = Find.Player(victimID)
-                 playerOffline = False
-
-
-            damageAmounts = HurtEvent.DamageAmounts
-            if attacker and attacker.SteamID != victimID and not self.checkPVPFlag(attacker.SteamID):
-                Util.Log("PVB - Flaging attacker" + attacker.Name)
-                self.flagPlayerPVP(attacker)
+                if not victim:
+                    victimName = victimData['name']
+                    playerOffline = True
+                else:
+                    victim = Server.FindPlayer(victimID)
+                    playerOffline = False
 
 
-            if playerOffline and not self.checkPVPFlag(victimID) and not self.protectForOffline(victimID) and not checkTribeConditions(victimID):
-                Util.Log("PVB - Building protected")
-                #nullify the damage if victim is offline and not marked for pvp
-                for i, d in enumerate(damageAmounts):
-                    if damageAmounts[i] != 0.0:
-                        damageAmounts[i] = 0.0
-                HurtEvent.DamageAmounts=damageAmounts
+                damageAmounts = HurtEvent.DamageAmounts
+                if attacker and attackerID != victimID and not self.checkPVPFlag(attackerID):
+                    self.flagPlayerPVP(attacker)
 
-            elif not playerOffline and self.checkPVPFlag(victimID) and attacker.SteamID != victimID:
-                # if victim is active, and not flagged
-                Util.Log("PVB - Flaging victim "+ str(victim))
-                if self.checkPVPFlag(victimID):
-                    self.flagPlayerPVP(victim)
+                    # Util.Log(str(self.tribeConditions(victimID)))
+                    # Util.Log(str(playerOffline))
+                if playerOffline and not self.checkPVPFlag(victimID) and self.protectForOffline(victimID) and not self.tribeConditions(victimID):
+                    #Util.Log("PVB - Building protected")
+                    #nullify the damage if victim is offline and not marked for pvp
+                    for i, d in enumerate(damageAmounts):
+                        if damageAmounts[i] != 0.0:
+                            damageAmounts[i] = 0.0
+                    HurtEvent.DamageAmounts=damageAmounts
+                    self.notifyPlayer(attacker, victimName)
 
-
+                elif not playerOffline and not self.checkPVPFlag(victimID) and attackerID != victimID:
+                    # if victim is active, and not flagged
+                    #Util.Log("PVB - Flaging victim "+ str(victim.Name))
+                    if not self.checkPVPFlag(victimID):
+                        self.flagPlayerPVP(victim)
 
     def On_PlayerHurt(self, HurtEvent):
 
         attacker = HurtEvent.Attacker
         victim = HurtEvent.Victim
-        if attacker and attacker.IsPlayer() and victim.IsPlayer():
-            attackerID = attacker.SteamID
-            victimID = victim.SteamID
-            # players can hurt themself and not beeing flagged (CHANGE to !=)
-            if attackerID != victimID:
-                #Server.Broadcast("Player "+HurtEvent.Victim.Name+ " was damaged by "+HurtEvent.Attacker.Name)
-                if not self.checkPVPFlag(attackerID):
-                    Util.Log("PVP Flag attacker "+attacker.Name)
-                    self.flagPlayerPVP(attacker)
-                if not self.checkPVPFlag(victimID):
-                    Util.Log("PVP Flag victim "+victim.Name)
-                    self.flagPlayerPVP(victim)
+
+        if attacker != None and victim != None:
+            # Util.Log('attacker: '+str(attacker.Name))
+            # Util.Log('victim: '+str(victim.Name))/
+            if attacker and attacker.IsPlayer() and victim.IsPlayer():
+                attackerID = attacker.SteamID
+                victimID = victim.SteamID
+                if attackerID != victimID:
+                   # Util.Log("Player "+HurtEvent.Victim.Name+ " was damaged by "+HurtEvent.Attacker.Name)
+                    if not self.checkPVPFlag(attackerID):
+                     #   Util.Log("PVP Flag attacker "+attacker.Name)
+                        self.flagPlayerPVP(attacker)
+                    if not self.checkPVPFlag(victimID):
+                     #   Util.Log("PVP Flag victim "+victim.Name)
+                        self.flagPlayerPVP(victim)
 
 
-    def checkTribeConditions(self, playerID):
+    def tribeConditions(self, playerID):
         '''
+        returns true if other tribe members online, or flagged
+        returns False if player in Ronin tribe
         TODO
         :param player:
         :return:
         '''
         playerData = DataStore.Get('Players', playerID)
-        playerTribe = playerData.playerData['tribe']
+        playerName = playerData['name']
+        playerTribe = playerData['tribe']
         if playerTribe != 'Ronins':
-            playerTribeData = DataStore.Get['Tribes', playerTribe]
-            tribeMembers = playerTribeData.tribeData['tribeMembers']
+            playerTribeData = DataStore.Get('Tribes', playerTribe)
+            tribeMembers = playerTribeData['tribeMembers']
             for tribeMemberID in tribeMembers:
-                tribeMember = Find.Player(tribeMemberID)
-                if tribeMember or (tribeMember in self.flaggedPlayers):
+                tribeMember = Server.FindPlayer(tribeMemberID)
+                if (tribeMember and tribeMember != playerName) and (tribeMemberID in self.flaggedPlayers):
                     return True
                 else:
                     return False
         else:
-            player.Message("You are a Ronin")
-            return True
+            #Util.Log('Player Ronin, not in tribe, returned True ')
+            return False
 
     def checkFriendlyFire(self, attacker, victim):
         '''
@@ -116,7 +125,8 @@ class AntiOfflineRaid():
 
     def flagPlayerPVP(self, player):
         if player not in self.flaggedPlayers:
-            self.flaggedPlayers.append(player)
+            #Util.Log("PVB - Flaging attacker" + player.Name)
+            self.flaggedPlayers.append(player.SteamID)
             fpData = Plugin.CreateDict()
             fpData['SteamID'] = player.SteamID
 
@@ -128,22 +138,23 @@ class AntiOfflineRaid():
         data = timer.Args
 
         playerID = data['SteamID']
-        playerName = DataStore.Get("Players", plyerID)
-        Util.Log('Unflaging player '+str(playerID)+playerName)
+        playerName = DataStore.Get("Players", playerID)
+        #Util.Log('Unflaging player '+str(playerID)+str(playerName))
         if playerID in self.flaggedPlayers:
             self.flaggedPlayers.remove(playerID)
 
-    def notifyPlayer(self, player):
+    def notifyPlayer(self, player, victimName):
         if player not in self.notifiedPlayers:
             self.notifiedPlayers.append(player)
             pData = Plugin.CreateDict()
             pData['player'] = player
+            player.MessageFrom("AOR", "Player "+victimName+" is offline and you can't damage his buildings ")
 
             Plugin.CreateParallelTimer('notify', self.nofityTimer*1000, pData).Start()
 
     def notifyCallback(self, timer):
         timer.Kill()
-        data = timer.args
+        data = timer.Args
 
         player = data['player']
         self.notifiedPlayers.remove(player)
@@ -156,18 +167,20 @@ class AntiOfflineRaid():
 
     def protectForOffline(self, playerID):
         '''
-        Turns of protection for players that war offline for more then 24 hours
+        Turns off protection for players until they are more then 24 hours offline
 
         :param player:
         :return: bool
         '''
         playerData = DataStore.Get('Players', playerID)
-        Util.Log('PlayerID'+ str(DataStore.Get('Players', playerID)))
-        Util.Log("lastonline"+ str(playerData['lastonline']))
+        #Util.Log('PlayerID'+ str(DataStore.Get('Players', playerID)))
+        #Util.Log("lastonline"+ str(playerData['lastonline']))
 
 
         #if time player is online is greater then offline protect timer, stop prottecting
         if (time.time() - playerData['lastonline']) > self.offlineProtectionTimeout:
+            Util.Log(str((time.time() - playerData['lastonline'])))
+            # player offline protection is off
             return False
         else:
             return True
@@ -199,5 +212,8 @@ class AntiOfflineRaid():
             player.Message("If you attack or someone attacks you or your buildings, you'll be flagged for 15 minutes.")
             player.Message("If you're flagged for pvp, and you log off, your buildings will not be protected for the next 15 minutes.")
             player.Message("Type /flag to see if you are flagged.")
+
+        if command == 'flags':
+            Util.Log(str(self.flaggedPlayers))
 
 

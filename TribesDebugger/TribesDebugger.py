@@ -42,12 +42,16 @@ class TribesDebugger():
             dataInput = DataInput(cmd.User)
 
 
-        if command == 'playerlist':
+        if command == 'pl':
             playerKeys = DataStore.Keys('Players')
             Util.Log(str(playerKeys))
             for playerID in playerKeys:
                 playerData = DataStore.Get('Players', playerID)
-                Util.Log(str(playerData['lastonline']))
+                Util.Log(playerID+' '+str(playerData['name']))
+                Util.Log(str(DataStore.Get('Players', playerID)))
+                player = Server.FindPlayer('76561197996829381')
+                Util.Log(str(player.Name))
+
 
 
 
@@ -60,16 +64,6 @@ class TribesDebugger():
             print cmd.User.basePlayer.displayName
             cmd.User.Name = newName
 
-        if command == 'dsadd':
-            addint = str.join(' ', cmd.args)
-            number = 1
-            numberData = []
-            DataStore.Add("Test", number, numberData)
-            print DataStore.Keys("Test")
-            print DataStore.Get("Test", number)
-            s = DataStore.Get("Test", number)
-            print s
-            print ''
 
         if command == 'dpd':
             print 'PlayerData: '
@@ -103,17 +97,30 @@ class TribesDebugger():
             else:
                 print "No tribes found"
 
-        if command == 'pdflush':
-            print "flushing player data"
-            DataStore.Flush('Players')
-
-        if command == 'tdflush':
-            print "flushin tribe data"
-            DataStore.Flush('Tribes')
+        if command == 'savedata':
             DataStore.Save()
 
-        if command == 'flush':
-            DataStore.Flush("Tribes")
-            DataStore.Flush("Players")
-            DataStore.Save()
-            print "flushing all"
+
+        # if command == 'pdflush':
+        #     print "flushing player data"
+        #     DataStore.Flush('Players')
+        #
+        # if command == 'tdflush':
+        #     print "flushin tribe data"
+        #     DataStore.Flush('Tribes')
+        #     playerlist = DataStore.Keys('Players')
+        #     Util.Log(str(playerlist))
+        #     for playerID in playerlist:
+        #         Util.Log(str(playerID))
+        #         Util.Log(str(DataStore.Get("Players", playerID)))
+        #         playerData = DataStore.Get("Players", playerID)
+        #         Util.Log(str(playerData))
+        #         playerData['tribe'] ='Ronins'
+        #         Util.Log(str(playerData['tribe']))
+        #     DataStore.Save()
+        #
+        # if command == 'flush':
+        #     DataStore.Flush("Tribes")
+        #     DataStore.Flush("Players")
+        #     DataStore.Save()
+        #     print "flushing all"

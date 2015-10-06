@@ -10,6 +10,9 @@ path = Util.GetPublicFolder()
 import datetime
 
 class BuildingOwner():
+    '''
+    Mozda cu trebati podesiti cesci save zbog building checka u antiofflineraid pluginu
+    '''
 
     def On_PluginInit(self):
         Util.Log("Plutin BuildingOwner Initialized!")
