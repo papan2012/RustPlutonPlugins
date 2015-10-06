@@ -1,0 +1,28 @@
+FIRST THINNG IN THE MORNING
+Start moderator tools:
+Mute.
+Kick
+
+Provjera za steam auth hack
+Poèeti pisati honeypot za ESP hackere
+Welcome msg-i sa rulesima
+
+
+
+
+iako smo u trajbu, flegan si kad napadneš moje graðevine (should be ok now)
+provjeri jel se radi dmg zgradama kad je builder u tribu i offline
+ - znam da radi za ljude koji nisu u tribu
+
+
+
+
+----------------------------------------------
+IF POSSIBLE:
+gumb za paljenje i gašenje svjetla na glavi
+
+----------------------------------------------
+
+DONE:
+player je promijenio ime, fixaj database entry (DONE; MAKE SOME TEST)
+notify player u AOR mora biti neka druga referenca, a ne player objekt, za sluèaj da se igraè odlogira, jer ga neæe maknuti it notify plyer liste

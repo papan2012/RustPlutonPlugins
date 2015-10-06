@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '0.1'
+__version__ = '1.0'
 
 import clr
 clr.AddReferenceByPartialName("Pluton")
@@ -144,10 +144,11 @@ class AntiOfflineRaid():
             self.flaggedPlayers.remove(playerID)
 
     def notifyPlayer(self, player, victimName):
-        if player not in self.notifiedPlayers:
-            self.notifiedPlayers.append(player)
+        playerID = player.SteamID
+        if playerID not in self.notifiedPlayers:
+            self.notifiedPlayers.append(playerID)
             pData = Plugin.CreateDict()
-            pData['player'] = player
+            pData['playerID'] = playerID
             player.MessageFrom("AOR", "Player "+victimName+" is offline and you can't damage his buildings ")
 
             Plugin.CreateParallelTimer('notify', self.nofityTimer*1000, pData).Start()
@@ -156,8 +157,8 @@ class AntiOfflineRaid():
         timer.Kill()
         data = timer.Args
 
-        player = data['player']
-        self.notifiedPlayers.remove(player)
+        playerID = data['playerID']
+        self.notifiedPlayers.remove(playerID)
 
     def checkPVPFlag(self, playerID):
         if playerID in self.flaggedPlayers:

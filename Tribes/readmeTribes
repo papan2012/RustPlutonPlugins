@@ -1,0 +1,27 @@
+TODO:
+PlayerData Class
+DataStore.Structure("Players", player.SteamID: playerData)
+
+playerData = {'name': self.playerName,
+                            'tribe': self.playerTribe,
+                            'online': self.playerOnlineStatus,
+                            'tribeRank': self.playerTribeRank,
+                            'pendingInvites' : 'No pending invites'
+                           }
+
+TribeData Class
+DataStore.Structure("Tribes", tribeName, tribeData)
+
+tribeData = {'creatorID': '',
+            'tribeMembers': [],
+            'tribeFriends': [],
+            'tribeEnemies' : [],
+            'tribeRaidable': bool
+        }
+
+
+Glavna klasa bi trebala imati instancu svih playera i tribeova:
+players = PlayerData.Keys('Players')
+tribes = TribeData.Keys('Tribes')
+
+U tom sluèaju bi modifikacije po DataStore vrijednostima mogao vršiti preko tih instanci, umjesto da ih inicijaliziram prilikom svake potrebe za promjenama

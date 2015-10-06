@@ -1,3 +1,6 @@
+__author__ = 'PanDevas'
+__version__ = '1.0'
+
 import clr
 
 clr.AddReferenceByPartialName("Pluton")
