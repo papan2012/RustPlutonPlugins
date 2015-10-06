@@ -1,0 +1,23 @@
+AntiHack mehanizmi
+
+- prebrzo pogaðanje kodlocka
+- trap za lovljenje ESP hakera sa hidden stashes
+
+pogledati ascii to unicode pretvaranje
+znaèi, ako ime ima nekih èudnovatosti, u datastore je spremljeno kao unicode
+možda samo konverzija u utf8 pomogne?ððž
+
+Tribe plugin
+Tribeu se možeš pridružiti i napustiti jedanput u tjedan dana
+Tribe leader može kikati osobu van klana, ali se tada kikana osoba ne može pridružiti drugom klanu 48 sati.
+
+
+Long Term TODO:
+Bounty system
+Igraè stavlja bounty na igraèa.
+Osoba koja ubije tog igraèa dobiva bounty.
+
+Bounty sustav MORAM isfurati preko bounty centra, koji æe biti non-raidable npc zgrada, u kojoj æe igraèi moæi stavljati bounty
+
+DEBU TASK
+tribeAccept.tribeMessages - provjeriti da li radi
