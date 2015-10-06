@@ -27,7 +27,6 @@ class WhosOnline():
                 elif i == (len(Server.ActivePlayers)-1):
                     playerName = playerData['name']
                     players += ' '+ playerName
-                    Server.Broadcast(playerName)
                     cmd.User.Message(players)
                 elif (i%5) == 0:
                     playerName = playerData['name']

@@ -20,4 +20,4 @@ Osoba koja ubije tog igraèa dobiva bounty.
 Bounty sustav MORAM isfurati preko bounty centra, koji æe biti non-raidable npc zgrada, u kojoj æe igraèi moæi stavljati bounty
 
 DEBU TASK
-tribeAccept.tribeMessages - provjeriti da li radi
+antiofflineraid kada je member, vlasnik kuæe, offline
