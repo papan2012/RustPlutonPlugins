@@ -86,7 +86,10 @@ class AntiOfflineRaid():
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
-            if HurtEvent.Victim.IsBuildingPart() and not self.checkAttVictTribe(attackerID, victimID):
+            #dodao victimID jer mi ponekad vraca Null (moguci datastore issue?)
+            if victimID and HurtEvent.Victim.IsBuildingPart() and not self.checkAttVictTribe(attackerID, victimID):
+                Util.Log('attackerID '+str(attackerID))
+                Util.Log('victimID ' + str(victimID))
                 victimData = DataStore.Get('Players', victimID)
                 victim = Server.FindPlayer(str(victimID))
 
@@ -107,7 +110,6 @@ class AntiOfflineRaid():
                             damageAmounts[i] = 0.0
                     HurtEvent.DamageAmounts=damageAmounts
                     self.notifyPlayer(attackerID, victimName)
-
 
                 elif not playerOffline and attackerID != victimID and victimID not in self.flaggedPlayers:
                     # if victim is active, and not flagged
@@ -231,7 +233,9 @@ class AntiOfflineRaid():
         :return: bool True/False if attacker and victim share Tribe
         '''
         attackerD = DataStore.Get("Players", attackerID)
+        Util.Log('attvicttribe:' + attackerD['tribe'])
         victimD = DataStore.Get("Players", victimID)
+        Util.Log('attvicttribe:' + victimD['tribe'])
         if attackerD['tribe'] == victimD['tribe']:
             return True
         else:
@@ -261,7 +265,7 @@ class AntiOfflineRaid():
         playerData = DataStore.Get('Players', playerID)
 
         #if time player is online is greater then offline protect timer, stop prottecting
-        if (playerData['tribe'] == 'Ronins') and ((time.time() - playerData['lastonline']) > self.offlineProtectionTimeout):
+        if (playerData['tribe'] == 'Ronins') and ((time.time() - playerData['lastonline']) > self.offlineProtectionTimeout) and playerID not in self.flaggedPlayers:
         #Util.Log(str((time.time() - playerData['lastonline'])))
             # player offline protection is off
             return False
@@ -272,7 +276,7 @@ class AntiOfflineRaid():
             tribeMembers = playerTribeData['tribeMembers']
             for tribeMemberID in tribeMembers:
                 playerD = DataStore.Get('Players', tribeMemberID)
-                if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout:
+                if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout and tribeMemberID not in self.flaggedPlayers:
                     return True
             return False
         else:
@@ -319,6 +323,3 @@ class AntiOfflineRaid():
         playerID = player.SteamID
         if playerID in self.disconnectedPlayers:
             self.disconnectedPlayers.pop(playerID)
-
-
-

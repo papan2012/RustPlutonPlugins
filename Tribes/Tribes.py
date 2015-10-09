@@ -65,10 +65,6 @@ class PlayerData():
             playerData[key] = valuesToChange[key]
         DataStore.Save()
 
-    def removePlayerFromDataStore(self, playerID):
-        DataStore.Remove("Players", playerID)
-        DataStore.Save()
-
 
 ###
 #  CLASS FOR MANAGING TRIBES DATASTORE DATA

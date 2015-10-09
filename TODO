@@ -1,6 +1,13 @@
 TODO za sutra:
-Riješiti flaganje cijelog klana kada jedan èlan bude flegan
+
+player ode offline, flagan, kuæa odmah aktivna - fix asap (should be fixed, doublecheck)
+
+ERROR na liniji 234, Nonetype object is unsubscriptable
+kao da ne dohvaæa vlasnika zgradež
+
+Podesiti notifikaciju ako je vlasnik baze duže online nego što je definirani timer
 prebaciti postavke koje korisnik može modificirati u .ini datoteke
+riješiti problem ekipe koja nije u klanu, a igra sa njima
 
 - kad je player zadnji put bio online
 
