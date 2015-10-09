@@ -4,6 +4,9 @@ prebaciti postavke koje korisnik može modificirati u .ini datoteke
 
 - kad je player zadnji put bio online
 
+Fix this:
+last_online zgrade svih tribemembera se trebaju štititi
+
 
 LONGTERM
 Admintools za cijeli sustav:
@@ -13,6 +16,13 @@ Admintools za cijeli sustav:
 
 
 
+TESTING
+1. ako su svi memberi duže od 24 sata offline, ne štiti graðevine
+inaèe štiti, neovisno o tome koliko je tko bio offline
+
+
+
+3. RADI LI PROTEKCIJA KUÆE ÈLANNA TRIBE-A AKO JE JEDANN ÈLAN ONLINE
 
 
 ------------------------------------
@@ -61,3 +71,6 @@ quickfix : koristi imena igraèa iz datastore-a
 
 8.10
 Fixed timer refresh when disconnecting while flagged
+
+9.10
+Flaging whole tribe when one member is aggressed
