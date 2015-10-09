@@ -21,14 +21,14 @@ class WhosOnline():
             players = 'Active Players: '
             for i, player in enumerate(Server.ActivePlayers):
                 playerData = DataStore.Get('Players', player.SteamID)
-                if (i%5) != 0 and (i != len(Server.ActivePlayers)-1):
+                if (i%7) != 0 and (i != len(Server.ActivePlayers)-1):
                     playerName = playerData['name']
                     players += ' '+ playerName+','
                 elif i == (len(Server.ActivePlayers)-1):
                     playerName = playerData['name']
                     players += ' '+ playerName
-                    cmd.User.Message(players)
-                elif (i%5) == 0:
+                    cmd.User.MessageFrom('', players)
+                elif (i%7) == 0:
                     playerName = playerData['name']
                     players += ' '+playerName
                     cmd.User.Message(players)

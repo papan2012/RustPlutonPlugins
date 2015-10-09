@@ -52,12 +52,6 @@ class TribesDebugger():
                 player = Server.FindPlayer('76561197996829381')
                 Util.Log(str(player.Name))
 
-
-
-
-
-
-
         if command == 'name':
             newName = str.join(' ', cmd.args)
             print newName
@@ -91,9 +85,13 @@ class TribesDebugger():
 
             if tribeDataKeys:
                 for key in tribeDataKeys:
-                    print key
-                    print DataStore.Get("Tribes", key)
-                    print ''
+                    Util.Log(key)
+                    list_of_players = []
+                    for item in DataStore.Get("Tribes", key)['tribeMembers']:
+                        pd = DataStore.Get('Players', item)
+                        list_of_players.append(pd['name'])
+
+                    Util.Log("List of players: "+str(list_of_players))
             else:
                 print "No tribes found"
 

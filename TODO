@@ -1,16 +1,48 @@
-AntiHack mehanizmi
+TODO za sutra:
+Riješiti flaganje cijelog klana kada jedan èlan bude flegan
+prebaciti postavke koje korisnik može modificirati u .ini datoteke
+
+- kad je player zadnji put bio online
+
+
+LONGTERM
+Admintools za cijeli sustav:
+ - sve gradjevine u krugu oko podruèja na kojem stoji Poglavica, a koje pripadaju izbaèenom èlanu, prebacuje u vlasištvo Poglavice
+ - save database (before restart)
+ - mute
+
+
+
+
+
+------------------------------------
+
+
+
+==AntiHack mehanizmi==
 
 - prebrzo pogaðanje kodlocka
 - trap za lovljenje ESP hakera sa hidden stashes
 
-pogledati ascii to unicode pretvaranje
-znaèi, ako ime ima nekih èudnovatosti, u datastore je spremljeno kao unicode
-možda samo konverzija u utf8 pomogne?ððž
 
-Tribe plugin
+
+==Tribe plugin==
 Tribeu se možeš pridružiti i napustiti jedanput u tjedan dana
 Tribe leader može kikati osobu van klana, ali se tada kikana osoba ne može pridružiti drugom klanu 48 sati.
 
+Što kada èlan koji je gradio za tribe napusti taj tribe?
+implementirati tribe ownera i/ili tribe zone?
+
+Možda najbolje napraviti još jedan dict, uz (location): ownerid, sa ownerid: [location]
+Po izlasku èovjeka iz klana, sve graðevine koje su pripadale tom èovjeku prelaze u vlasništvo vlasnika klana
+ - promjena ownerid u trenutnom dictinerijuu
+ - dodjela lokacija jednog ownera drugom
+
+ triber owner može kreirati kodelock, i sva vrata koja imaju taj code èlanovi plemena mogu otvarati
+
+==AntiOFFLINERaid==
+TODO:
+Tribe flag - kad jedan member bude flagan, cijeli tribe dobije flag
 
 Long Term TODO:
 Bounty system
@@ -19,5 +51,13 @@ Osoba koja ubije tog igraèa dobiva bounty.
 
 Bounty sustav MORAM isfurati preko bounty centra, koji æe biti non-raidable npc zgrada, u kojoj æe igraèi moæi stavljati bounty
 
-DEBU TASK
+DONE
 antiofflineraid kada je member, vlasnik kuæe, offline
+
+pogledati ascii to unicode pretvaranje
+znaèi, ako ime ima nekih èudnovatosti, u datastore je spremljeno kao unicode
+možda samo konverzija u utf8 pomogne?
+quickfix : koristi imena igraèa iz datastore-a
+
+8.10
+Fixed timer refresh when disconnecting while flagged

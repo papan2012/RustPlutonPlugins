@@ -2,12 +2,61 @@ __author__ = 'PanDevas'
 __version__ = '1.0'
 
 import clr
-clr.AddReferenceByPartialName("Pluton")
+clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
 
 import Pluton
 import sys
 path = Util.GetPublicFolder()
+sys.path.append(path + "\\Python\\Lib\\")
 import time
+
+import Facepunch
+import CommunityEntity
+import Network
+
+try:
+    import json
+except ImportError:
+    raise ImportError("LegacyBroadcast: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
+
+broadcastgui = [
+    {
+        "name": "broadcastui",
+        #"parent": "Overlay",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Image",
+                "color": "0.1 0.1 0.1 0.4",
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.005 0.975",
+                "anchormax": "0.035 0.995"
+            }
+        ]
+    },
+    {
+        "parent": "broadcastui",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Text",
+                "text": "[TEXT]",
+                "color":  "0.9 0.1 0.1 0.8",
+                "fontSize": 10,
+                "align": "MiddleCenter",
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.005 0.005",
+                "anchormax": "0.995 0.995"
+            }
+        ]
+    }
+]
+string = json.encode(broadcastgui)
+broadcast = json.makepretty(string)
 
 
 class AntiOfflineRaid():
@@ -15,8 +64,8 @@ class AntiOfflineRaid():
     def On_PluginInit(self):
         self.flaggedPlayers = []
         self.notifiedPlayers = []
-        #self.timerLenght = 900000
-        self.timerLenght = 60
+        self.disconnectedPlayers = {}
+        self.timerLenght = 900
         self.nofityTimer = 60
         self.offlineProtectionTimeout = 86400
 
@@ -26,14 +75,16 @@ class AntiOfflineRaid():
         :return:
         Detects if building part was damaged and get its location and owner
         '''
+
+        attacker = HurtEvent.Attacker
         ignoredDamagesList = ['ElectricShock', 'Heat', 'Cold']
-        if HurtEvent.Attacker and HurtEvent.Attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList:
-            attacker = HurtEvent.Attacker
+        if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList:
+
             attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
-            if attacker and attacker.IsPlayer() and HurtEvent.Victim.IsBuildingPart():
-                victimID = DataStore.Get("BuildingPartOwner", victimLocation)
+            victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
+            if HurtEvent.Victim.IsBuildingPart() and not self.checkAttVictTribe(attackerID, victimID):
                 victimData = DataStore.Get('Players', victimID)
                 victim = Server.FindPlayer(str(victimID))
 
@@ -46,20 +97,19 @@ class AntiOfflineRaid():
 
 
                 damageAmounts = HurtEvent.DamageAmounts
-                if attacker and attackerID != victimID and not self.checkPVPFlag(attackerID):
-                    self.flagPlayerPVP(attacker)
+                if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
+                    self.flagPlayerPVP(attackerID)
 
                 if playerOffline and (self.protectForOffline(victimID) and not self.tribeConditions(victimID)):
                     for i, d in enumerate(damageAmounts):
                         if damageAmounts[i] != 0.0:
                             damageAmounts[i] = 0.0
                     HurtEvent.DamageAmounts=damageAmounts
-                    self.notifyPlayer(attacker, victimName)
+                    self.notifyPlayer(attackerID, victimName)
 
-                elif not playerOffline and not self.checkPVPFlag(victimID) and attackerID != victimID:
+                elif not playerOffline and attackerID != victimID:
                     # if victim is active, and not flagged
-                    if not self.checkPVPFlag(victimID):
-                        self.flagPlayerPVP(victim)
+                    self.flagPlayerPVP(victimID)
 
     def On_PlayerHurt(self, HurtEvent):
 
@@ -70,11 +120,20 @@ class AntiOfflineRaid():
             if attacker and attacker.IsPlayer() and victim.IsPlayer():
                 attackerID = attacker.SteamID
                 victimID = victim.SteamID
-                if attackerID != victimID:
+                if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                     if not self.checkPVPFlag(attackerID):
-                        self.flagPlayerPVP(attacker)
-                    if not self.checkPVPFlag(victimID):
-                        self.flagPlayerPVP(victim)
+                        self.flagPlayerPVP(attackerID)
+                    if not self.checkPVPFlag(victimID) and Server.FindPlayer(victimID):
+                        self.flagPlayerPVP(victimID)
+
+    def victInAttTribe(self, attackerID, victimID):
+        attackerD = DataStore.Get("Players", attackerID)
+        victimD = DataStore.Get("Players", victimID)
+
+        if attackerD['tribe'] == victimD['tribe']:
+            return True
+        else:
+            return False
 
 
     def tribeConditions(self, playerID):
@@ -96,48 +155,63 @@ class AntiOfflineRaid():
                 if tribeMember:
                     if tribeMember.Name != playerName or tribeMemberID in self.flaggedPlayers:
                         return True
+        if playerTribe != 'Ronins':
+            return True
         else:
-            #Util.Log('Player Ronin, not in tribe, returned False ')
             return False
 
-    def checkFriendlyFire(self, attacker, victim):
-        '''
-        TODO
-        Players from friedslist can't flag for pvp, TODO
-
-        :param attacker:
-        :param victim:
-        :return:
-        '''
-        pass
-
-    def flagPlayerPVP(self, player):
-        if player not in self.flaggedPlayers:
-            self.flaggedPlayers.append(player.SteamID)
+    def flagPlayerPVP(self, playerID):
+        if not self.checkPVPFlag(playerID):
+            player = Server.FindPlayer(playerID)
+            self.flaggedPlayers.append(playerID)
+            flagText = "Flagged "
             fpData = Plugin.CreateDict()
-            fpData['SteamID'] = player.SteamID
+            fpData['SteamID'] = playerID
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
 
             Plugin.CreateParallelTimer("PVPFlag", self.timerLenght*1000, fpData).Start()
 
 
     def PVPFlagCallback(self, timer):
-        timer.Kill()
         data = timer.Args
 
         playerID = data['SteamID']
         playerName = DataStore.Get("Players", playerID)
-        if playerID in self.flaggedPlayers:
-            self.flaggedPlayers.remove(playerID)
 
-    def notifyPlayer(self, player, victimName):
-        playerID = player.SteamID
+        if playerID in self.disconnectedPlayers:
+            self.disconnectedPlayers.pop(playerID)
+            # za sada produzuje timer za dodatnih 15 minuta u slucaju disconnecta. Nije tako lose, ali nije ni skroz ispravno
+        else:
+            timer.Kill()
+            player = Server.FindPlayer(playerID)
+            if playerID in self.flaggedPlayers:
+                self.flaggedPlayers.remove(playerID)
+                if player:
+                    CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
+
+    def notifyPlayer(self, playerID, victimName):
+        player = Server.FindPlayer(playerID)
         if playerID not in self.notifiedPlayers:
             self.notifiedPlayers.append(playerID)
             pData = Plugin.CreateDict()
             pData['playerID'] = playerID
             player.MessageFrom("AOR", "Player "+victimName+" is offline and you can't damage his buildings ")
-
             Plugin.CreateParallelTimer('notify', self.nofityTimer*1000, pData).Start()
+
+    def checkAttVictTribe(self, attackerID, victimID):
+        '''
+        :param attackerID:
+        :param victimID:
+        :return: bool True/False if attacker and victim share Tribe
+        '''
+        attackerD = DataStore.Get("Players", attackerID)
+        victimD = DataStore.Get("Players", victimID)
+        if attackerD['tribe'] == victimD['tribe']:
+            return True
+        else:
+            return False
+
 
     def notifyCallback(self, timer):
         timer.Kill()
@@ -163,7 +237,7 @@ class AntiOfflineRaid():
 
         #if time player is online is greater then offline protect timer, stop prottecting
         if (time.time() - playerData['lastonline']) > self.offlineProtectionTimeout:
-            Util.Log(str((time.time() - playerData['lastonline'])))
+            #Util.Log(str((time.time() - playerData['lastonline'])))
             # player offline protection is off
             return False
         else:
@@ -199,5 +273,12 @@ class AntiOfflineRaid():
 
         if command == 'flags':
             Util.Log(str(self.flaggedPlayers))
+
+    def On_PlayerDisconnected(self, player):
+        now = time.time()
+        playerID = player.SteamID
+        if playerID not in self.disconnectedPlayers:
+            self.disconnectedPlayers[playerID] = now
+
 
 

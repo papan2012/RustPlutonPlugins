@@ -128,9 +128,7 @@ class TribeData():
 
     def removeMember(self, memberID):
         if memberID in self.tribeData['tribeMembers']:
-            Util.Log(str(self.tribeData['tribeMembers']))
             self.tribeData['tribeMembers'].remove(str(memberID))
-            Util.Log(str(self.tribeData['tribeMembers']))
             return True
         else:
             return False
@@ -197,7 +195,6 @@ class Tribes:
            TribeName limited to 10 chars
         '''
 
-        #TribeName limited to 10 chars
         self._update_tribe_list()
         tribeslist = DataStore.Keys("Tribes")
 
@@ -226,14 +223,6 @@ class Tribes:
             self._update_tribe_list()
 
             creator.MessageFrom("Tribes", "Tribe \""+tribeName+"\" created!")
-
-
-
-    def deleteTribe(self, cmd):
-        '''
-        TODO
-        '''
-        print "Deleting Tribe"
 
     def listTribes(self, cmd):
         self._update_tribe_list()
@@ -296,20 +285,17 @@ class Tribes:
     def leaveTribe(self, cmd):
         player = cmd.User
         playerD = PlayerData(player)
-        Util.Log(str(playerD))
         currentTribe = playerD.playerData['tribe']
 
         if currentTribe == 'Ronins':
             player.MessageFrom("Tribes", "You're just a Ronin! Where can you go?")
         else:
-            Util.Log(str(player.SteamID))
             playerTD = TribeData(currentTribe)
             playerTD.removeMember(player.SteamID)
             playerTD.tribeMessages(playerD.playerData['tribe'], "Player "+player.Name+" left your tribe!")
             playerD = PlayerData(player)
             playerD.playerData['tribe'] = 'Ronins'
             playerNTD = TribeData('Ronins')
-            Util.Log(str(playerNTD))
             playerNTD.addMember(player.SteamID)
             player.MessageFrom("Tribes:", "You have left the tribe \""+currentTribe+"\"")
             if len(playerTD.tribeData['tribeMembers']) == 0 and playerTD.tribeName != 'Ronin':
