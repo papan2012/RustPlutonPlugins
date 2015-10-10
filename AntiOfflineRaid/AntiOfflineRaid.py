@@ -193,7 +193,7 @@ class AntiOfflineRaid():
         playerID = data['SteamID']
         playerD = DataStore.Get("Players", playerID)
 
-        if playerD['tribe'] == 'Ronins' and playerID in self.disconnectedPlayers:
+        if playerD['tribe'] == 'Ronins' and playerID in self.disconnectedPlayers.keys():
             self.disconnectedPlayers.pop(playerID)
             # za sada produzuje timer za dodatnih 15 minuta u slucaju disconnecta. Nije tako lose, ali nije ni skroz ispravno
         elif playerD['tribe'] == 'Ronins':
@@ -207,7 +207,7 @@ class AntiOfflineRaid():
         if playerD['tribe'] != 'Ronins':
             plTribeD = DataStore.Get('Tribes', playerD['tribe'])
             for memberID in plTribeD['tribeMembers']:
-                if memberID in self.disconnectedPlayers:
+                if memberID in self.disconnectedPlayers.keys():
                     self.disconnectedPlayers.pop(playerID)
                 else:
                     timer.Kill()
@@ -316,7 +316,7 @@ class AntiOfflineRaid():
     def On_PlayerDisconnected(self, player):
         now = time.time()
         playerID = player.SteamID
-        if playerID not in self.disconnectedPlayers:
+        if playerID not in self.disconnectedPlayers.keys() and playerID in self.flaggedPlayers:
             self.disconnectedPlayers[playerID] = now
 
     def On_PlayerConnected(self, player):

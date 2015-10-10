@@ -1,6 +1,8 @@
 TODO za sutra:
 
 player ode offline, flagan, kuæa odmah aktivna - fix asap (should be fixed, doublecheck)
+provjeriti radi li pop na self.disconnectedPlayers.pop(playerID) PVPFlagCallback
+
 
 ERROR na liniji 234, Nonetype object is unsubscriptable
 kao da ne dohvaæa vlasnika zgradež
