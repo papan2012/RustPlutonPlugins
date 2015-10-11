@@ -64,6 +64,7 @@ broadcast = json.makepretty(string)
 class AntiOfflineRaid():
 
     def On_PluginInit(self):
+        #self.settings = self.loadIniSettings()
         self.flaggedPlayers = []
         self.notifiedPlayers = []
         self.disconnectedPlayers = {}
@@ -87,11 +88,13 @@ class AntiOfflineRaid():
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
             #dodao victimID jer mi ponekad vraca Null (moguci datastore issue?)
-            if victimID and HurtEvent.Victim.IsBuildingPart() and not self.checkAttVictTribe(attackerID, victimID):
+            if victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
                 Util.Log('attackerID '+str(attackerID))
                 Util.Log('victimID ' + str(victimID))
                 victimData = DataStore.Get('Players', victimID)
                 victim = Server.FindPlayer(str(victimID))
+                if attackerID not in self.flaggedPlayers:
+                    Util.Log("Player "+attacker.Name + "is attacking building of player "+victimData['name'])
 
                 if not victim:
                     victimName = victimData['name']
@@ -101,7 +104,7 @@ class AntiOfflineRaid():
                     playerOffline = False
 
                 damageAmounts = HurtEvent.DamageAmounts
-                if attackerID != victimID and not self.victInAttTribe(attackerID, victimID) and attackerID not in self.flaggedPlayers:
+                if attackerID != victimID and attackerID not in self.flaggedPlayers:
                     self.checkTribeBeforeFlag(attackerID)
 
                 if playerOffline and (self.protectForOffline(victimID) and not self.tribeConditions(victimID)):
@@ -111,19 +114,34 @@ class AntiOfflineRaid():
                     HurtEvent.DamageAmounts=damageAmounts
                     self.notifyPlayer(attackerID, victimName)
 
-                elif not playerOffline and attackerID != victimID and victimID not in self.flaggedPlayers:
+                elif not playerOffline and attackerID != victimID and (victimID not in self.flaggedPlayers or victimID not in self.disconnectedPlayers.keys()):
                     # if victim is active, and not flagged
                     self.checkTribeBeforeFlag(victimID)
+
+    def loadIniSettings(self):
+        if not Plutin.IniExists("settings"):
+            Plugin.CreateIni("settings")
+            ini = Plugin.GetIni("settings")
+            ini.AddSetting("settings", "pvptimerLenght", "900")
+            ini.AddSetting("settings", "notifyTimerPeriod", "30")
+            ini.AddSetting("settings", "offlineProtectionTimeout", "86400")
+            ini.Save()
+        settings = {}
+        ini = Plugin.GetIni("settings")
+
+
+
 
     def On_PlayerHurt(self, HurtEvent):
 
         attacker = HurtEvent.Attacker
         victim = HurtEvent.Victim
 
-        if attacker != None and victim != None:
+        if attacker and victim:
             if attacker and attacker.IsPlayer() and victim.IsPlayer():
                 attackerID = attacker.SteamID
                 victimID = victim.SteamID
+                Util.Log("Player "+attacker.Name+" is attacking "+victim.Name)
                 if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                     if not self.checkPVPFlag(attackerID):
                         self.checkTribeBeforeFlag(attackerID)
@@ -134,7 +152,10 @@ class AntiOfflineRaid():
         attackerD = DataStore.Get("Players", attackerID)
         victimD = DataStore.Get("Players", victimID)
 
-        if attackerD['tribe'] == victimD['tribe']:
+        if attackerD['tribe'] == 'Ronins' and victimD['tribe'] == 'Ronins':
+            Util.Log("Both players in Ronins")
+            return False
+        elif attackerD['tribe'] == victimD['tribe']:
             return True
         else:
             return False
@@ -157,7 +178,8 @@ class AntiOfflineRaid():
             for tribeMemberID in tribeMembers:
                 tribeMember = Server.FindPlayer(tribeMemberID)
                 if tribeMember:
-                    if tribeMember.Name != playerName or tribeMemberID in self.flaggedPlayers:
+                    if tribeMemberID in self.flaggedPlayers or tribeMemberID in self.disconnectedPlayers.keys():
+                        Util.Log("Tribe Member flagged or disconnected!")
                         return True
         else:
             return False
@@ -169,13 +191,18 @@ class AntiOfflineRaid():
             for memberID in tribeD['tribeMembers']:
                 member = Server.FindPlayer(memberID)
                 if member:
+                    Util.Log("Flaging member "+member.Name)
                     self.flagPlayerPVP(member.SteamID)
         else:
+            member = Server.FindPlayer(playerID)
+            Util.Log("Flaging Ronin member" + member.Name)
             self.flagPlayerPVP(playerID)
 
 
     def flagPlayerPVP(self, playerID):
         if not self.checkPVPFlag(playerID):
+            player = Server.FindPlayer(playerID)
+            Util.Log("Flaging player "+ str(player.Name))
             player = Server.FindPlayer(playerID)
             self.flaggedPlayers.append(playerID)
             flagText = "Flagged "
@@ -192,12 +219,14 @@ class AntiOfflineRaid():
 
         playerID = data['SteamID']
         playerD = DataStore.Get("Players", playerID)
+        playerName = playerD['name']
 
         if playerD['tribe'] == 'Ronins' and playerID in self.disconnectedPlayers.keys():
+            Util.Log("Player "+playerName+" was in Ronins, disconnected, extending timer")
             self.disconnectedPlayers.pop(playerID)
-            # za sada produzuje timer za dodatnih 15 minuta u slucaju disconnecta. Nije tako lose, ali nije ni skroz ispravno
         elif playerD['tribe'] == 'Ronins':
             timer.Kill()
+            Util.Log("Killing timer for player "+playerName)
             player = Server.FindPlayer(playerID)
             if playerID in self.flaggedPlayers:
                 self.flaggedPlayers.remove(playerID)
@@ -206,16 +235,22 @@ class AntiOfflineRaid():
 
         if playerD['tribe'] != 'Ronins':
             plTribeD = DataStore.Get('Tribes', playerD['tribe'])
+            flags = False
             for memberID in plTribeD['tribeMembers']:
+                Util.Log(str(memberID))
                 if memberID in self.disconnectedPlayers.keys():
+                    Util.Log("Timer extending, player "+str(playerD['name']+' disconnected!'))
                     self.disconnectedPlayers.pop(playerID)
-                else:
-                    timer.Kill()
-                    player = Server.FindPlayer(playerID)
-                    if playerID in self.flaggedPlayers:
-                        self.flaggedPlayers.remove(playerID)
-                        if player:
-                            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
+                    Util.Log("Some player disconnected")
+                    flags = True
+            if not flags:
+                timer.Kill()
+                Util.Log("Timer killed "+str(playerD['name']))
+                player = Server.FindPlayer(playerID)
+                if playerID in self.flaggedPlayers:
+                    self.flaggedPlayers.remove(playerID)
+                    if player:
+                        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
 
     def notifyPlayer(self, playerID, victimName):
         player = Server.FindPlayer(playerID)
@@ -225,22 +260,6 @@ class AntiOfflineRaid():
             pData['playerID'] = playerID
             player.MessageFrom("AOR", "Player "+victimName+" is offline and you can't damage his buildings!")
             Plugin.CreateParallelTimer('notify', self.nofityTimer*1000, pData).Start()
-
-    def checkAttVictTribe(self, attackerID, victimID):
-        '''
-        :param attackerID:
-        :param victimID:
-        :return: bool True/False if attacker and victim share Tribe
-        '''
-        attackerD = DataStore.Get("Players", attackerID)
-        Util.Log('attvicttribe:' + attackerD['tribe'])
-        victimD = DataStore.Get("Players", victimID)
-        Util.Log('attvicttribe:' + victimD['tribe'])
-        if attackerD['tribe'] == victimD['tribe']:
-            return True
-        else:
-            return False
-
 
     def notifyCallback(self, timer):
         timer.Kill()
@@ -265,7 +284,7 @@ class AntiOfflineRaid():
         playerData = DataStore.Get('Players', playerID)
 
         #if time player is online is greater then offline protect timer, stop prottecting
-        if (playerData['tribe'] == 'Ronins') and ((time.time() - playerData['lastonline']) > self.offlineProtectionTimeout) and playerID not in self.flaggedPlayers:
+        if (playerData['tribe'] == 'Ronins') and ((time.time() - playerData['lastonline']) > self.offlineProtectionTimeout) and (playerID in self.flaggedPlayers or playerID in self.disconnectedPlayers.keys()):
         #Util.Log(str((time.time() - playerData['lastonline'])))
             # player offline protection is off
             return False
@@ -276,7 +295,7 @@ class AntiOfflineRaid():
             tribeMembers = playerTribeData['tribeMembers']
             for tribeMemberID in tribeMembers:
                 playerD = DataStore.Get('Players', tribeMemberID)
-                if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout and tribeMemberID not in self.flaggedPlayers:
+                if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout and tribeMemberID not in self.flaggedPlayers or tribeMemberID not in self.disconnectedPlayers.keys():
                     return True
             return False
         else:
@@ -317,9 +336,10 @@ class AntiOfflineRaid():
         now = time.time()
         playerID = player.SteamID
         if playerID not in self.disconnectedPlayers.keys() and playerID in self.flaggedPlayers:
+            self.flaggedPlayers.remove(playerID)
             self.disconnectedPlayers[playerID] = now
 
     def On_PlayerConnected(self, player):
         playerID = player.SteamID
-        if playerID in self.disconnectedPlayers:
+        if playerID in self.disconnectedPlayers.keys():
             self.disconnectedPlayers.pop(playerID)
