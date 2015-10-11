@@ -114,7 +114,7 @@ class AntiOfflineRaid():
                     HurtEvent.DamageAmounts=damageAmounts
                     self.notifyPlayer(attackerID, victimName)
 
-                elif not playerOffline and attackerID != victimID and (victimID not in self.flaggedPlayers or victimID not in self.disconnectedPlayers.keys()):
+                elif (not playerOffline and attackerID != victimID and victimID not in self.flaggedPlayers) or victimID not in self.disconnectedPlayers.keys():
                     # if victim is active, and not flagged
                     self.checkTribeBeforeFlag(victimID)
 
