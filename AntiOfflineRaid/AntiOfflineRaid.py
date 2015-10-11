@@ -222,6 +222,7 @@ class AntiOfflineRaid():
 
         if playerD['tribe'] == 'Ronins' and playerID in self.disconnectedPlayers.keys():
             Util.Log("Player "+playerName+" was in Ronins, disconnected, extending timer")
+
             self.disconnectedPlayers.pop(playerID)
         elif playerD['tribe'] == 'Ronins':
             timer.Kill()
@@ -238,12 +239,11 @@ class AntiOfflineRaid():
             for memberID in plTribeD['tribeMembers']:
                 if memberID in self.disconnectedPlayers.keys():
                     Util.Log("Timer extending, player "+str(playerD['name']+' disconnected!'))
-                    self.disconnectedPlayers.pop(playerID)
+                    self.disconnectedPlayers.pop(memberID)
                     Util.Log("Some player disconnected")
                     flags = True
             if not flags:
                 timer.Kill()
-                Util.Log("Timer killed "+str(playerD['name']))
                 player = Server.FindPlayer(playerID)
                 if playerID in self.flaggedPlayers:
                     self.flaggedPlayers.remove(playerID)
