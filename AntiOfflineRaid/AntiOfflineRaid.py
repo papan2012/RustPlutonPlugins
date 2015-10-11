@@ -202,7 +202,6 @@ class AntiOfflineRaid():
     def flagPlayerPVP(self, playerID):
         if not self.checkPVPFlag(playerID):
             player = Server.FindPlayer(playerID)
-            Util.Log("Flaging player "+ str(player.Name))
             player = Server.FindPlayer(playerID)
             self.flaggedPlayers.append(playerID)
             flagText = "Flagged "
@@ -237,7 +236,6 @@ class AntiOfflineRaid():
             plTribeD = DataStore.Get('Tribes', playerD['tribe'])
             flags = False
             for memberID in plTribeD['tribeMembers']:
-                Util.Log(str(memberID))
                 if memberID in self.disconnectedPlayers.keys():
                     Util.Log("Timer extending, player "+str(playerD['name']+' disconnected!'))
                     self.disconnectedPlayers.pop(playerID)
@@ -300,16 +298,6 @@ class AntiOfflineRaid():
             return False
         else:
             return True
-
-    # def On_PlayerDisconnected(self, player):
-    #     # Refreshes timers in case of player disconnect under timer
-    #     # TODO provjeri radi li
-    #     # ovo ce trebati napraviti preko reference na timer. Ako postoji timer, ubij ga i podesi novi
-    #     # fakat TODO
-    #     if player.SteamID in self.flaggedPlayers:
-    #         self.flaggedPlayers.remove(player.SteamID)
-    #         self.flagPlayerPVP(player)
-
 
     def On_Command(self, cmd):
         player = cmd.User
