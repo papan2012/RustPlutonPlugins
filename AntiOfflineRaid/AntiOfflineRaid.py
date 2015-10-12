@@ -64,13 +64,27 @@ broadcast = json.makepretty(string)
 class AntiOfflineRaid():
 
     def On_PluginInit(self):
-        #self.settings = self.loadIniSettings()
+        settings = self.loadIniSettings()
         self.flaggedPlayers = []
         self.notifiedPlayers = []
         self.disconnectedPlayers = {}
-        self.timerLenght = 900
-        self.nofityTimer = 30
-        self.offlineProtectionTimeout = 86400
+        self.timerLenght = int(settings.GetSetting("settings", "pvptimerLenght"))
+        self.nofityTimer = int(settings.GetSetting("settings", "notifyTimerPeriod"))
+        self.offlineProtectionTimeout = int(settings.GetSetting("settings", "offlineProtectionTimeout"))
+        # self.timerLenght = 900
+        # self.nofityTimer = 30
+        # self.offlineProtectionTimeout = 86400
+
+    def loadIniSettings(self):
+        if not Plugin.IniExists("settings"):
+            Plugin.CreateIni("settings")
+            ini = Plugin.GetIni("settings")
+            ini.AddSetting("settings", "pvptimerLenght", "900")
+            ini.AddSetting("settings", "notifyTimerPeriod", "30")
+            ini.AddSetting("settings", "offlineProtectionTimeout", "86400")
+            ini.Save()
+        settings = {}
+        return Plugin.GetIni("settings")
 
     def On_CombatEntityHurt(self, HurtEvent):
         '''
@@ -117,20 +131,6 @@ class AntiOfflineRaid():
                 elif (not playerOffline and attackerID != victimID and victimID not in self.flaggedPlayers) or victimID not in self.disconnectedPlayers.keys():
                     # if victim is active, and not flagged
                     self.checkTribeBeforeFlag(victimID)
-
-    def loadIniSettings(self):
-        if not Plutin.IniExists("settings"):
-            Plugin.CreateIni("settings")
-            ini = Plugin.GetIni("settings")
-            ini.AddSetting("settings", "pvptimerLenght", "900")
-            ini.AddSetting("settings", "notifyTimerPeriod", "30")
-            ini.AddSetting("settings", "offlineProtectionTimeout", "86400")
-            ini.Save()
-        settings = {}
-        ini = Plugin.GetIni("settings")
-
-
-
 
     def On_PlayerHurt(self, HurtEvent):
 
@@ -222,8 +222,7 @@ class AntiOfflineRaid():
 
         if playerD['tribe'] == 'Ronins' and playerID in self.disconnectedPlayers.keys():
             Util.Log("Player "+playerName+" was in Ronins, disconnected, extending timer")
-
-            self.disconnectedPlayers.pop(playerID)
+            self.disconnectedPlayers.pop(playerID, None)
         elif playerD['tribe'] == 'Ronins':
             timer.Kill()
             Util.Log("Killing timer for player "+playerName)
@@ -237,9 +236,10 @@ class AntiOfflineRaid():
             plTribeD = DataStore.Get('Tribes', playerD['tribe'])
             flags = False
             for memberID in plTribeD['tribeMembers']:
+                Util.Log("disconnectedPlayers"+str(self.disconnectedPlayers.keys()))
                 if memberID in self.disconnectedPlayers.keys():
                     Util.Log("Timer extending, player "+str(playerD['name']+' disconnected!'))
-                    self.disconnectedPlayers.pop(memberID)
+                    self.disconnectedPlayers.pop(memberID, None)
                     Util.Log("Some player disconnected")
                     flags = True
             if not flags:
@@ -324,10 +324,15 @@ class AntiOfflineRaid():
         now = time.time()
         playerID = player.SteamID
         if playerID not in self.disconnectedPlayers.keys() and playerID in self.flaggedPlayers:
-            self.flaggedPlayers.remove(playerID)
             self.disconnectedPlayers[playerID] = now
 
     def On_PlayerConnected(self, player):
         playerID = player.SteamID
         if playerID in self.disconnectedPlayers.keys():
             self.disconnectedPlayers.pop(playerID)
+
+
+    def On_PlayerWakeUp(self, player):
+        flagText = "Flagged "
+        if player.SteamID in self.flaggedPlayers:
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
