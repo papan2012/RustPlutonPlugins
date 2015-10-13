@@ -1,5 +1,11 @@
 TODO za sutra:
 
+Share mehanizam za tribe vrata
+osnivaè tribea je poglavica tribea
+može definirati šifru na zajednièkim vratima
+svi pripadnici tribea imaju pristup vratima sa tom šifrom
+
+
 player ode offline, flagan, kuæa odmah aktivna - fix asap (should be fixed, doublecheck)
 provjeriti radi li pop na self.disconnectedPlayers.pop(playerID) PVPFlagCallback
 

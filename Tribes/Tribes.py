@@ -223,10 +223,11 @@ class Tribes:
     def listTribes(self, cmd):
         self._update_tribe_list()
         player = cmd.User
-        player.MessageFrom("Tribes List", str(len(self.tribeList))+' found')
+        player.MessageFrom("Tribes List", "("+str(len(self.tribeList))+' found)')
         for i, tribeName in enumerate(self.tribeList):
-            player.MessageFrom(str(i+1), tribeName)
             tribe = TribeData(tribeName)
+            Util.Log(str(tribe.tribeData['tribeMembers']))
+            player.MessageFrom(str(i+1), tribeName + " ("+ str(len(tribe.tribeData['tribeMembers']))+' members)')
 
     def invitToTribe(self, cmd):
         playerr = cmd.User
