@@ -135,8 +135,7 @@ class AntiOfflineRaid():
                 attackerID = attacker.SteamID
                 victimID = victim.SteamID
                 Util.Log("Player "+attacker.Name+" is attacking "+victim.Name)
-                #if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
-                if attackerID == victimID:
+                if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                     if not self.checkPVPFlag(attackerID):
                         self.checkTribeBeforeFlag(attackerID)
                     if not self.checkPVPFlag(victimID) and Server.FindPlayer(victimID):
@@ -316,6 +315,12 @@ class AntiOfflineRaid():
                 player.MessageFrom("AOR", "You are flagged, your buildings won't be protected if you go offline while you're flagged!")
             else:
                 player.MessageFrom("AOR", "You are not flagged")
+
+        if command == 'flags':
+            players = []
+            for playerID in self.flaggedPlayers:
+                player = Server.FindPLayer(playerID)
+                players.append(player.Name)
 
         if command == 'aor':
             player.Message("Antiraid system works in the following way:")
