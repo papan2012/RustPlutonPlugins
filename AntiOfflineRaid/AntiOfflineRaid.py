@@ -102,7 +102,7 @@ class AntiOfflineRaid():
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
-            #dodao victimID jer mi ponekad vraca Null (moguci datastore issue?)
+            # victimID check if datastore entry not found (doors and frames hold the same location)
             if victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
@@ -182,9 +182,8 @@ class AntiOfflineRaid():
                 playerD = DataStore.Get('Players', tribeMemberID)
                 if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout and not self.checkPVPFlag(tribeMemberID):
                     return True
-            return False
         else:
-            return True
+            return False
 
 
     def tribeConditions(self, playerID):
