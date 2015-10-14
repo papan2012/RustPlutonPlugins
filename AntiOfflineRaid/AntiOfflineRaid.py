@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.0'
+__version__ = '1.12'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -103,7 +103,7 @@ class AntiOfflineRaid():
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
             # victimID check if datastore entry not found
-            if victimID and attackerID != victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
+            if attackerID and victimID and attackerID != victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
                 victim = Server.FindPlayer(str(victimID))
