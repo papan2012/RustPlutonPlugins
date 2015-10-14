@@ -114,14 +114,14 @@ class AntiOfflineRaid():
                 if attackerID != victimID and attackerID not in self.flaggedPlayers:
                     self.checkTribeBeforeFlag(attackerID)
 
-                if self.protectForOffline(victimID) and not self.tribeConditions(victimID):
+                    if self.protectForOffline(victimID) and not self.tribeConditions(victimID):
                     for i, d in enumerate(damageAmounts):
                         if damageAmounts[i] != 0.0:
                             damageAmounts[i] = 0.0
                     HurtEvent.DamageAmounts=damageAmounts
                     self.notifyPlayer(attackerID, victimName)
 
-                elif Server.attackerID != victimID and not self.checkPVPFlag(victimID):
+                elif attackerID != victimID and not self.checkPVPFlag(victimID):
                     # if victim is active, and not flagged
                     self.checkTribeBeforeFlag(victimID)
 
