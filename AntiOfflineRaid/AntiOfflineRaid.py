@@ -103,7 +103,7 @@ class AntiOfflineRaid():
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
             # victimID check if datastore entry not found
-            if victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
+            if victimID and attackerID != victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
                 victim = Server.FindPlayer(str(victimID))
@@ -111,17 +111,17 @@ class AntiOfflineRaid():
                     Util.Log("Player "+attacker.Name + "is attacking building of player "+victimData['name'])
 
                 damageAmounts = HurtEvent.DamageAmounts
-                if attackerID != victimID and attackerID not in self.flaggedPlayers:
+                if attackerID not in self.flaggedPlayers:
                     self.checkTribeBeforeFlag(attackerID)
 
-                    if self.protectForOffline(victimID) and not self.tribeConditions(victimID):
+                if self.protectForOffline(victimID) and not self.tribeConditions(victimID):
                     for i, d in enumerate(damageAmounts):
                         if damageAmounts[i] != 0.0:
                             damageAmounts[i] = 0.0
                     HurtEvent.DamageAmounts=damageAmounts
                     self.notifyPlayer(attackerID, victimName)
 
-                elif attackerID != victimID and not self.checkPVPFlag(victimID):
+                elif not self.checkPVPFlag(victimID):
                     # if victim is active, and not flagged
                     self.checkTribeBeforeFlag(victimID)
 
