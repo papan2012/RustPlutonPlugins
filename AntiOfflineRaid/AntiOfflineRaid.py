@@ -102,7 +102,7 @@ class AntiOfflineRaid():
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
 
-            # victimID check if datastore entry not found (doors and frames hold the same location)
+            # victimID check if datastore entry not found
             if victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
@@ -121,7 +121,7 @@ class AntiOfflineRaid():
                     HurtEvent.DamageAmounts=damageAmounts
                     self.notifyPlayer(attackerID, victimName)
 
-                elif attackerID != victimID and not self.checkPVPFlag(victimID):
+                elif Server.attackerID != victimID and not self.checkPVPFlag(victimID):
                     # if victim is active, and not flagged
                     self.checkTribeBeforeFlag(victimID)
 
@@ -177,10 +177,19 @@ class AntiOfflineRaid():
             playerTribe = playerData['tribe']
             playerTribeData = DataStore.Get('Tribes', playerTribe)
             tribeMembers = playerTribeData['tribeMembers']
+            protect = False
             for tribeMemberID in tribeMembers:
                 playerD = DataStore.Get('Players', tribeMemberID)
-                if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout and not self.checkPVPFlag(tribeMemberID):
-                    return True
+                player = Server.FindPlayer(tribeMemberID)
+                if player:
+                    Util.Log(player.Name+' online')
+                    Util.Log("Player from tribe online, not protecting")
+                    return False
+                    break
+                elif (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout and not self.checkPVPFlag(tribeMemberID):
+                    protect = True
+                    Util.Log("No players offline or flagged, protecting")
+            return protect
         else:
             return False
 
@@ -319,8 +328,9 @@ class AntiOfflineRaid():
         if command == 'flags':
             players = []
             for playerID in self.flaggedPlayers:
-                player = Server.FindPLayer(playerID)
+                player = Server.FindPlayer(playerID)
                 players.append(player.Name)
+            Util.Log(str(players))
 
         if command == 'aor':
             player.Message("Antiraid system works in the following way:")
@@ -332,8 +342,8 @@ class AntiOfflineRaid():
         if command == 'clearflags':
             for playerID in self.flaggedPlayers:
                 player = Server.FindPlayer(playerID)
-                self.flaggedPlayers.remove(playerID)
                 if player:
+                    self.flaggedPlayers.remove(playerID)
                     Util.Log("Clearing all flags!")
                     CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
 

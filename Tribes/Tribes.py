@@ -91,8 +91,6 @@ class TribeData():
             self.tribeData = DataStore.Get('Tribes', self.tribeName)
 
 
-
-
     def addTribeToDatastore(self, creatorID):
         tribeData = { 'creatorID': '',
                           'tribeMembers': [],
