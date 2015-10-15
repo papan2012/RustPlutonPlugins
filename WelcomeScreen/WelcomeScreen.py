@@ -53,7 +53,7 @@ broadcastgui = [
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.055 0.055",
+                "anchormin": "0.1 0.5",
                 "anchormax": "0.955 0.955"
             }
         ]
@@ -63,23 +63,36 @@ broadcastgui = [
         "name" : "okbutton",
         "components":
         [
+
             {
                 "type": "UnityEngine.UI.Button",
+                "text": "OK",
                 "close": "broadcastui",
                 "command": "close.window",
-                "color": "0.8 0.1 0.1 0.7",
-            },
-            {
-                "type": "UnityEngine.UI.Text",
-                "color": "0.1 0.1 0.1 0.9",
-                "text": "OK",
-                "fontSize": 20,
-             #   "align": "LowerRight",
+                "color": "0.2 0.1 0.1 0.5",
+                "scale": "1.5 1.5"
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.5 0.5",
-                "anchormax": "0.5 0.5"
+                "anchormin": "0.89 0.05",
+                "anchormax": "0.99 0.15"
+            }
+        ]
+    },
+    {
+        "parent": "okbutton",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Text",
+                "color": "0.9 0.2 0.5 0.9",
+                "text": "OK",
+                "fontSize": 20,
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.1 0.1",
+                "anchormax": "0.99 0.99"
             }
         ]
     }
@@ -117,6 +130,9 @@ class WelcomeScreen():
 
 
     def On_ClientConsole(self, cce):
+        player = cce.User
+        if cce.cmd == 'close.window':
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
         Util.Log(str(type(cce)))
         Util.Log(str(cce.cmd))
 
