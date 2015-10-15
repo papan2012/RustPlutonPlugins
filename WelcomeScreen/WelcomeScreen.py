@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '0.113'
+__version__ = '0.5'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -29,7 +29,7 @@ broadcastgui = [
         [
             {
                 "type": "UnityEngine.UI.Image",
-                "color": "0.8 0.8 0.8 0.4",
+                "color": "0.1 0.1 0.1 0.85",
             },
             {
                 "type": "RectTransform",
@@ -47,16 +47,53 @@ broadcastgui = [
         [
             {
                 "type": "UnityEngine.UI.Text",
-                "color": "0.5 0.8 0.8 0.8",
+                "color": "0.8 0.8 0.8 0.7",
                 "text": "[TEXT]",
                 "fontSize": 13
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.1 0.5",
-                "anchormax": "0.955 0.955"
+                "anchormin": "0.05 0.2",
+                "anchormax": "0.8 0.8"
             }
         ]
+    },
+        {
+        "parent": "broadcastui",
+        "name" : "welcome",
+        "components":
+            [
+                {
+                    "type": "UnityEngine.UI.Text",
+                    "color": "1.0 1.0 1.0 0.95",
+                    "text": "Welcome To <color=red>CroHQ Server</color>!",
+                    "fontSize": 20,
+                },
+                {
+                    "type": "RectTransform",
+                    "anchormin": "0.05 0.90",
+                    "anchormax": "0.99 0.99"
+                },
+            ]
+
+    },
+    {
+        "parent": "broadcastui",
+        "name" : "bottray",
+        "components":
+            [
+                {
+                    "type": "UnityEngine.UI.Image",
+                    "color": "0.1 0.1 0.1 1.0",
+                },
+                {
+                    "type": "RectTransform",
+                    "anchormin": "0.89 0.05",
+                    "anchormax": "0.99 0.15"
+                }
+            ]
+
+
     },
     {
         "parent": "broadcastui",
@@ -65,7 +102,7 @@ broadcastgui = [
         [
             {
                 "type": "UnityEngine.UI.Text",
-                "color": "0.9 0.2 0.5 0.9",
+                "color": "0.1 0.6 0.1 1.0",
                 "text": "OK",
                 "fontSize": 20,
                 "align": "MiddleCenter"
@@ -81,6 +118,7 @@ broadcastgui = [
                 "close": "broadcastui",
                 "command": "close.window",
                 "color": "0.2 0.1 0.1 0.5",
+                "scale": "1.1 1.1 1.1"
             }
 
         ]
@@ -94,36 +132,31 @@ broadcast = json.makepretty(string)
 
 class WelcomeScreen():
 
-    def On_Command(self, cmd):
-        command = cmd.cmd
-        player = cmd.User
+    def On_PluginInit(self):
+        if DataStore.GetTable("Welcomed"):
+            self.shown_players = DataStore.Get("Welcomed", "players")
+        else:
+            DataStore.Add("Welcomed", "players", [])
+            self.shown_players = DataStore.Get("Welcomed", "players")
 
-        if command == 't':
-            flagText = "Wall of text with all the rules is here \n with a new line <color=red>red</color>"
-            Util.Log(str(broadcast))
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
+        self.flagText = "If you are tired of beeing raided moment you log off, we can offer you one of a kind experience on our server. \n\n" \
+                       "There's an offline raid protection plugin in place, that will protect all of your buildings from damage while you are offline, for a period of 24 hours.\n" \
+                       "If you don't come online in that 24 hour period, your building will not be protected any longer, so be sure to log in at least once a day to refresh the timer.\n\n" \
+                       "Be sure to check available commands and additional help by issuing following commands in chat:\n" \
+                       "1. /help\n" \
+                       "2. /trhelp\n" \
+                       "3. /aor\n" \
+                       "\nFor any additional questions, feel free to ask in chat, someone will know the answer.\n" \
+                       "\nHappy gaming!"
 
-            tdata = Plugin.CreateDict()
-            tdata['player'] = player
-            Plugin.CreateTimer("Test", 15000, tdata).Start()
-
-        if command == 'toff':
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
-
-
-    def TestCallback(self, timer):
-        player = timer.Args['player']
-        timer.Kill()
-
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
-
+    def On_PlayerLoaded(self, player):
+        if player.SteamID not in self.shown_players:
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
         player = cce.User
+        playerID = player.SteamID
         if cce.cmd == 'close.window':
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
-        Util.Log(str(type(cce)))
-        Util.Log(str(cce.cmd))
-
-
-
+        self.shown_players.append(playerID)
+        DataStore.Save()
