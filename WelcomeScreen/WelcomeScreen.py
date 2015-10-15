@@ -64,31 +64,25 @@ broadcastgui = [
         "components":
         [
             {
-                "type": "UnityEngine.UI.Button",
-                "text": "OK",
-                "close": "broadcastui",
-                "command": "close.window",
-                "color": "0.2 0.1 0.1 0.5",
-                "scale": "1.5 1.5"
-            },
-            {
-                "type": "RectTransform",
-                "anchormin": "0.89 0.05",
-                "anchormax": "0.99 0.15"
-            }
-        ]
-    },
-    {
-        "parent": "okbutton",
-        "components":
-        [
-            {
                 "type": "UnityEngine.UI.Text",
                 "color": "0.9 0.2 0.5 0.9",
                 "text": "OK",
                 "fontSize": 20,
                 "align": "MiddleCenter"
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.89 0.05",
+                "anchormax": "0.99 0.15"
+            },
+            {
+                "type": "UnityEngine.UI.Button",
+                "text": "OK",
+                "close": "broadcastui",
+                "command": "close.window",
+                "color": "0.2 0.1 0.1 0.5",
             }
+
         ]
     }
 ]
