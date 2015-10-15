@@ -1,14 +1,15 @@
 __author__ = 'PanDevas'
-__version__ = '0.1'
+__version__ = '0.113'
 
 import clr
-import sys
-
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
-path = Util.GetPublicFolder()
-sys.path.append(path + "\\Python\\Lib\\")
 
 import Pluton
+import sys
+path = Util.GetPublicFolder()
+sys.path.append(path + "\\Python\\Lib\\")
+import time
+
 import Facepunch
 import CommunityEntity
 import Network
@@ -18,100 +19,106 @@ try:
 except ImportError:
     raise ImportError("LegacyBroadcast: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
 
-welcomeui = [
+
+# Thanks to Jakkee for helping me with overview thingy <3
+broadcastgui = [
     {
-        "name": "welcomeui",
-        "parent": "Overlay",
+        "name": "broadcastui",
+        #"parent": "Overlay",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Image",
-                "color": "0.0 0.0 1.0 0.2",
+                "color": "0.8 0.8 0.8 0.4",
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.0 0.0",
-                "anchormax": "1.0 1.0"
+                "anchormin": "0.205 0.205",
+                "anchormax": "0.795 0.795"
+            },
+            {
+                "type": "NeedsCursor"
             }
         ]
     },
     {
-        "parent": "welcomeui",
+        "parent": "broadcastui",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Text",
+                "color": "0.5 0.8 0.8 0.8",
                 "text": "[TEXT]",
-                "fontSize": 20,
-                "align": "MiddleCenter",
+                "fontSize": 13
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.005 0.005",
-                "anchormax": "0.995 0.995"
+                "anchormin": "0.055 0.055",
+                "anchormax": "0.955 0.955"
             }
         ]
     },
     {
-        "parent:": "welcomeui",
+        "parent": "broadcastui",
+        "name" : "okbutton",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Button",
-                "color": "0.9 0.8 0.9 0.8",
+                "close": "broadcastui",
+                "command": "close.window",
+                "color": "0.8 0.1 0.1 0.7",
             },
             {
                 "type": "UnityEngine.UI.Text",
-                "color": "1.0 1.0 1.0 0.9",
-                "text": "[GUMB]"
-            }
-        ]
-    }
-
-]
-
-gumbui = [
-    {
-        "parent": "welcomeui",
-        "components":
-        [
+                "color": "0.1 0.1 0.1 0.9",
+                "text": "OK",
+                "fontSize": 20,
+             #   "align": "LowerRight",
+            },
             {
-                "type": "UnityEngine.UI.Image",
-                "text": "Gumb",
+                "type": "RectTransform",
+                "anchormin": "0.5 0.5",
+                "anchormax": "0.5 0.5"
             }
         ]
     }
 ]
 
-string = json.encode(welcomeui)
-welcome = json.makepretty(string)
 
-gstring = json.encode(gumbui)
-gumb = json.makepretty(gstring  )
+string = json.encode(broadcastgui)
+broadcast = json.makepretty(string)
 
 
 class WelcomeScreen():
 
-
-    def On_PlayerLoaded(self, player):
-        pass
-
-
     def On_Command(self, cmd):
-        welcomeText = "Text2"
         command = cmd.cmd
         player = cmd.User
 
+        if command == 't':
+            flagText = "Wall of text with all the rules is here \n with a new line <color=red>red</color>"
+            Util.Log(str(broadcast))
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
 
-        if command == 'a':
-            Util.Log(player.Name)
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeui"))
-        if command == 'wel':
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(welcome.Replace("[TEXT]", welcomeText)))
+            tdata = Plugin.CreateDict()
+            tdata['player'] = player
+            Plugin.CreateTimer("Test", 15000, tdata).Start()
 
-        if command == 'bot':
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.GUI.Controls.Button(gumb))
+        if command == 'toff':
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
 
-        if command == 'help':
-            Util.Log(str(help(Facepunch.GUI.Controls)))
+
+    def TestCallback(self, timer):
+        player = timer.Args['player']
+        timer.Kill()
+
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
+
+
+    def On_ClientConsole(self, cce):
+        Util.Log(str(type(cce)))
+        Util.Log(str(cce.cmd))
+
+
 
