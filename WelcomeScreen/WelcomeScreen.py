@@ -63,7 +63,6 @@ broadcastgui = [
         "name" : "okbutton",
         "components":
         [
-
             {
                 "type": "UnityEngine.UI.Button",
                 "text": "OK",
@@ -88,11 +87,7 @@ broadcastgui = [
                 "color": "0.9 0.2 0.5 0.9",
                 "text": "OK",
                 "fontSize": 20,
-            },
-            {
-                "type": "RectTransform",
-                "anchormin": "0.1 0.1",
-                "anchormax": "0.99 0.99"
+                "align": "MiddleCenter"
             }
         ]
     }
