@@ -95,15 +95,17 @@ class AntiOfflineRaid():
         '''
 
         attacker = HurtEvent.Attacker
+
         ignoredDamagesList = ['ElectricShock', 'Heat', 'Cold']
         if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList:
-
             attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
-
+            Util.Log(str(victimLocation))
+            Util.Log(str(victimID))
             # victimID check if datastore entry not found
             if attackerID and victimID and attackerID != victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
+                Util.Log("Works?")
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
                 victim = Server.FindPlayer(str(victimID))
@@ -146,7 +148,6 @@ class AntiOfflineRaid():
         victimD = DataStore.Get("Players", victimID)
 
         if attackerD['tribe'] == 'Ronins' and victimD['tribe'] == 'Ronins':
-            Util.Log("Both players in Ronins")
             return False
         elif attackerD['tribe'] == victimD['tribe']:
             return True
@@ -282,11 +283,9 @@ class AntiOfflineRaid():
             plTribeD = DataStore.Get('Tribes', playerD['tribe'])
             flags = False
             for memberID in plTribeD['tribeMembers']:
-                Util.Log("disconnectedPlayers"+str(self.disconnectedPlayers.keys()))
                 if memberID in self.disconnectedPlayers.keys():
                     Util.Log("Timer extending, player "+str(playerD['name']+' disconnected!'))
                     self.disconnectedPlayers.pop(memberID, None)
-                    Util.Log("Some player disconnected")
                     flags = True
             if not flags:
                 timer.Kill()

@@ -100,28 +100,3 @@ class TribesDebugger():
 
         if command == 'savedata':
             DataStore.Save()
-
-
-        # if command == 'pdflush':
-        #     print "flushing player data"
-        #     DataStore.Flush('Players')
-        #
-        # if command == 'tdflush':
-        #     print "flushin tribe data"
-        #     DataStore.Flush('Tribes')
-        #     playerlist = DataStore.Keys('Players')
-        #     Util.Log(str(playerlist))
-        #     for playerID in playerlist:
-        #         Util.Log(str(playerID))
-        #         Util.Log(str(DataStore.Get("Players", playerID)))
-        #         playerData = DataStore.Get("Players", playerID)
-        #         Util.Log(str(playerData))
-        #         playerData['tribe'] ='Ronins'
-        #         Util.Log(str(playerData['tribe']))
-        #     DataStore.Save()
-        #
-        # if command == 'flush':
-        #     DataStore.Flush("Tribes")
-        #     DataStore.Flush("Players")
-        #     DataStore.Save()
-        #     print "flushing all"

@@ -58,7 +58,23 @@ broadcastgui = [
             }
         ]
     },
-        {
+    {
+        "parent": "broadcastui",
+        "name" : "toptray",
+        "components":
+            [
+                {
+                    "type": "UnityEngine.UI.Image",
+                    "color": "0.1 0.1 0.1 1.0",
+                },
+                {
+                    "type": "RectTransform",
+                    "anchormin": "0.01 0.90",
+                    "anchormax": "0.99 0.99"
+                }
+            ]
+    },
+    {
         "parent": "broadcastui",
         "name" : "welcome",
         "components":
@@ -66,14 +82,14 @@ broadcastgui = [
                 {
                     "type": "UnityEngine.UI.Text",
                     "color": "1.0 1.0 1.0 0.95",
-                    "text": "Welcome To <color=red>CroHQ Server</color>!",
+                    "text": "Welcome To <color=red>CroHQ Community Server</color>!",
                     "fontSize": 20,
                 },
                 {
                     "type": "RectTransform",
-                    "anchormin": "0.05 0.90",
+                    "anchormin": "0.30 0.90",
                     "anchormax": "0.99 0.99"
-                },
+                }
             ]
 
     },
@@ -92,8 +108,6 @@ broadcastgui = [
                     "anchormax": "0.99 0.15"
                 }
             ]
-
-
     },
     {
         "parent": "broadcastui",
@@ -117,8 +131,6 @@ broadcastgui = [
                 "text": "OK",
                 "close": "broadcastui",
                 "command": "close.window",
-                "color": "0.2 0.1 0.1 0.5",
-                "scale": "1.1 1.1 1.1"
             }
 
         ]
@@ -139,9 +151,9 @@ class WelcomeScreen():
             DataStore.Add("Welcomed", "players", [])
             self.shown_players = DataStore.Get("Welcomed", "players")
 
-        self.flagText = "If you are tired of beeing raided moment you log off, we can offer you one of a kind experience on our server. \n\n" \
-                       "There's an offline raid protection plugin in place, that will protect all of your buildings from damage while you are offline, for a period of 24 hours.\n" \
-                       "If you don't come online in that 24 hour period, your building will not be protected any longer, so be sure to log in at least once a day to refresh the timer.\n\n" \
+        self.flagText = "If you are tired of being raided the moment you log off we can offer you one of a kind experience on our server. \n\n" \
+                       "There's an offline raid protection plugin in place that will protect all of your buildings from damage while you are offline, for a period of 24 hours.\n" \
+                       "If you don't come online in that 24 hour period your building will not be protected any longer so be sure to log in at least once a day to refresh the timer.\n\n" \
                        "Be sure to check available commands and additional help by issuing following commands in chat:\n" \
                        "1. /help\n" \
                        "2. /trhelp\n" \
@@ -150,13 +162,16 @@ class WelcomeScreen():
                        "\nHappy gaming!"
 
     def On_PlayerLoaded(self, player):
-        if player.SteamID not in self.shown_players:
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
+        pass
+#        if player.SteamID not in self.shown_players:
+        #CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
         player = cce.User
         playerID = player.SteamID
         if cce.cmd == 'close.window':
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
-        self.shown_players.append(playerID)
-        DataStore.Save()
+#            self.shown_players.append(playerID)
+#            DataStore.Save()
+        if cce.cmd == "create.window":
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
