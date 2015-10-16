@@ -103,6 +103,9 @@ class AntiOfflineRaid():
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
             Util.Log(str(victimLocation))
             Util.Log(str(victimID))
+            Util.Log(str(victimLocation in DataStore.Keys("BuildingPartOwner")))
+            Util.Log(DataStore.Get("BuildingPartOwner", victimLocation))
+            Util.Log(str(DataStore.Values("BuildingPartOwner")))
             # victimID check if datastore entry not found
             if attackerID and victimID and attackerID != victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
                 Util.Log("Works?")
