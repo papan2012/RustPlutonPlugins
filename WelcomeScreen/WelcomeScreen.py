@@ -112,24 +112,6 @@ welcomegui = [
     },
     {
         "parent": "welcomeUI",
-        "name" : "okbutton",
-        "components":
-        [
-            {
-                "type": "UnityEngine.UI.Button",
-                "close": "welcomeUI",
-                "command": "close.window",
-                "color": "0.2 0.2 0.2 0.6"
-            },
-            {
-                "type": "RectTransform",
-                "anchormin": "0.89 0.05",
-                "anchormax": "0.99 0.15"
-            }
-        ]
-    },
-    {
-        "parent": "okbutton",
         "components":
         [
             {
@@ -138,9 +120,32 @@ welcomegui = [
                 "text": "OK",
                 "fontSize": 18,
                 "align": "MiddleCenter"
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.89 0.05",
+                "anchormax": "0.99 0.15"
             }
          ]
-     }
+     },
+    {
+        "parent": "welcomeUI",
+        "name" : "okbutton",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Button",
+                "close": "welcomeUI",
+                "command": "close.window",
+                "color": "0.2 0.2 0.2 0.5"
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.89 0.05",
+                "anchormax": "0.99 0.15"
+            }
+        ]
+    }
 ]
 
 
