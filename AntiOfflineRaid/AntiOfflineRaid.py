@@ -97,17 +97,11 @@ class AntiOfflineRaid():
         attacker = HurtEvent.Attacker
 
         ignoredDamagesList = ['ElectricShock', 'Heat', 'Cold']
-        if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList:
+        if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
             attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
-            Util.Log(str(victimLocation))
-            Util.Log(str(victimID))
-            Util.Log(str(victimLocation in DataStore.Keys("BuildingPartOwner")))
-            Util.Log(DataStore.Get("BuildingPartOwner", victimLocation))
-            Util.Log(str(DataStore.Values("BuildingPartOwner")))
-            # victimID check if datastore entry not found
-            if attackerID and victimID and attackerID != victimID and HurtEvent.Victim.IsBuildingPart() and not self.victInAttTribe(attackerID, victimID):
+            if attackerID and victimID and attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                 Util.Log("Works?")
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
@@ -367,3 +361,12 @@ class AntiOfflineRaid():
         flagText = "Flagged "
         if player.SteamID in self.flaggedPlayers:
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
+
+    # def On_ClientConsole(self, cce):
+    #     player = cce.User
+    #     flagText = "Flagged "
+    #     if cce.cmd == 'flag':
+    #         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
+    #
+    #     if cce.cmd == 'cflag':
+    #          CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))

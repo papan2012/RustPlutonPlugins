@@ -65,7 +65,7 @@ broadcastgui = [
             [
                 {
                     "type": "UnityEngine.UI.Image",
-                    "color": "0.1 0.1 0.1 1.0",
+                    "color": "0.1 0.1 0.1 0.0",
                 },
                 {
                     "type": "RectTransform",
@@ -75,7 +75,7 @@ broadcastgui = [
             ]
     },
     {
-        "parent": "broadcastui",
+        "parent": "toptray",
         "name" : "welcome",
         "components":
             [
@@ -84,6 +84,7 @@ broadcastgui = [
                     "color": "1.0 1.0 1.0 0.95",
                     "text": "Welcome To <color=red>CroHQ Community Server</color>!",
                     "fontSize": 20,
+                    "align": "MiddleCenter"
                 },
                 {
                     "type": "RectTransform",
@@ -115,24 +116,29 @@ broadcastgui = [
         "components":
         [
             {
-                "type": "UnityEngine.UI.Text",
-                "color": "0.1 0.6 0.1 1.0",
-                "text": "OK",
-                "fontSize": 20,
-                "align": "MiddleCenter"
+                "type": "UnityEngine.UI.Button",
+                "close": "broadcastui",
+                "command": "close.window",
+                "color": "0.1 0.1 0.1 0.1",
             },
             {
                 "type": "RectTransform",
                 "anchormin": "0.89 0.05",
                 "anchormax": "0.99 0.15"
-            },
-            {
-                "type": "UnityEngine.UI.Button",
-                "text": "OK",
-                "close": "broadcastui",
-                "command": "close.window",
             }
-
+        ]
+    },
+    {
+        "parent": "okbutton",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Text",
+                "color": "0.1 0.6 0.1 1.0",
+                "text": "OK",
+                "fontSize": 18,
+                "align": "MiddleCenter"
+            }
         ]
     }
 ]
@@ -172,6 +178,5 @@ class WelcomeScreen():
         if cce.cmd == 'close.window':
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
 #            self.shown_players.append(playerID)
-#            DataStore.Save()
         if cce.cmd == "create.window":
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
