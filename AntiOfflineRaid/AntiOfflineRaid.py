@@ -102,12 +102,11 @@ class AntiOfflineRaid():
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
             if attackerID and victimID and attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
-                Util.Log("Works?")
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
                 victim = Server.FindPlayer(str(victimID))
-                if attackerID not in self.flaggedPlayers:
-                    Util.Log("Player "+attacker.Name + "is attacking building of player "+victimData['name'])
+                if attackerID not in self.flaggedPlayers or victimID not in self.flaggedPlayers:
+                    Util.Log("Player "+attacker.Name + "is attacking building of player "+victimName)
 
                 damageAmounts = HurtEvent.DamageAmounts
                 if attackerID not in self.flaggedPlayers:
@@ -189,6 +188,8 @@ class AntiOfflineRaid():
                     Util.Log("No players offline or flagged, protecting")
             return protect
         else:
+            if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout:
+                Util.Log("Player "+playerData['name']+" offline more then 24 hours!")
             return False
 
 

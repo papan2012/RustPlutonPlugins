@@ -21,9 +21,9 @@ except ImportError:
 
 
 # Thanks to Jakkee for helping me with overview thingy <3
-broadcastgui = [
+welcomegui = [
     {
-        "name": "broadcastui",
+        "name": "welcomeUI",
         #"parent": "Overlay",
         "components":
         [
@@ -42,7 +42,7 @@ broadcastgui = [
         ]
     },
     {
-        "parent": "broadcastui",
+        "parent": "welcomeUI",
         "components":
         [
             {
@@ -59,13 +59,13 @@ broadcastgui = [
         ]
     },
     {
-        "parent": "broadcastui",
+        "parent": "welcomeUI",
         "name" : "toptray",
         "components":
             [
                 {
                     "type": "UnityEngine.UI.Image",
-                    "color": "0.1 0.1 0.1 0.0",
+                    "color": "0.1 0.1 0.1 0.7",
                 },
                 {
                     "type": "RectTransform",
@@ -75,7 +75,7 @@ broadcastgui = [
             ]
     },
     {
-        "parent": "toptray",
+        "parent": "welcomeUI",
         "name" : "welcome",
         "components":
             [
@@ -84,24 +84,24 @@ broadcastgui = [
                     "color": "1.0 1.0 1.0 0.95",
                     "text": "Welcome To <color=red>CroHQ Community Server</color>!",
                     "fontSize": 20,
-                    "align": "MiddleCenter"
+                     "align": "MiddleCenter"
                 },
                 {
                     "type": "RectTransform",
-                    "anchormin": "0.30 0.90",
+                    "anchormin": "0.0 0.90",
                     "anchormax": "0.99 0.99"
                 }
             ]
 
     },
     {
-        "parent": "broadcastui",
+        "parent": "welcomeUI",
         "name" : "bottray",
         "components":
             [
                 {
                     "type": "UnityEngine.UI.Image",
-                    "color": "0.1 0.1 0.1 1.0",
+                    "color": "0.1 0.1 0.1 0.1",
                 },
                 {
                     "type": "RectTransform",
@@ -111,15 +111,15 @@ broadcastgui = [
             ]
     },
     {
-        "parent": "broadcastui",
+        "parent": "welcomeUI",
         "name" : "okbutton",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Button",
-                "close": "broadcastui",
+                "close": "welcomeUI",
                 "command": "close.window",
-                "color": "0.1 0.1 0.1 0.1",
+                "color": "0.2 0.2 0.2 0.6"
             },
             {
                 "type": "RectTransform",
@@ -139,12 +139,12 @@ broadcastgui = [
                 "fontSize": 18,
                 "align": "MiddleCenter"
             }
-        ]
-    }
+         ]
+     }
 ]
 
 
-string = json.encode(broadcastgui)
+string = json.encode(welcomegui)
 broadcast = json.makepretty(string)
 
 
@@ -168,15 +168,14 @@ class WelcomeScreen():
                        "\nHappy gaming!"
 
     def On_PlayerLoaded(self, player):
-        pass
 #        if player.SteamID not in self.shown_players:
-        #CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
         player = cce.User
         playerID = player.SteamID
         if cce.cmd == 'close.window':
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("broadcastui"))
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeUI"))
 #            self.shown_players.append(playerID)
         if cce.cmd == "create.window":
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
