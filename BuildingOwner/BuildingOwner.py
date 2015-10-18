@@ -14,6 +14,9 @@ class BuildingOwner():
     Mozda cu trebati podesiti cesci save zbog building checka u antiofflineraid pluginu
     '''
 
+    def On_ServerSaved(self):
+        self.SaveData()
+
     def On_PluginInit(self):
         Util.Log("Plutin BuildingOwner Initialized!")
 

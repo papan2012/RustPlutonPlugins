@@ -24,7 +24,7 @@ except ImportError:
 welcomegui = [
     {
         "name": "welcomeUI",
-        #"parent": "Overlay",
+        #"parent": "overlay",
         "components":
         [
             {
@@ -179,6 +179,7 @@ class WelcomeScreen():
     def On_ClientConsole(self, cce):
         player = cce.User
         playerID = player.SteamID
+        Util.Log("broadcast "+str(type(broadcast)))
         if cce.cmd == 'close.window':
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeUI"))
 #            self.shown_players.append(playerID)
