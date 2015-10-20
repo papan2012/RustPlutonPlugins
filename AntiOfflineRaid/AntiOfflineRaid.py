@@ -188,7 +188,7 @@ class AntiOfflineRaid():
                     Util.Log("No players offline or flagged, protecting")
             return protect
         else:
-            if (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout:
+            if (time.time() - playerData['lastonline']) < self.offlineProtectionTimeout:
                 Util.Log("Player "+playerData['name']+" offline more then 24 hours!")
             return False
 

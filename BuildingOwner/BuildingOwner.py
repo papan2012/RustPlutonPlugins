@@ -15,7 +15,7 @@ class BuildingOwner():
     '''
 
     def On_ServerSaved(self):
-        self.SaveData()
+        DataStore.Save()
 
     def On_PluginInit(self):
         Util.Log("Plutin BuildingOwner Initialized!")
