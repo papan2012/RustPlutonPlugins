@@ -63,7 +63,6 @@ class PlayerData():
         playerData = DataStore.Get('Players', playerID)
         for key in valuesToChange.keys():
             playerData[key] = valuesToChange[key]
-        DataStore.Save()
 
 
 ###
@@ -344,7 +343,6 @@ class Tribes:
         #chek if player name has changed
         if con_player.playerData['name'] != player.Name:
             con_player.playerData['name'] = player.Name
-        DataStore.Save()
         player.Message(str(len(Server.ActivePlayers))+" online, "+str(len(Server.SleepingPlayers))+" sleepers.")
         player.Message("Type /help to list available commands")
 

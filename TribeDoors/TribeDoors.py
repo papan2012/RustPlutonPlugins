@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '0.2'
+__version__ = '0.3'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -19,16 +19,24 @@ class TribeDoors():
     def On_DoorUse(self, due):
         #Util.Log("door: "+str(dir(due.Door)))
         doorLocation = due.Door.Location
-        doorOwner = DataStore.Get("BuildingPartOwner", doorLocation)
+        doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
+        doorUserID = due.Player.SteamID
 
-        Util.Log(str(dir(due.Deny)))
-        Util.Log(str(help(due.Deny.Equals)))
-        Util.Log("equals method: "+str(due.Deny.Equals(True)))
-        due.Deny("deny not working")
-        #due.Open  # state of doors open/closed
+        if doorOwnerID == doorUserID:
+            due.Allow
+        elif self.isPlayerInTribe(doorUserID, doorOwnerID):
+            due.Allow
+            due.IgnoreLock = True
+        else:
+            due.Deny("You're not the owner of this door, or member of door owner tribe")
 
-        # ignore lock if condition fulfiller
-        #due.IgnoreLock = True
-
-    def isPlayerInTribe(self, playerID):
-        pass
+    def isPlayerInTribe(self, doorUserID, doorOwnerID):
+        doorUserTribe = DataStore.Get("Players", doorUserID)
+        doorOwnerTribe = DataStore.Get("Players", doorOwnerID)
+        Util.Log(str(doorOwnerTribe))
+        if doorOwnerTribe['tribe'] == 'Ronins':
+            return False
+        elif doorUserTribe['tribe'] != doorOwnerTribe['tribe']:
+            return False
+        else:
+            return True
