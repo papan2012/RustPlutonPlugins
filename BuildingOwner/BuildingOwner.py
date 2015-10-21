@@ -24,7 +24,7 @@ class BuildingOwner():
         player = buildingpart.Builder
         location = buildingpart.BuildingPart.Location
         DataStore.Add("BuildingPartOwner", location, player.SteamID)
-        Util.Log("Building Added to datastore "+str(location) +str(player.SteamID))
+        Util.Log("Building Added to datastore "+str(location) + str(player.SteamID))
 
     def On_BuildingPartDemolished(self, bpde):
         location = bpde.BuildingPart.Location

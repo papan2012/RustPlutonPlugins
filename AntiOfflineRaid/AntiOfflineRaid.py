@@ -101,6 +101,8 @@ class AntiOfflineRaid():
             attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
+            if not victimID:
+                Util.Log("AOR: Victim not found "+str(victimLocation))
             if attackerID and victimID and attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
@@ -362,12 +364,3 @@ class AntiOfflineRaid():
         flagText = "Flagged "
         if player.SteamID in self.flaggedPlayers:
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
-
-    # def On_ClientConsole(self, cce):
-    #     player = cce.User
-    #     flagText = "Flagged "
-    #     if cce.cmd == 'flag':
-    #         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
-    #
-    #     if cce.cmd == 'cflag':
-    #          CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))

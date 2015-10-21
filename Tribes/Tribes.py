@@ -63,6 +63,7 @@ class PlayerData():
         playerData = DataStore.Get('Players', playerID)
         for key in valuesToChange.keys():
             playerData[key] = valuesToChange[key]
+        DataStore.Save()
 
 
 ###
@@ -223,7 +224,6 @@ class Tribes:
         player.MessageFrom("Tribes List", "("+str(len(self.tribeList))+' found)')
         for i, tribeName in enumerate(self.tribeList):
             tribe = TribeData(tribeName)
-            Util.Log(str(tribe.tribeData['tribeMembers']))
             player.MessageFrom(str(i+1), tribeName + " ("+ str(len(tribe.tribeData['tribeMembers']))+' members)')
 
     def invitToTribe(self, cmd):

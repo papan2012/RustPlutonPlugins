@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '0.3'
+__version__ = '0.4'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -13,14 +13,18 @@ import time
 class TribeDoors():
 
     def On_PluginInit(self):
-        pass
+        self.reportPlayer = Server.FindPlayer("PanDevas")
 
 
     def On_DoorUse(self, due):
-        #Util.Log("door: "+str(dir(due.Door)))
         doorLocation = due.Door.Location
         doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
         doorUserID = due.Player.SteamID
+        Util.Log(str(doorLocation))
+        if not doorOwnerID:
+            Util.Log("DoorOwner not found "+ str(doorLocation))
+            doorOwnerID = doorUserID
+            DataStore.Add("BuildingPartOwner", doorLocation, doorOwnerID)
 
         if doorOwnerID == doorUserID:
             due.Allow
@@ -33,7 +37,10 @@ class TribeDoors():
     def isPlayerInTribe(self, doorUserID, doorOwnerID):
         doorUserTribe = DataStore.Get("Players", doorUserID)
         doorOwnerTribe = DataStore.Get("Players", doorOwnerID)
-        Util.Log(str(doorOwnerTribe))
+        if not doorOwnerTribe:
+            Util.Log("DoorOwnerTribe not found" + str(doorOwnerID))
+            doorOwnerTribe = doorUserTribe
+
         if doorOwnerTribe['tribe'] == 'Ronins':
             return False
         elif doorUserTribe['tribe'] != doorOwnerTribe['tribe']:
