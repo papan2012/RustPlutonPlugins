@@ -20,16 +20,23 @@ class TribeDoors():
         doorLocation = due.Door.Location
         doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
         doorUserID = due.Player.SteamID
-        Util.Log(str(doorLocation))
         if not doorOwnerID:
-            Util.Log("DoorOwner not found "+ str(doorLocation))
-            doorOwnerID = doorUserID
-            DataStore.Add("BuildingPartOwner", doorLocation, doorOwnerID)
-
-        if doorOwnerID == doorUserID:
             due.Allow
+            # Some structures didn't end up in database
+            # either from me not using On_ServerSaved method from the beggining, and forgetint to save the datastore before server restart
+            # or becaouse of that DataStore vector3 conversion that missed something.
+            # this code should verify the problem
+            Util.Log("DoorOwner not found "+ str(doorLocation) + due.Player.Name + "opening")
+            v3 = buildingpart.Location
+            v3String = str.format("Vector3,{0},{1},{2}",v3.x.ToString("G9"), v3.y.ToString("G9"), v3.z.ToString("G9"))
+            Util.Log("doorLoc in datastore (old) "+ str(v3String in DataStore.Keys("BuildingPartOwner")))
+            Util.Log("doorLoc in datastore (new) "+ str(doorLocation in DataStore.Keys("BuildingPartOwner")))
+#            doorOwnerID = doorUserID
+#            DataStore.Add("BuildingPartOwner", doorLocation, doorOwnerID)
+        elif doorOwnerID == doorUserID:
+            due.Allow
+            due.IgnoreLock = True
         elif self.isPlayerInTribe(doorUserID, doorOwnerID):
-            due.Allow
             due.IgnoreLock = True
         else:
             due.Deny("You're not the owner of this door, or member of door owner tribe")
