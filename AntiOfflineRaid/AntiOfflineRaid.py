@@ -101,7 +101,9 @@ class AntiOfflineRaid():
         # ignoring those damage types on buildings because of excesive number of checks
         # have to find a way to speed this up, and protect from it normally
         # speed issue might be related to Util.Log
+
         if str(HurtEvent.DamageType) in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
+            damageAmounts = HurtEvent.DamageAmounts
             for i, d in enumerate(damageAmounts):
                 if damageAmounts[i] != 0.0:
                     damageAmounts[i] = 0.0

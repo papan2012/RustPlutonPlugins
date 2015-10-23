@@ -20,7 +20,7 @@ class TribeDoors():
         doorLocation = due.Door.Location
         doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
         doorUserID = due.Player.SteamID
-        Util.Log(str(dir(due)))
+        Util.Log(str(help(due.__getattribute__)))
         if not doorOwnerID:
             due.Allow
             # Some structures didn't end up in database
@@ -55,28 +55,3 @@ class TribeDoors():
             return False
         else:
             return True
-
-    def isPlayerAuthorized(self):
-        '''
-        DataStore.Get('DoorAuth', doorlocation, {owner: steamID, authorized: [] })
-        :return:
-        '''
-
-        pass
-
-
-    def On_DoorCode(self, dce):
-        '''
-        If dce.IsCorrect(): whitelist
-
-        sta ako netko promijeni sifru?
-        Da li RemoveLock() i ResetLock() metode vracaju bool ili vrse funkcije micanja ili resetiranja locka?
-
-        :param dce:
-        :return:
-        '''
-        Util.Log("Pokusavam")
-        Util.Log("dce"+str(dir(dce)))
-        Util.Log("Code: "+str(dce.Code))
-        Util.Log("Entered: "+str(dce.Entered))
-        Util.Log("Codelock:"+str(dce.codeLock))
