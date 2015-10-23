@@ -33,3 +33,4 @@ class BuildingOwner():
     def On_BuildingPartDestroyed(self, bpde):
         location = bpde.BuildingPart.Location
         DataStore.Remove("BuildingPartOwner", location)
+        Util.Log("Building removed "+str(location))

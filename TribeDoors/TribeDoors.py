@@ -20,6 +20,7 @@ class TribeDoors():
         doorLocation = due.Door.Location
         doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
         doorUserID = due.Player.SteamID
+        Util.Log(str(dir(due)))
         if not doorOwnerID:
             due.Allow
             # Some structures didn't end up in database
@@ -27,12 +28,12 @@ class TribeDoors():
             # or becaouse of that DataStore vector3 conversion that missed something.
             # this code should verify the problem
             Util.Log("DoorOwner not found "+ str(doorLocation) + due.Player.Name + "opening")
-            v3 = buildingpart.Location
+            v3 = doorLocation
             v3String = str.format("Vector3,{0},{1},{2}",v3.x.ToString("G9"), v3.y.ToString("G9"), v3.z.ToString("G9"))
             Util.Log("doorLoc in datastore (old) "+ str(v3String in DataStore.Keys("BuildingPartOwner")))
             Util.Log("doorLoc in datastore (new) "+ str(doorLocation in DataStore.Keys("BuildingPartOwner")))
-#            doorOwnerID = doorUserID
-#            DataStore.Add("BuildingPartOwner", doorLocation, doorOwnerID)
+            doorOwnerID = doorUserID
+            DataStore.Add("BuildingPartOwner", doorLocation, doorOwnerID)
         elif doorOwnerID == doorUserID:
             due.Allow
             due.IgnoreLock = True
@@ -54,3 +55,28 @@ class TribeDoors():
             return False
         else:
             return True
+
+    def isPlayerAuthorized(self):
+        '''
+        DataStore.Get('DoorAuth', doorlocation, {owner: steamID, authorized: [] })
+        :return:
+        '''
+
+        pass
+
+
+    def On_DoorCode(self, dce):
+        '''
+        If dce.IsCorrect(): whitelist
+
+        sta ako netko promijeni sifru?
+        Da li RemoveLock() i ResetLock() metode vracaju bool ili vrse funkcije micanja ili resetiranja locka?
+
+        :param dce:
+        :return:
+        '''
+        Util.Log("Pokusavam")
+        Util.Log("dce"+str(dir(dce)))
+        Util.Log("Code: "+str(dce.Code))
+        Util.Log("Entered: "+str(dce.Entered))
+        Util.Log("Codelock:"+str(dce.codeLock))

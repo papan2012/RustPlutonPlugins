@@ -95,8 +95,19 @@ class AntiOfflineRaid():
         '''
 
         attacker = HurtEvent.Attacker
+        victimLocation = HurtEvent.Victim.Location
 
         ignoredDamagesList = ['ElectricShock', 'Heat', 'Cold']
+        # ignoring those damage types on buildings because of excesive number of checks
+        # have to find a way to speed this up, and protect from it normally
+        # speed issue might be related to Util.Log
+        if str(HurtEvent.DamageType) in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
+            for i, d in enumerate(damageAmounts):
+                if damageAmounts[i] != 0.0:
+                    damageAmounts[i] = 0.0
+                HurtEvent.DamageAmounts=damageAmounts
+
+
         if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
             attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
