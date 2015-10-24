@@ -297,8 +297,7 @@ class Tribes:
                 player.MessageFrom("Tribes", "Tribe \""+currentTribe+"\" disbanded.")
 
     def denyInvite(self, cmd):
-        playerID = cmd.User.SteamID
-        playerData = PlayerData(playerID)
+        playerData = PlayerData(cmd.User)
         playerData['pendingInvites'] = ''
 
 
