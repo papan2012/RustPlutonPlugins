@@ -212,11 +212,11 @@ broadcast = json.makepretty(string)
 class WelcomeScreen():
 
     def On_PluginInit(self):
-        if DataStore.GetTable("Welcomed"):
-            self.shown_players = DataStore.Get("Welcomed", "players")
+        if DataStore.GetTable("SkipWelcome"):
+            self.shown_players = DataStore.Get("SkipWelcome", "players")
         else:
-            DataStore.Add("Welcomed", "players", [])
-            self.shown_players = DataStore.Get("Welcomed", "players")
+            DataStore.Add("SkipWelcome", "players", [])
+            self.shown_players = DataStore.Get("SkipWelcome", "players")
 
         self.flagText = "If you are tired of being raided the moment you log off we can offer you one of a kind experience on our server. \n\n" \
                        "There's an offline raid protection plugin in place that will protect all of your buildings from damage while you are offline, for a period of 24 hours.\n" \
@@ -241,9 +241,3 @@ class WelcomeScreen():
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
         if cce.cmd == "welcome.dontshow":
             self.shown_players.append(player.SteamID)
-
-        # if cce.cmd == 'clear.shown':
-        #     player.Message("Dtastore 'Welcomed' cleared!")
-        #     DataStore.Flush("Welcomed")
-
-
