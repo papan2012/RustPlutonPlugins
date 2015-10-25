@@ -47,7 +47,7 @@ welcomegui = [
         [
             {
                 "type": "UnityEngine.UI.Text",
-                "color": "0.8 0.8 0.8 0.7",
+                "color": "0.8 0.8 0.8 0.8",
                 "text": "[TEXT]",
                 "fontSize": 13
             },
@@ -65,7 +65,7 @@ welcomegui = [
             [
                 {
                     "type": "UnityEngine.UI.Image",
-                    "color": "0.1 0.1 0.1 0.7",
+                    "color": "0.1 0.1 0.1 0.9",
                 },
                 {
                     "type": "RectTransform",
@@ -96,19 +96,75 @@ welcomegui = [
     },
     {
         "parent": "welcomeUI",
-        "name" : "bottray",
         "components":
-            [
-                {
-                    "type": "UnityEngine.UI.Image",
-                    "color": "0.1 0.1 0.1 0.1",
-                },
-                {
-                    "type": "RectTransform",
-                    "anchormin": "0.89 0.05",
-                    "anchormax": "0.99 0.15"
-                }
-            ]
+        [
+            {
+                "type": "UnityEngine.UI.Text",
+                "color": "1.0 1.0 1.0 0.9",
+                "text": "Help Screen",
+                "fontSize": 16,
+                "align": "MiddleCenter"
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.08 0.05",
+                "anchormax": "0.24 0.15"
+            }
+         ]
+     },
+    {
+        "parent": "welcomeUI",
+        "name" : "okbutton",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Button",
+                "close": "welcomeUI",
+                "command": "help.aor",
+                "color": "0.2 0.2 0.2 0.7"
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.08 0.05",
+                "anchormax": "0.24 0.15"
+            }
+        ]
+    },
+    {
+        "parent": "welcomeUI",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Text",
+                "color": "0.8 0.3 0.1 1.0",
+                "text": "Don't show again",
+                "fontSize": 12,
+                "align": "MiddleCenter"
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.73 0.05",
+                "anchormax": "0.83 0.15"
+            }
+         ]
+     },
+    {
+        "parent": "welcomeUI",
+        "name" : "dontshow",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Button",
+                "close": "welcomeUI",
+                "command": "welcome.dontshow",
+                "color": "0.2 0.2 0.2 0.5"
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.73 0.05",
+                "anchormax": "0.83 0.15"
+            }
+        ]
     },
     {
         "parent": "welcomeUI",
@@ -123,8 +179,8 @@ welcomegui = [
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.89 0.05",
-                "anchormax": "0.99 0.15"
+                "anchormin": "0.85 0.05",
+                "anchormax": "0.95 0.15"
             }
          ]
      },
@@ -141,8 +197,8 @@ welcomegui = [
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.89 0.05",
-                "anchormax": "0.99 0.15"
+                "anchormin": "0.85 0.05",
+                "anchormax": "0.95 0.15"
             }
         ]
     }
@@ -173,14 +229,21 @@ class WelcomeScreen():
                        "\nHappy gaming!"
 
     def On_PlayerLoaded(self, player):
-#        if player.SteamID not in self.shown_players:
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
+        if player.SteamID not in self.shown_players:
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
         player = cce.User
         playerID = player.SteamID
-        if cce.cmd == 'close.window':
+        if cce.cmd == 'close.welcome':
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeUI"))
-#            self.shown_players.append(playerID)
-        if cce.cmd == "create.window":
+        if cce.cmd == "create.welcome":
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
+        if cce.cmd == "welcome.dontshow":
+            self.shown_players.append(player.SteamID)
+
+        # if cce.cmd == 'clear.shown':
+        #     player.Message("Dtastore 'Welcomed' cleared!")
+        #     DataStore.Flush("Welcomed")
+
+

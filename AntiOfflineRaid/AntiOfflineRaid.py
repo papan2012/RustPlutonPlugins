@@ -84,7 +84,6 @@ class AntiOfflineRaid():
             ini.AddSetting("settings", "notifyTimerPeriod", "30")
             ini.AddSetting("settings", "offlineProtectionTimeout", "86400")
             ini.Save()
-        settings = {}
         return Plugin.GetIni("settings")
 
     def _createNotification(self, player):

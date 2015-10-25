@@ -371,11 +371,6 @@ class Tribes:
                 cmd.User.MessageFrom('Tribes',"/"+ str(key)+str(self.commands[key][1]))
             cmd.User.MessageFrom('Tribes',"/tm - send message to members of your tribe" )
 
-        if command == 'help':
-            cmd.User.Message("Type /trhelp for help with Tribe mod commands")
-            cmd.User.Message("Type /aor for help with AntiOfflineRaid")
-            cmd.User.Message("Type /who or /players to see who's online")
-
         if command == 'tm':
             player = cmd.User
             playerData = PlayerData(player)
@@ -393,7 +388,7 @@ class Tribes:
         if con_player.playerData['name'] != player.Name:
             con_player.playerData['name'] = player.Name
         player.Message(str(len(Server.ActivePlayers))+" online, "+str(len(Server.SleepingPlayers))+" sleepers.")
-        player.Message("Type /help to list available commands")
+        player.Message("Type /help to get information about this server and its plugins.")
 
 
     def On_PlayerDisconnected(self, player):
