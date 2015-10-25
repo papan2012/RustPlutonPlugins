@@ -339,7 +339,7 @@ class TribesHelp():
         self.doorHelp="DOORS\n\n" \
                       "Door system was implemented for two reasons:\n" \
                       " 1. We couldn't allow players using door on buildings whos owners were offline.\n" \
-                      " 2. There's a rare glitch, or a hack, that prevents people opening doors without the code authrization\n" \
+                      " 2. There's a rare glitch, or a hack, that lets people open doors without the code authrization\n" \
                       "   - this system prevents both problems.\n\n" \
                       "When you place a door, they are bound to your SteamID. Only you can open and close them.\n" \
                       "So there's no reall need for codelocks on doors any longer.\n\n" \
