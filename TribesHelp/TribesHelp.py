@@ -322,37 +322,36 @@ class TribesHelp():
                      "AntiofflineRaid system doesn't prevent decay!\n" \
                      "if a player attacks you or one of or your buildings, while you are online, you and the attacking player will be flagged with a 15 minute timer.\n" \
                      "If you log off while the timer is still on, timer will be extended for 15 minutes, and you're building will not be protected until that timer runs out.\n" \
-                     "That will prevent loging out in the middle of the raid to prevent raiders to take what they came for.\n" \
+                     "That will prevent logouts in the middle of the raid to prevent raiders to take what they came for.\n" \
                      "So, if you wan't to protect your stuff, you'll have to fight for it!\n\n" \
                      "Tribe system is implemented to prevent players that are in the tribe to trigger AntiOfflineRaid system mechanisms.\n" \
-                     "If you're playing with someone, join a Tribe to avoid any inconveniance and get some benefits.\n" \
+                     "If you're playing with someone, join a Tribe to avoid any inconvenience and get some benefits.\n" \
                      "More about tribe mechanism in Tribes help section."
         self.tribeHelp="TRIBES\n\n" \
                        "If you wan't to live with someone, or use his doors, you'll have to join the tribe with him.\n" \
                        "Tribe members can access all doors belonging to other tribe members. \n" \
-                       "If you're not part of the Tribe, you won't be able to use doors on tribe member buildings, even if they don't have a codelock, or you know the lock code.\n" \
+                       "If you're not part of the Tribe, you won't be able to use doors on tribe member buildings, even if they don't have a code lock, or you know the lock code.\n" \
                        "More about door changes read in Doors help section.\n\n" \
                        "When you're in a Tribe, aggression flags are applied to the whole Tribe\n" \
                        "Timer for offline raid protection counts from the moment last member of the tribe went offline\n" \
-                       "Tribe members are not flaged if they attack each other.\n\n" \
-                       "Tribe system is managed by chat commands for now. Write /trhelp in chat to get the list of comands available.\n\n"
+                       "Tribe members are not flagged if they attack each other.\n\n" \
+                       "Tribe system is managed by chat commands for now. Write /trhelp in chat to get the list of commands available.\n\n"
         self.doorHelp="DOORS\n\n" \
                       "Door system was implemented for two reasons:\n" \
-                      " 1. We couldn't allow players using door on buildings whos owners were offline.\n" \
-                      " 2. There's a rare glitch, or a hack, that lets people open doors without the code authrization\n" \
+                      " 1. We couldn't allow players using door on buildings whose owners were offline.\n" \
+                      " 2. There's a rare glitch, or a hack, that lets people open doors without the code authorization.\n" \
                       "   - this system prevents both problems.\n\n" \
                       "When you place a door, they are bound to your SteamID. Only you can open and close them.\n" \
-                      "So there's no reall need for codelocks on doors any longer.\n\n" \
+                      "So there's no real need for code locks on doors any longer.\n\n" \
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n" \
-                      "If you need some privacy, put codelocks on chests. \n" \
+                      "If you need some privacy, put code locks on chests. \n" \
                       "That will prevent anyone opening them without the code.\n\n"
         self.serverInfo="SERVER INNFO\n\n" \
                         " - decay lowered to 20% effectiveness\n" \
-                        " - crafting times of External stone walls is increessed to 2 minutes for wooden, and 4 minutes for stone walls\n" \
+                        " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n" \
                         "\n\n\nIf you got any questions, ask in chat, someone will know the answer.\n" \
                         "For any problems with the server plugins, contact Pan Devas.\n" \
                         "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information."
-
 
 
     def loadIniSettings(self):

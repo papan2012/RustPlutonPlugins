@@ -1,3 +1,8 @@
+linija 296 u tribes
+if len(playerTD.tribeData['tribeMembers']) == 0 and playerTD.tribeName != 'Survivors':
+wtf sa playerTD.tribeName != 'Survivors'
+
+
 flagPlayerPVP sada uzima steamID umjesto player objekta
 
 makni playera iz self.reAgress dicta nakon micanja flaga

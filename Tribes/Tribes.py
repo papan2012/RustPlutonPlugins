@@ -26,7 +26,7 @@ class PlayerData():
     '''
             Creates player class with relevant information saved in datastore as key:value dictionary for every player attribute
             steamID :   Name
-                        Tribe (TribeName or 'Ronins')
+                        Tribe (TribeName or 'Survivors')
                         Tribe_rank
                         Online status
                         pendingInvites
@@ -40,7 +40,7 @@ class PlayerData():
             self.playerID = player.SteamID
             self.playerName = player.Name
             self.playerOnlineStatus = 1
-            self.playerTribe = 'Ronins'
+            self.playerTribe = 'Survivors'
             self.playerTribeRank = 0
             self.playerData = {'name': self.playerName,
                             'tribe': self.playerTribe,
@@ -49,7 +49,7 @@ class PlayerData():
                             'lastonline': 0
                            }
             DataStore.Add("Players", self.playerID, self.playerData)
-            tribe = TribeData('Ronins')
+            tribe = TribeData('Survivors')
             tribe.addMember(self.playerID)
             DataStore.Save()
 
@@ -81,7 +81,7 @@ class TribeData():
         }
     '''
     def __init__(self, tribeName):
-        # first initialization,creating Ronins tribe
+        # first initialization,creating Survivors tribe
         self.tribeName = tribeName
 
         if not DataStore.GetTable('Tribes'):
@@ -173,7 +173,7 @@ class Tribes:
         tribeList = DataStore.Keys('Tribes')
 
         if not tribeList:
-            createTribeRonins = TribeData('Ronins')
+            createTribeSurvivors = TribeData('Survivors')
 
         self.tribeList = DataStore.Keys('Tribes')
 
@@ -199,16 +199,16 @@ class Tribes:
         tribeName = str.join('', cmd.args)
         tribeName = tribeName if len(tribeName) <=10 else tribeName[0:10]
 
-        if playerD.playerData['tribe'] != 'Ronins' or playerD.playerData['tribe'] not in tribeslist:
+        if playerD.playerData['tribe'] != 'Survivors' or playerD.playerData['tribe'] not in tribeslist:
             creator.MessageFrom("Tribes", "You're already in in tribe "+playerD.playerData['tribe'])
         elif len(tribeName) < 3:
             creator.MessageFrom("Tribes", "TribeName is shorter than 3 characters.")
         elif tribeName in self.tribeList:
             creator.MessageFrom("Tribes", "Tribe with name \""+tribeName+"\" already exists")
         else:
-            #removing player from Ronins tribe
-            roninsTribe = TribeData('Ronins')
-            roninsTribe.removeMember(creator.SteamID)
+            #removing player from Survivors tribe
+            SurvivorsTribe = TribeData('Survivors')
+            SurvivorsTribe.removeMember(creator.SteamID)
 
             #creating a new tribe
             tribe = TribeData(tribeName)
@@ -235,9 +235,9 @@ class Tribes:
             playerR = PlayerData(playerr)
             playerI = PlayerData(playeri)
 
-            if playerI.playerData['tribe'] != 'Ronins':
+            if playerI.playerData['tribe'] != 'Survivors':
                 playerr.MessageFrom("Tribes", playeri.Name+' is already in a tribe \"' + playerI.playerData['tribe']+"\"")
-            elif playerR.playerData['tribe'] == 'Ronins':
+            elif playerR.playerData['tribe'] == 'Survivors':
                 playerr.MessageFrom("Tribes", "You are not in a tribe.")
             else:
                 playerr.MessageFrom("Tribes", "Player"+ playeri.Name+ "\" invited!")
@@ -253,7 +253,7 @@ class Tribes:
         playerD = PlayerData(player)
         if len(playerD.playerData['pendingInvites']) > 0:
             newTribe = playerD.playerData['pendingInvites']
-            remCurTribe = TribeData('Ronins')
+            remCurTribe = TribeData('Survivors')
             remCurTribe.removeMember(player.SteamID)
             tribeAccept = TribeData(newTribe)
             playerD.playerData['tribe'] = newTribe
@@ -282,25 +282,25 @@ class Tribes:
         playerD = PlayerData(player)
         currentTribe = playerD.playerData['tribe']
 
-        if currentTribe == 'Ronins':
-            player.MessageFrom("Tribes", "You're just a Ronin! Where can you go?")
+        if currentTribe == 'Survivors':
+            player.MessageFrom("Tribes", "You're just a lone survivor! Where can you go?")
         else:
             playerTD = TribeData(currentTribe)
             playerTD.removeMember(player.SteamID)
             playerTD.tribeMessages(playerD.playerData['tribe'], "Player "+player.Name+" left your tribe!")
             playerD = PlayerData(player)
-            playerD.playerData['tribe'] = 'Ronins'
-            playerNTD = TribeData('Ronins')
+            playerD.playerData['tribe'] = 'Survivors'
+            playerNTD = TribeData('Survivors')
             playerNTD.addMember(player.SteamID)
             player.MessageFrom("Tribes:", "You have left the tribe \""+currentTribe+"\"")
-            if len(playerTD.tribeData['tribeMembers']) == 0 and playerTD.tribeName != 'Ronin':
+            if len(playerTD.tribeData['tribeMembers']) == 0:
                 DataStore.Remove('Tribes', playerTD.tribeName)
                 player.MessageFrom("Tribes", "Tribe \""+currentTribe+"\" disbanded.")
 
     def kickFromTribe(self, cmd):
         creator = cmd.User
         kickPlayerName = ' '.join((cmd.args)[0:])
-        roninTribe = TribeData("Ronins")
+        roninTribe = TribeData("Survivors")
         creatorD = PlayerData(creator)
         tribeName = creatorD.playerData['tribe']
         creatorTD = TribeData(tribeName)
@@ -329,7 +329,7 @@ class Tribes:
                 kickPlayer.MessageFrom("Tribes", "You have been kicked from tribe "+tribeName)
                 creatorTD.removeMember(kickPlayer.SteamID)
                 roninTribe.addMember(kickPlayer.SteamID)
-                kickPlayerD.playerData['tribe'] = 'Ronins'
+                kickPlayerD.playerData['tribe'] = 'Survivors'
             else:
                 creator.MessageFrom("Tribes", "Member "+kickPlayerName +" is not part of the tribe")
         else:
@@ -340,7 +340,7 @@ class Tribes:
         #
         # if kickPlayer and creator.SteamID == currentTribe.tribeData['CreatorID']:
         #
-        #     newTribe = TribeData('Ronins')
+        #     newTribe = TribeData('Survivors')
         #     player.MessageFrom("Tribes:", "You have kicked "+kickPlayerName+" from your tribe.")
         #     currentTribe.removeMember(kickPlayerID)
         #     newTribe.addMember(kickPlayerID)

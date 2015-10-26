@@ -20,7 +20,6 @@ class TribeDoors():
         doorLocation = due.Door.Location
         doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
         doorUserID = due.Player.SteamID
-        Util.Log(str(help(due.__getattribute__)))
         if not doorOwnerID:
             due.Allow
             # Some structures didn't end up in database
@@ -49,7 +48,7 @@ class TribeDoors():
             Util.Log("DoorOwnerTribe not found" + str(doorOwnerID))
             doorOwnerTribe = doorUserTribe
 
-        if doorOwnerTribe['tribe'] == 'Ronins':
+        if doorOwnerTribe['tribe'] == 'Survivors':
             return False
         elif doorUserTribe['tribe'] != doorOwnerTribe['tribe']:
             return False

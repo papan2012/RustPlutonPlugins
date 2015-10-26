@@ -74,7 +74,11 @@ class AntiOfflineRaid():
         self.reAgress = {}
         self.tribereAgress = {}
         self.tribeDiscPlayers = {}
+        self.reFlag = True # used to avoid extra checks, timers extends in check one per minute
 
+        # performance test
+        self.now = time.time()
+        # performance test
 
     def loadIniSettings(self):
         if not Plugin.IniExists("settings"):
@@ -94,12 +98,16 @@ class AntiOfflineRaid():
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
 
     def _reflag(self, playerID):
+        # performance test
+        #now = time.time()
+        # Util.Log("reflag took "+str(now-self.now))
+        # performance test end
         # mark reagression to playerID for timer calculation
         playerData = DataStore.Get('Players', playerID)
         reAgressTime = time.time()
         self.reAgress[playerID] = reAgressTime
 
-        if playerData['tribe'] != 'Ronins':
+        if playerData['tribe'] != 'Survivors':
             self.tribereAgress[playerData['tribe']] = reAgressTime
 
 
@@ -113,28 +121,46 @@ class AntiOfflineRaid():
         attacker = HurtEvent.Attacker
         victimLocation = HurtEvent.Victim.Location
 
-        # ignoredDamagesList = ['ElectricShock', 'Heat', 'Cold']
-        # if str(HurtEvent.DamageType) in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
-        #     damageAmounts = HurtEvent.DamageAmounts
-        #     for i, d in enumerate(damageAmounts):
-        #         if damageAmounts[i] != 0.0:
-        #             damageAmounts[i] = 0.0
-        #         HurtEvent.DamageAmounts = damageAmounts
-        #if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
-        if attacker and attacker.IsPlayer() and HurtEvent.Victim.IsBuildingPart():
+        ignoredDamagesList = ['Heat', 'Cold']
+        # Have to nulify heat damage for calculations, taking 10 times longer (incendiary rockets and ammo)
+        # best solution for now is to have it do zero dmg to buildings and avoiding checks
+        if str(HurtEvent.DamageType) in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
+            damageAmounts = HurtEvent.DamageAmounts
+            for i, d in enumerate(damageAmounts):
+                if damageAmounts[i] != 0.0:
+                    damageAmounts[i] = 0.0
+                HurtEvent.DamageAmounts = damageAmounts
+
+        #if attacker and attacker.IsPlayer() and HurtEvent.Victim.IsBuildingPart():
+        if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
             attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
-            # if not victimID:
-            #     Util.Log("AOR: Victim not found "+str(victimLocation))
-            if attackerID and victimID and attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
+
+            # victimID check for database debuging
+            if not victimID:
+                Util.Log("AOR: Victim not found "+str(victimLocation))
+
+            # trying to reduce checks for reflag to once every minute
+            # for now only checks reagression, maybe extand to count from first aggression
+
+       #Moram odvojiti za attackera i victim
+      #       if attackerID in self.reAgress.keys() and victimID in self.reAgress.keys():
+      # #          Util.Log(" time: " +str(time.time() - self.reAgress[attackerID]))
+      #           if (time.time() - self.reAgress[attackerID]) < 60000 and (time.time() - self.reAgress[victimID]) < 60000:
+      #               self.reFlag = False
+      #       else:
+      #           self.reFlag = True
+      #           Util.Log('reflag')
+            #uncomment condition below to see the speed advantage
+            #Util.Log(str(dontreFlag))
+
+            if (attackerID and victimID) and (attackerID != victimID) and (not self.victInAttTribe(attackerID, victimID)):
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
                 victim = Server.FindPlayer(str(victimID))
-                # if attackerID not in self.flaggedPlayers or victimID not in self.flaggedPlayers:
-                #     Util.Log("Player "+attacker.Name + "is attacking building of player "+victimName)
-
                 damageAmounts = HurtEvent.DamageAmounts
+
                 self.checkTribeBeforeFlag(attackerID)
 
                 if self.protectForOffline(victimID) and not self.tribeConditions(victimID):
@@ -146,6 +172,11 @@ class AntiOfflineRaid():
 
                 if victim:
                     self.checkTribeBeforeFlag(victimID)
+        # # performance test
+        # now = time.time()
+        # Util.Log("On_CombatEntityHurt took "+str(now-self.now))
+        # self.now = time.time()
+        # # performance test end
 
     def On_PlayerHurt(self, HurtEvent):
 
@@ -162,12 +193,16 @@ class AntiOfflineRaid():
                         self.checkTribeBeforeFlag(attackerID)
                     if not self.checkPVPFlag(victimID) and Server.FindPlayer(victimID):
                         self.checkTribeBeforeFlag(victimID)
+        # # performance test
+        # now = time.time()
+        # Util.Log("On_PlayerHurt took "+str(now-self.now))
+        # # performance test end
 
     def victInAttTribe(self, attackerID, victimID):
         attackerD = DataStore.Get("Players", attackerID)
         victimD = DataStore.Get("Players", victimID)
 
-        if attackerD['tribe'] == 'Ronins' and victimD['tribe'] == 'Ronins':
+        if attackerD['tribe'] == 'Survivors' and victimD['tribe'] == 'Survivors':
             return False
         elif attackerD['tribe'] == victimD['tribe']:
             return True
@@ -193,9 +228,9 @@ class AntiOfflineRaid():
         :return: bool
         '''
         playerData = DataStore.Get('Players', playerID)
-        if (playerData['tribe'] == 'Ronins') and ((time.time() - playerData['lastonline']) < self.offlineProtectionTimeout) and not self.checkPVPFlag(playerID):
+        if (playerData['tribe'] == 'Survivors') and ((time.time() - playerData['lastonline']) < self.offlineProtectionTimeout) and not self.checkPVPFlag(playerID):
             return True
-        elif playerData['tribe'] != 'Ronins':
+        elif playerData['tribe'] != 'Survivors':
 
             playerTribe = playerData['tribe']
             playerTribeData = DataStore.Get('Tribes', playerTribe)
@@ -217,7 +252,7 @@ class AntiOfflineRaid():
     def tribeConditions(self, playerID):
         '''
         return True if other members online or flagged
-        True if tribe is Ronins
+        True if tribe is Survivors
         False if tribe is not raidable
         :param player:
         :return: bool
@@ -225,7 +260,7 @@ class AntiOfflineRaid():
         playerData = DataStore.Get('Players', playerID)
         playerName = playerData['name']
         playerTribe = playerData['tribe']
-        if playerTribe != 'Ronins':
+        if playerTribe != 'Survivors':
             playerTribeData = DataStore.Get('Tribes', playerTribe)
             tribeMembers = playerTribeData['tribeMembers']
             for tribeMemberID in tribeMembers:
@@ -245,13 +280,13 @@ class AntiOfflineRaid():
 
     def checkTribeBeforeFlag(self, playerID):
         '''
-        If player in Ronins, flag all members in Tribe
+        If player in Survivors, flag all members in Tribe
         :param playerID:
         :return:
         '''
         playerD = DataStore.Get('Players', playerID)
         player = Server.FindPlayer(playerID)
-        if playerD['tribe'] != 'Ronins':
+        if playerD['tribe'] != 'Survivors':
             tribeD = DataStore.Get('Tribes', playerD['tribe'])
             for memberID in tribeD['tribeMembers']:
                 if player:
@@ -293,10 +328,10 @@ class AntiOfflineRaid():
         playerD = DataStore.Get("Players", playerID)
         playerName = playerD['name']
 
-        if playerD['tribe'] == 'Ronins' and playerID in self.disconnectedPlayers.keys():
+        if playerD['tribe'] == 'Survivors' and playerID in self.disconnectedPlayers.keys():
             #napravi timer kill i podesi novi timer od vremena disconnecta
             self.disconnectedPlayers.pop(playerID, None)
-        elif playerD['tribe'] == 'Ronins':
+        elif playerD['tribe'] == 'Survivors':
             if playerID in self.reAgress.keys():
                 now = time.time()
                 timeDiff = now - self.reAgress[playerID]
@@ -311,7 +346,7 @@ class AntiOfflineRaid():
                 if player:
                     self._removeNotification(player)
 
-        if playerD['tribe'] != 'Ronins':
+        if playerD['tribe'] != 'Survivors':
             now = time.time()
             player = Server.FindPlayer(playerID)
             tribe = playerD['tribe']
@@ -326,7 +361,8 @@ class AntiOfflineRaid():
                 timer.Kill()
                 self.reAgress.pop(playerID, None)
                 self.flaggedPlayers.remove(playerID)
-                self._removeNotification(player)
+                if player:
+                    self._removeNotification(player)
 
     def notifyPlayer(self, playerID, victimName):
         player = Server.FindPlayer(playerID)
@@ -378,6 +414,7 @@ class AntiOfflineRaid():
                     self.flaggedPlayers.remove(playerID)
                     Util.Log("Clearing all flags!")
                     self._removeNotification(player)
+                    self.reAgress.pop(playerID)
 
 
     def On_PlayerDisconnected(self, player):
@@ -386,7 +423,7 @@ class AntiOfflineRaid():
         playerData = DataStore.Get('Players', playerID)
         if playerID not in self.disconnectedPlayers.keys() and playerID in self.flaggedPlayers:
             self.disconnectedPlayers[playerID] = now
-        if playerData['tribe'] != 'Ronins':
+        if playerData['tribe'] != 'Survivors':
             self.tribereAgress[playerData['tribe']] = now
 
 
