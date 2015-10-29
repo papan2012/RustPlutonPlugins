@@ -44,7 +44,7 @@ class TribesDebugger():
 
         if command == 'pl':
             playerKeys = DataStore.Keys('Players')
-            Util.Log(str(playerKeys))
+            Util.Log("tdpl: "+str(playerKeys))
             for playerID in playerKeys:
                 playerData = DataStore.Get('Players', playerID)
                 Util.Log(playerID+' '+str(playerData['name']))

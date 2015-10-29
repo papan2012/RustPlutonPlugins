@@ -120,7 +120,7 @@ welcomegui = [
             {
                 "type": "UnityEngine.UI.Button",
                 "close": "welcomeUI",
-                "command": "help.aor",
+                "command": "help.create",
                 "color": "0.2 0.2 0.2 0.7"
             },
             {
@@ -230,11 +230,13 @@ class WelcomeScreen():
 
     def On_PlayerLoaded(self, player):
         if player.SteamID not in self.shown_players:
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
+             Util.Log("showing welcome")
+             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
-        player = cce.User
-        playerID = player.SteamID
+        if cce.cmd != 'chat.say':
+            player = cce.User
+            playerID = player.SteamID
         if cce.cmd == 'close.welcome':
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeUI"))
         if cce.cmd == "create.welcome":

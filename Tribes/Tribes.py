@@ -281,9 +281,12 @@ class Tribes:
         player = cmd.User
         playerD = PlayerData(player)
         currentTribe = playerD.playerData['tribe']
+        playerTribeData = TribeData(currentTribe)
 
         if currentTribe == 'Survivors':
             player.MessageFrom("Tribes", "You're just a lone survivor! Where can you go?")
+        elif player.SteamID == playerTribeData.tribeData['creatorID'] and len(playerTribeData.tribeData['tribeMembers']) >1:
+            player.MessageFrom("Tribes", "You can't leave you Tribe. Your tribe members need you!")
         else:
             playerTD = TribeData(currentTribe)
             playerTD.removeMember(player.SteamID)
@@ -308,16 +311,13 @@ class Tribes:
 
 
         if creator.SteamID == creatorTD.tribeData['creatorID']:
-            Util.Log(kickPlayerName)
             kickPlayer = Server.FindPlayer(kickPlayerName)
 
             if kickPlayer:
                 kickPlayerD = PlayerData(kickPlayer)
             elif not kickPlayer:
-                Util.Log("not pl")
                 for pl in Server.OfflinePlayers.Values:
                     if pl.Name.lower() == kickPlayerName.lower():
-                        Util.Log("pl.Name.lower"+pl.Name.lower)
                         kickPlayer = pl
                         kickPlayerD = PlayerData(kickPlayer)
                         break
@@ -334,17 +334,6 @@ class Tribes:
                 creator.MessageFrom("Tribes", "Member "+kickPlayerName +" is not part of the tribe")
         else:
             creator.MessageFrom("Tribes:", "You're not the creator of your tribe. Only tribe creator can kick people.")
-
-        #
-        #     #kickPlayer = playerTD.tribeData[]
-        #
-        # if kickPlayer and creator.SteamID == currentTribe.tribeData['CreatorID']:
-        #
-        #     newTribe = TribeData('Survivors')
-        #     player.MessageFrom("Tribes:", "You have kicked "+kickPlayerName+" from your tribe.")
-        #     currentTribe.removeMember(kickPlayerID)
-        #     newTribe.addMember(kickPlayerID)
-        #     kickplayer.MessageFrom("You have been kicked from tribe "+currentTribe)
 
 
     def denyInvite(self, cmd):

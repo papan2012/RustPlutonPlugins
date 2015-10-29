@@ -1,6 +1,5 @@
-linija 296 u tribes
-if len(playerTD.tribeData['tribeMembers']) == 0 and playerTD.tribeName != 'Survivors':
-wtf sa playerTD.tribeName != 'Survivors'
+Provjeri radi li odbijanje napuštanja tribe-a za tribe leadera, ako ima još membera u trajbu
+Ako radi, poveæaj check za +1
 
 
 flagPlayerPVP sada uzima steamID umjesto player objekta

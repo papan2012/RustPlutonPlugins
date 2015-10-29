@@ -21,7 +21,7 @@ class TribeDoors():
         doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
         doorUserID = due.Player.SteamID
         if not doorOwnerID:
-            due.Allow
+            #due.Allow
             # Some structures didn't end up in database
             # either from me not using On_ServerSaved method from the beggining, and forgetint to save the datastore before server restart
             # or becaouse of that DataStore vector3 conversion that missed something.

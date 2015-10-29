@@ -58,7 +58,7 @@ flagmark = [
     }
 ]
 string = json.encode(flagmark)
-broadcast = json.makepretty(string)
+flagged = json.makepretty(string)
 
 
 class AntiOfflineRaid():
@@ -76,10 +76,6 @@ class AntiOfflineRaid():
         self.tribeDiscPlayers = {}
         self.reFlag = True # used to avoid extra checks, timers extends in check one per minute
 
-        # performance test
-        self.now = time.time()
-        # performance test
-
     def loadIniSettings(self):
         if not Plugin.IniExists("settings"):
             Plugin.CreateIni("settings")
@@ -92,17 +88,12 @@ class AntiOfflineRaid():
 
     def _createNotification(self, player):
         flagText = "Flaged "
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", flagText)))
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(flagged.Replace("[TEXT]", flagText)))
 
     def _removeNotification(self, player):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
 
     def _reflag(self, playerID):
-        # performance test
-        #now = time.time()
-        # Util.Log("reflag took "+str(now-self.now))
-        # performance test end
-        # mark reagression to playerID for timer calculation
         playerData = DataStore.Get('Players', playerID)
         reAgressTime = time.time()
         self.reAgress[playerID] = reAgressTime
@@ -121,9 +112,10 @@ class AntiOfflineRaid():
         attacker = HurtEvent.Attacker
         victimLocation = HurtEvent.Victim.Location
 
-        ignoredDamagesList = ['Heat', 'Cold']
+        ignoredDamagesList = ['Heat']
         # Have to nulify heat damage for calculations, taking 10 times longer (incendiary rockets and ammo)
         # best solution for now is to have it do zero dmg to buildings and avoiding checks
+        # players still get damaged
         if str(HurtEvent.DamageType) in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
             damageAmounts = HurtEvent.DamageAmounts
             for i, d in enumerate(damageAmounts):
@@ -143,8 +135,7 @@ class AntiOfflineRaid():
 
             # trying to reduce checks for reflag to once every minute
             # for now only checks reagression, maybe extand to count from first aggression
-
-       #Moram odvojiti za attackera i victim
+            #Moram odvojiti za attackera i victim
       #       if attackerID in self.reAgress.keys() and victimID in self.reAgress.keys():
       # #          Util.Log(" time: " +str(time.time() - self.reAgress[attackerID]))
       #           if (time.time() - self.reAgress[attackerID]) < 60000 and (time.time() - self.reAgress[victimID]) < 60000:
@@ -162,7 +153,6 @@ class AntiOfflineRaid():
                 damageAmounts = HurtEvent.DamageAmounts
 
                 self.checkTribeBeforeFlag(attackerID)
-
                 if self.protectForOffline(victimID) and not self.tribeConditions(victimID):
                     for i, d in enumerate(damageAmounts):
                         if damageAmounts[i] != 0.0:
@@ -172,11 +162,6 @@ class AntiOfflineRaid():
 
                 if victim:
                     self.checkTribeBeforeFlag(victimID)
-        # # performance test
-        # now = time.time()
-        # Util.Log("On_CombatEntityHurt took "+str(now-self.now))
-        # self.now = time.time()
-        # # performance test end
 
     def On_PlayerHurt(self, HurtEvent):
 
@@ -359,7 +344,6 @@ class AntiOfflineRaid():
             else:
                 #Util.Log("killing tribe timer")
                 timer.Kill()
-                self.reAgress.pop(playerID, None)
                 self.flaggedPlayers.remove(playerID)
                 if player:
                     self._removeNotification(player)
@@ -415,6 +399,19 @@ class AntiOfflineRaid():
                     Util.Log("Clearing all flags!")
                     self._removeNotification(player)
                     self.reAgress.pop(playerID)
+
+    def On_PlayerDied(self, pde):
+        attacker = pde.Attacker
+        victim = pde.Victim
+        if attacker and attacker != victim:
+            if attacker.IsPlayer():
+                Server.Broadcast(victim.Name + " was killed by " + attacker.Name + " with a hit to his " + pde.HitBone)
+            else:
+                name = str(attacker.Name.split('/')[-1].split('.')[0])
+                Server.Broadcast(victim.Name + " was killed by " + name)
+
+        else:
+            Server.Broadcast(victim.Name + " died from " + str(pde.DamageType))
 
 
     def On_PlayerDisconnected(self, player):

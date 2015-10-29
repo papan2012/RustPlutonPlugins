@@ -21,15 +21,16 @@ except ImportError:
 
 
 # Thanks to Jakkee for helping me with overview thingy <3
-helpgui = [
+
+bggui = [
     {
-        "name": "helpUI",
+        "name": "bgUI",
         #"parent": "overlay",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Image",
-                "color": "0.1 0.1 0.1 0.85",
+                "color": "0.1 0.1 0.1 0.47",
             },
             {
                 "type": "RectTransform",
@@ -38,6 +39,25 @@ helpgui = [
             },
             {
                 "type": "NeedsCursor"
+            }
+        ]
+    }
+]
+
+helpgui = [
+    {
+        "name": "helpUI",
+        "parent": "bgUI",
+        "components":
+        [
+            {
+                "type": "UnityEngine.UI.Image",
+                "color": "0.1 0.1 0.1 0.85",
+            },
+            {
+                "type": "RectTransform",
+                "anchormin": "0.001 0.001",
+                "anchormax": "0.999 0.999"
             }
         ]
     },
@@ -254,47 +274,13 @@ helpgui = [
      },
     {
         "parent": "helpUI",
-        "name" : "bottray",
-        "components":
-            [
-                {
-                    "type": "UnityEngine.UI.Image",
-                    "color": "0.1 0.1 0.1 0.1",
-                },
-                {
-                    "type": "RectTransform",
-                    "anchormin": "0.89 0.05",
-                    "anchormax": "0.99 0.15"
-                }
-            ]
-    },
-    {
-        "parent": "helpUI",
-        "components":
-        [
-            {
-                "type": "UnityEngine.UI.Text",
-                "color": "0.1 0.6 0.1 1.0",
-                "text": "OK",
-                "fontSize": 18,
-                "align": "MiddleCenter"
-            },
-            {
-                "type": "RectTransform",
-                "anchormin": "0.89 0.05",
-                "anchormax": "0.99 0.15"
-            }
-         ]
-     },
-    {
-        "parent": "helpUI",
         "name" : "okbutton",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Button",
                 "close": "helpUI",
-                "command": "close.window",
+                "command": "close.help",
                 "color": "0.2 0.2 0.2 0.5"
             },
             {
@@ -307,6 +293,8 @@ helpgui = [
 ]
 
 
+bgstring = json.encode(bggui)
+bgJson = json.makepretty(bgstring)
 string = json.encode(helpgui)
 helpJson = json.makepretty(string)
 
@@ -317,8 +305,9 @@ class TribesHelp():
         self.aorHelp="ANTIOFFLINERAID\n\n" \
                      "The point of the AntiOfflineRaid system is, well, to prevent offline raid.\n" \
                      "Since it's one of the kind, you'll have to get to know how it works.\n\n" \
-                     "Basically, when you go offline, your buildings get total protection from any kind of damage for 24 hours.\n" \
+                     "Basically, when you go offline, your buildings get total protection from any player made damage for 24 hours.\n" \
                      "In case you don't come online in the next 24 hours, your building will be susceptible to damage.\n" \
+                     "So, if you can't play, be sure to log in at least once in that 24 hour period to refresh the time." \
                      "AntiofflineRaid system doesn't prevent decay!\n" \
                      "if a player attacks you or one of or your buildings, while you are online, you and the attacking player will be flagged with a 15 minute timer.\n" \
                      "If you log off while the timer is still on, timer will be extended for 15 minutes, and you're building will not be protected until that timer runs out.\n" \
@@ -366,20 +355,28 @@ class TribesHelp():
         return Plugin.GetIni('settings')
 
 
-        
-    def createGUI(self, player, help):
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(helpJson.Replace("[TEXT]", help)))
+    def createBG(self, player):
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(bgJson))
 
+    def destroyBG(self, player):
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("bgUI"))
 
+    def createGUI(self, player, text):
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(helpJson.Replace("[TEXT]", text)))
 
     def destroyGUI(self, player):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("helpUI"))
 
     def On_ClientConsole(self, cce):
-        player = cce.User
-        playerID = player.SteamID
-        self.destroyGUI(player)
+        if cce.cmd != 'chat.say':
+            player = cce.User
+            playerID = player.SteamID
+            self.destroyGUI(player)
+        if cce.cmd == 'help.create':
+            self.createBG(player)
+            self.createGUI(player, self.aorHelp)
         if cce.cmd == 'close.help':
+            self.destroyBG(player)
             self.destroyGUI(player)
         if cce.cmd == "help.aor":
             self.curWindow = 'aorHelp'
@@ -400,5 +397,7 @@ class TribesHelp():
         player = cmd.User
 
         if command == 'help':
+            Util.Log(str(bgJson))
+            self.createBG(player)
             self.createGUI(player, self.aorHelp)
 

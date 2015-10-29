@@ -1,0 +1,12 @@
+AntiOfflineRaid:
+added server broadcast information about player deaths
+
+TribesHelp
+some text corrections
+help screen no longer reset mouse position to the center of the screen when switching help categories
+
+WelcomeScreen & TribesHelp
+ignoring "chat.say" in chat commands methods
+
+Other:
+minor bugs fixes
