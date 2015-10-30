@@ -111,6 +111,7 @@ class CreateUI(InterfaceComponents):
     def __init__(self, player):
         #self.UI = InterfaceComponents()
         self.player = player
+        self.currentView = None
 
     def makeBackground(self):
         gui = []
@@ -136,7 +137,7 @@ class CreateUI(InterfaceComponents):
         gui = []
 
         anchormin_x = 0.005
-        anchormin_y = 0.92
+        anchormin_y = 0.91
         anchormax_x = 0.1
         anchormax_y = 0.95
         for i, item in enumerate(menuItems):
@@ -153,7 +154,7 @@ class CreateUI(InterfaceComponents):
         menuUI = json.to_json(gui)
         objectList = json.makepretty(menuUI)
 
-        Util.Log(str(objectList))
+        #Util.Log(str(objectList))
         self.createOverlay(objectList)
 
 
@@ -163,8 +164,28 @@ class CreateUI(InterfaceComponents):
     def destroyOverlay(self, name):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
-    def createPlayerView(self, player):
-        pass
+    def createPlayerView(self):
+
+        gui = []
+        anchormin_x = 0.005
+        anchormin_y = 0.85
+        anchormax_x = 0.1
+        anchormax_y = 0.89
+
+        for pl in Server.ActivePlayers:
+        #for pl in range(1, 50):
+            anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
+            anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
+            Util.Log(str(pl.Name))
+            gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name=pl.Name, text=pl.Name, parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name=pl.Name, command="tribe+pl.Name", parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+
+        playerListUI = json.to_json(gui)
+        objectList = json.makepretty(playerListUI)
+
+        Util.Log(str(objectList))
+
+        self.createOverlay(objectList)
 
     def createTribesView(self, player):
         pass
@@ -206,9 +227,16 @@ class GTribes():
                 ui = CreateUI(player)
                 ui.makeBackground()
                 self.overlays[playerID] = ui
-        if cce.cmd == "tribe.close":
+        if cce.cmd == 'tribe.close':
             if playerID in self.overlays.keys():
                 Util.Log('Destroying overlay for '+player.Name)
                 ui = self.overlays[playerID]
                 ui.destroyOverlay("TribeBgUI")
                 self.overlays.pop(playerID, None)
+
+        if cce.cmd == 'tribe.players':
+            if playerID in self.overlays.keys():
+                ui = self.overlays[playerID]
+                if ui.currentView != 'Players':
+                    ui.createPlayerView()
+                    ui.currentView = 'Players'
