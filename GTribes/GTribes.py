@@ -123,8 +123,8 @@ class CreateUI(InterfaceComponents):
         gui.append(self.componentUIText(color="0.8 1.0 1.0 0.95", text="Tribe and Player Info Panel", fontSize="13", parent="TribeBgUI", anchormin="0.01 0.965", anchormax="0.5 0.99", name="close"))
 
         #close button text
-        gui.append(self.componentUIText(color="0.8 1.0 1.0 0.95", text="close", fontSize="18", parent="TribeBgUI", anchormin="0.962 0.97", anchormax="1.0 1.0", name="close"))
-        gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name="closeButton", parent="TribeBgUI", anchormin="0.96 0.97", anchormax="0.995 0.999", command="tribe.close"))
+        gui.append(self.componentUIText(color="0.8 1.0 1.0 0.95", text="close", fontSize="18", parent="TribeBgUI", anchormin="0.962 0.968", anchormax="1.0 1.0", name="close"))
+        gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name="closeButton", parent="TribeBgUI", anchormin="0.96 0.968", anchormax="0.995 0.999", command="tribe.close"))
 
         tribesUI = json.to_json(gui)
         objectList = json.makepretty(tribesUI)
@@ -172,13 +172,17 @@ class CreateUI(InterfaceComponents):
         anchormax_x = 0.1
         anchormax_y = 0.89
 
-        for pl in Server.ActivePlayers:
-        #for pl in range(1, 50):
+        #for pl in Server.ActivePlayers:
+        for pl in range(0, 10):
             anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
             anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
-            Util.Log(str(pl.Name))
-            gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name=pl.Name, text=pl.Name, parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
-            gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name=pl.Name, command="tribe+pl.Name", parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name="player "+str(pl), text="player "+str(pl), parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name="player "+str(pl), command="player "+str(pl), parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+            # Util.Log(str(pl.Name))
+            #gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name=pl.Name, text=pl.Name, parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            # gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name=pl.Name, command="tribe+pl.Name", parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+            anchormin_y -= 0.05
+            anchormax_y -= 0.05
 
         playerListUI = json.to_json(gui)
         objectList = json.makepretty(playerListUI)
