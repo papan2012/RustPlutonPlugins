@@ -372,9 +372,9 @@ class TribesHelp():
             player = cce.User
             playerID = player.SteamID
             self.destroyGUI(player)
-        if cce.cmd == 'help.create':
-            self.createBG(player)
-            self.createGUI(player, self.aorHelp)
+            if cce.cmd == 'help.create':
+                self.createBG(player)
+                self.createGUI(player, self.aorHelp)
         if cce.cmd == 'close.help':
             self.destroyBG(player)
             self.destroyGUI(player)

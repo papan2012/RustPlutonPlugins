@@ -30,7 +30,6 @@ class InterfaceComponents():
         :param parent:
         :return: dict Object
         '''
-        Util.Log("adding component")
         component = {}
         if name:
             component["name"] = name
@@ -61,7 +60,7 @@ class InterfaceComponents():
         return UIImage
 
 
-    def componentUIText(self, color, text, fontSize, name=None, parent=None, align=None, anchormin=None, anchormax=None):
+    def componentUIText(self, color=None, text=None, fontSize=None, name=None, parent=None, align=None, anchormin=None, anchormax=None):
         components = []
         text = {"type": "UnityEngine.UI.Text", "color": color, "text": text, "fontSize": fontSize}
 
@@ -114,7 +113,6 @@ class CreateUI(InterfaceComponents):
         self.player = player
 
     def makeBackground(self):
-        Util.Log("background")
         gui = []
         #bg
         gui.append(self.componentUIImage("TribeBgUI", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.895 0.955", needsCursor=True))
@@ -130,9 +128,34 @@ class CreateUI(InterfaceComponents):
         tribesUI = json.to_json(gui)
         objectList = json.makepretty(tribesUI)
 
-        Util.Log(str(objectList))
-
         self.createOverlay(objectList)
+        self.makeMenu()
+
+    def makeMenu(self):
+        menuItems = [("Tribes", "tribe.tribes"), ("Players", "tribe.players")]
+        gui = []
+
+        anchormin_x = 0.005
+        anchormin_y = 0.92
+        anchormax_x = 0.1
+        anchormax_y = 0.95
+        for i, item in enumerate(menuItems):
+            anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
+            anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
+            Util.Log(str(anchormin))
+            Util.Log(str(anchormax))
+            gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name=item, text=menuItems[i][0], parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name=item, command=menuItems[i][1], parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+            anchormin_x += 0.1
+            anchormax_x += 0.1
+
+
+        menuUI = json.to_json(gui)
+        objectList = json.makepretty(menuUI)
+
+        Util.Log(str(objectList))
+        self.createOverlay(objectList)
+
 
     def createOverlay(self, objectlist):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
