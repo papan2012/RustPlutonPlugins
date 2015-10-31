@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.0'
+__version__ = '1.11'
 
 import clr
 
@@ -122,7 +122,7 @@ class CreateUI(InterfaceComponents):
         gui.append(self.componentUIText(text="Tribe and Player Info Panel", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.01 0.965", anchormax="0.5 0.99"))
 
         #close button text
-        gui.append(self.componentUIText(text="close", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="18", anchormin="0.962 0.968", anchormax="1.0 1.0"))
+        gui.append(self.componentUIText(text="close", parent="TribeBgUI", align="MiddleCenter", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.96 0.968", anchormax="0.995 0.999"))
         gui.append(self.componentUIButton(command="tribeUI.close" ,parent="TribeBgUI", color="0.8 1.0 1.0 0.15",anchormin="0.96 0.968", anchormax="0.995 0.999"))
 
         tribesUI = json.to_json(gui)
@@ -326,6 +326,7 @@ class GTribes():
                 ui = self.overlays[playerID]
                 ui.currentView = 'playerView'
                 ui.createPlayerView("Offline")
+                #Util.Log(str(self.offlinePlayers))
                 ui.createPlayerList(self.offlinePlayers)
 
     def On_Command(self, cmd):
@@ -348,24 +349,36 @@ class GTribes():
         self._addToOnlinePlayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
 
-    def On_playerDisconnected(self, player):
+    def On_PlayerDisconnected(self, player):
         self._addToOfflinePLayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
 
 
     def _addToOnlinePlayers(self, player):
-        self.onlinePlayers.append((player.SteamID, player.Name))
         try:
-            self.offlinePlayers.remove((player.SteamID, player.Name))
+            playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
+            self.onlinePlayers.append((player.SteamID, playerName))
+            if (player.SteamID, playerName) in self.offlinePlayers:
+                self.offlinePlayers.remove((player.SteamID, playerName))
+                Util.Log("Removing " + playerName)
         except:
             pass
 
+
+
     def _addToOfflinePLayers(self, player):
         try:
-            self.onlinePlayers.remove((player.SteamID, player.Name))
+            playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
+            self.offlinePlayers.append((player.SteamID, playerName))
+            if (player.SteamID, playerName) in self.onlinePlayers:
+                self.onlinePlayers.remove((player.SteamID, playerName))
+                Util.Log("Removing from online " + playerName)
         except:
             pass
-        self.offlinePlayer.append((player.SteamID, player.Name))
+
+
+
+
 
     def _sortListByKey(self, someList, element):
         self.onlinePlayers.sort(key=lambda tup: tup[element])
