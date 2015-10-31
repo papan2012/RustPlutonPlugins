@@ -129,9 +129,9 @@ class CreateUI(InterfaceComponents):
         objectList = json.makepretty(tribesUI)
 
         self.createOverlay(objectList)
-        self.makeMenu()
 
-    def makeMenu(self):
+
+    def makeMenu(self, selection):
         menuItems = [("Tribes", "tribeUI.tribes"), ("Players", "tribeUI.players.online")]
         gui = []
 
@@ -140,11 +140,13 @@ class CreateUI(InterfaceComponents):
         anchormax_x = 0.1
         anchormax_y = 0.95
         for item in menuItems:
+            if item[0] == selection:
+                color = "1.0 0.3 0.3 0.95"
+            else:
+                color = "1.0 0.9 0.9 0.95"
             anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
             anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
-            Util.Log(str(anchormin))
-            Util.Log(str(anchormax))
-            gui.append(self.componentUIText(text=item[0], parent="TribeBgUI", color="1.0 0.9 0.9 0.95",  align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(text=item[0], parent="TribeBgUI", color=color,  align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command=item[1], parent="TribeBgUI", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
             anchormin_x += 0.1
             anchormax_x += 0.1
@@ -165,24 +167,27 @@ class CreateUI(InterfaceComponents):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
 
-    def createPlayerView(self):
+    def createPlayerView(self, selection):
         playerViewButtons = [('Online', 'tribeUI.players.online'), ('Offline', 'tribeUI.players.offline')]
         gui = []
 
-        anchormin_x = 0.1
+
+        self.destroyOverlay(self.currentView)
+        anchormin_x = 0.105
         anchormin_y = 0.95
         anchormax_x = 0.19
         anchormax_y = 0.99
 
-        gui.append(self.componentUIImage("playerView", parent="TribeBgUI", color="0.1 0.1 0.1 0.25", anchormin="0.001 0.10", anchormax="0.999 0.88"))
-        # gui.append(self.componentUIText(text="TEST", parent="PlayerButtons", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin="0.0 0.0", anchormax="1.0 1.0"))
-        # gui.append(self.componentUIButton(command="TEST", parent="PlayerButtons", color="0.8 1.0 1.0 0.15"))
-
+        gui.append(self.componentUIImage("playerView", parent="TribeBgUI", color="0.2 0.1 0.1 0.25", anchormin="0.000 0.08", anchormax="0.999 0.88"))
 
         for i, button in enumerate(playerViewButtons):
+            if button[0] == selection:
+                color = "1.0 0.3 0.3 0.95"
+            else:
+                color = "1.0 0.9 0.9 0.95"
             anchormin = str(anchormin_x)+' '+str(anchormin_y)
             anchormax = str(anchormax_x)+' '+str(anchormax_y)
-            gui.append(self.componentUIText(text=button[0], parent="playerView", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(text=button[0], parent="playerView", color=color, align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command=button[1], parent="playerView", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
             anchormin_x += 0.1
             anchormax_x += 0.1
@@ -191,7 +196,7 @@ class CreateUI(InterfaceComponents):
         playerView = json.to_json(gui)
         objectList = json.makepretty(playerView)
 
-        Util.Log(str(objectList))
+        #Util.Log(str(objectList))
 
         self.createOverlay(objectList)
 
@@ -203,29 +208,29 @@ class CreateUI(InterfaceComponents):
         :return:
         '''
 
+        self.destroyOverlay('playerList')
         Util.Log('creating player list')
+
         gui = []
 
-        gui.append(self.componentUIImage('playerList', parent="playerView", color="0.1 0.1 0.1 0.85", anchormin="0.001 0.1", anchormax="0.999 0.82"))
+        gui.append(self.componentUIImage('playerList', parent="playerView", color="0.1 0.1 0.1 0.90", anchormin="0.001 0.0", anchormax="0.999 0.93"))
 
-        anchormin_x = 0.005
-        anchormin_y = 0.95
-        anchormax_x = 0.1
-        anchormax_y = 0.99
+        anchormin_x = 0.002
+        anchormin_y = 0.955
+        anchormax_x = 0.097
+        anchormax_y = 0.995
+
 
         for i, pl in enumerate(playerList):
             if i!=0  and i%20 == 0:
                 anchormin_x += 0.1
-                anchormin_y = 0.95
+                anchormin_y = 0.955
                 anchormax_x += 0.1
-                anchormax_y = 0.99
+                anchormax_y = 0.995
             anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
             anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
-            gui.append(self.componentUIText(text="player "+str(pl), parent="playerList", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
-            gui.append(self.componentUIButton(command="player "+str(pl), parent="playerList", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
-            # Util.Log(str(pl.Name))
-            #gui.append(self.componentUIText(text=pl.Name, parent="TribeBgUI", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
-            # gui.append(self.componentUIButton(ommand="tribe+pl.Name", parent="TribeBgUI", color="0.8 1.0 1.0 0.15", canchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(text=str(pl[1]), parent="playerList", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="9", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(command="command", parent="playerList", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
             anchormin_y -= 0.05
             anchormax_y -= 0.05
 
@@ -250,22 +255,22 @@ class GTribes():
         '''
         # dict for holding overlays with playerID keys
         self.overlays = {}
+        #
+        # # lists of online  and offline players
+        # self.onlinePlayers = range(0, 200)
+        # self.offlinePlayers = range(200, 0, -1)
+
+        self.defaultSelection = "Players"
+
+        self.onlinePlayers = []
+        self.offlinePlayers = []
+
+        for player in Server.ActivePlayers:
+            self._addToOnlinePlayers(player)
+
+        for player in Server.OfflinePlayers.Values:
+            self._addToOfflinePLayers(player)
         
-        # lists of online  and offline players
-        self.onlinePlayers = range(0, 200)
-        self.offlinePlayers = range(200, 0, -1)
-        
-
-    def On_Command(self, cmd):
-        command = cmd.cmd
-        player = cmd.User
-        playerID = player.GameID
-
-        if command == 'gt':
-            ui = CreateUI(player)
-            ui.makeBackground()
-            self.overlays[playerID] = ui
-
 
     def On_ClientConsole(self, cce):
         '''
@@ -280,34 +285,88 @@ class GTribes():
 
         if cce.cmd == 'tribeUI.create':
             if playerID not in self.overlays.keys():
-                Util.Log("Creating overlay for "+ player.Name)
+                Util.Log("Creating whois overlay for "+ player.Name)
                 ui = CreateUI(player)
                 ui.makeBackground()
+                ui.makeMenu(self.defaultSelection)
                 self.overlays[playerID] = ui
+                ui.currentView = 'playerView'
+                ui.createPlayerView("Online")
+                ui.createPlayerList(self.onlinePlayers)
+
+        # TODO: kreirati funkcionalnost tribe gumba
+        # if cce.cmd == 'tribeUI.tribes':
+        #     if playerID in self.overlays.keys():
+        #         Util.Log("Creating tribe overlay for "+ player.Name)
+        #         ui = self.overlays[playerID]
+        #         ui.makeBackground()
+        #         ui.makeMenu(self.defaultSelection)
+        #         ui.currentView = 'Tribes'
+        #         #ui.CreateTribeView["selected"]
+
+                
         if cce.cmd == 'tribeUI.close':
             if playerID in self.overlays.keys():
                 Util.Log('Destroying overlay for '+player.Name)
                 ui = self.overlays[playerID]
                 ui.destroyOverlay("TribeBgUI")
                 self.overlays.pop(playerID, None)
-                Util.Log(str(self.overlays.keys()))
+
 
 
         if cce.cmd == 'tribeUI.players.online':
             if playerID in self.overlays.keys():
                 ui = self.overlays[playerID]
-                if ui.currentView != 'playerView':
-                    Util.Log('destroying '+str(ui.currentView))
-                    ui.destroyOverlay(ui.currentView)
-                    ui.currentView = 'playerView'
-                    ui.createPlayerView()
-                    ui.createPlayerList(self.onlinePlayers)
+                ui.currentView = 'playerView'
+                ui.createPlayerView('Online')
+                ui.createPlayerList(self.onlinePlayers)
 
         if cce.cmd == 'tribeUI.players.offline':
             if playerID in self.overlays.keys():
                 ui = self.overlays[playerID]
-                if ui.currentView != 'playerView':
-                    Util.Log('destroying '+str(ui.currentView))
-                    ui.destroyOverlay(ui.currentView)
-                    ui.currentView = 'playerView'
-                    ui.createPlayerList(self.offlinePlayers)
+                ui.currentView = 'playerView'
+                ui.createPlayerView("Offline")
+                ui.createPlayerList(self.offlinePlayers)
+
+    def On_Command(self, cmd):
+        command = cmd.cmd
+        player = cmd.User
+        playerID = player.GameID
+
+        if command == 'gwho':
+            if playerID not in self.overlays.keys():
+                Util.Log("Creating overlay for "+ player.Name)
+                ui = CreateUI(player)
+                ui.makeBackground()
+                ui.makeMenu(self.defaultSelection)
+                self.overlays[playerID] = ui
+                ui.currentView = 'playerView'
+                ui.createPlayerView("Online")
+                ui.createPlayerList(self.onlinePlayers)
+
+    def On_PlayerConnected(self, player):
+        self._addToOnlinePlayers(player)
+        self._sortListByKey(self.onlinePlayers, 1)
+
+    def On_playerDisconnected(self, player):
+        self._addToOfflinePLayers(player)
+        self._sortListByKey(self.onlinePlayers, 1)
+
+
+    def _addToOnlinePlayers(self, player):
+        self.onlinePlayers.append((player.SteamID, player.Name))
+        try:
+            self.offlinePlayers.remove((player.SteamID, player.Name))
+        except:
+            pass
+
+    def _addToOfflinePLayers(self, player):
+        try:
+            self.onlinePlayers.remove((player.SteamID, player.Name))
+        except:
+            pass
+        self.offlinePlayer.append((player.SteamID, player.Name))
+
+    def _sortListByKey(self, someList, element):
+        self.onlinePlayers.sort(key=lambda tup: tup[element])
+        self.offlinePlayers.sort(key=lambda tup:tup[element])
