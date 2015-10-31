@@ -60,9 +60,9 @@ class InterfaceComponents():
         return UIImage
 
 
-    def componentUIText(self, color=None, text=None, fontSize=None, name=None, parent=None, align=None, anchormin=None, anchormax=None):
+    def componentUIText(self, text, parent, color=None, fontSize=None, align=None, anchormin=None, anchormax=None):
         components = []
-        text = {"type": "UnityEngine.UI.Text", "color": color, "text": text, "fontSize": fontSize}
+        text = {"type": "UnityEngine.UI.Text",  "text": text, "parent": parent, "color": color,"fontSize": fontSize}
 
         if align:
             text["align"] = align
@@ -77,12 +77,10 @@ class InterfaceComponents():
         return UIText
 
 
-    def componentUIButton(self, parent=None, name=None, command=None, color=None, anchormin=None, anchormax=None):
+    def componentUIButton(self, command, parent, color=None, anchormin=None, anchormax=None):
         components = []
-        button = {"type": "UnityEngine.UI.Button"}
+        button = {"type": "UnityEngine.UI.Button", "command": command, "parent": parent}
 
-        if name:
-            button['name'] = name
         if command:
             button['command'] = command
         if color:
@@ -107,6 +105,7 @@ class InterfaceComponents():
         return {"type": "NeedsCursor"}
 
 
+
 class CreateUI(InterfaceComponents):
     def __init__(self, player):
         #self.UI = InterfaceComponents()
@@ -116,15 +115,15 @@ class CreateUI(InterfaceComponents):
     def makeBackground(self):
         gui = []
         #bg
-        gui.append(self.componentUIImage("TribeBgUI", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.895 0.955", needsCursor=True))
+        gui.append(self.componentUIImage("TribeBgUI", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.889 0.955", needsCursor=True))
         #toptray
         gui.append(self.componentUIImage("toptray", parent="TribeBgUI", color="0.2 0.2 0.2 0.35", anchormin="0.0 0.97", anchormax="1.0 1.0"))
         # toptitle
-        gui.append(self.componentUIText(color="0.8 1.0 1.0 0.95", text="Tribe and Player Info Panel", fontSize="13", parent="TribeBgUI", anchormin="0.01 0.965", anchormax="0.5 0.99", name="close"))
+        gui.append(self.componentUIText(text="Tribe and Player Info Panel", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.01 0.965", anchormax="0.5 0.99"))
 
         #close button text
-        gui.append(self.componentUIText(color="0.8 1.0 1.0 0.95", text="close", fontSize="18", parent="TribeBgUI", anchormin="0.962 0.968", anchormax="1.0 1.0", name="close"))
-        gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name="closeButton", parent="TribeBgUI", anchormin="0.96 0.968", anchormax="0.995 0.999", command="tribe.close"))
+        gui.append(self.componentUIText(text="close", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="18", anchormin="0.962 0.968", anchormax="1.0 1.0"))
+        gui.append(self.componentUIButton(command="tribeUI.close" ,parent="TribeBgUI", color="0.8 1.0 1.0 0.15",anchormin="0.96 0.968", anchormax="0.995 0.999"))
 
         tribesUI = json.to_json(gui)
         objectList = json.makepretty(tribesUI)
@@ -133,20 +132,20 @@ class CreateUI(InterfaceComponents):
         self.makeMenu()
 
     def makeMenu(self):
-        menuItems = [("Tribes", "tribe.tribes"), ("Players", "tribe.players")]
+        menuItems = [("Tribes", "tribeUI.tribes"), ("Players", "tribeUI.players.online")]
         gui = []
 
         anchormin_x = 0.005
         anchormin_y = 0.91
         anchormax_x = 0.1
         anchormax_y = 0.95
-        for i, item in enumerate(menuItems):
+        for item in menuItems:
             anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
             anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
             Util.Log(str(anchormin))
             Util.Log(str(anchormax))
-            gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name=item, text=menuItems[i][0], parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
-            gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name=item, command=menuItems[i][1], parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(text=item[0], parent="TribeBgUI", color="1.0 0.9 0.9 0.95",  align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(command=item[1], parent="TribeBgUI", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
             anchormin_x += 0.1
             anchormax_x += 0.1
 
@@ -162,32 +161,80 @@ class CreateUI(InterfaceComponents):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
 
     def destroyOverlay(self, name):
+        Util.Log('destroying '+str(name))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
+
     def createPlayerView(self):
-
+        playerViewButtons = [('Online', 'tribeUI.players.online'), ('Offline', 'tribeUI.players.offline')]
         gui = []
-        anchormin_x = 0.005
-        anchormin_y = 0.85
-        anchormax_x = 0.1
-        anchormax_y = 0.89
 
-        #for pl in Server.ActivePlayers:
-        for pl in range(0, 10):
+        anchormin_x = 0.1
+        anchormin_y = 0.95
+        anchormax_x = 0.19
+        anchormax_y = 0.99
+
+        gui.append(self.componentUIImage("playerView", parent="TribeBgUI", color="0.1 0.1 0.1 0.25", anchormin="0.001 0.10", anchormax="0.999 0.88"))
+        # gui.append(self.componentUIText(text="TEST", parent="PlayerButtons", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin="0.0 0.0", anchormax="1.0 1.0"))
+        # gui.append(self.componentUIButton(command="TEST", parent="PlayerButtons", color="0.8 1.0 1.0 0.15"))
+
+
+        for i, button in enumerate(playerViewButtons):
+            anchormin = str(anchormin_x)+' '+str(anchormin_y)
+            anchormax = str(anchormax_x)+' '+str(anchormax_y)
+            gui.append(self.componentUIText(text=button[0], parent="playerView", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(command=button[1], parent="playerView", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
+            anchormin_x += 0.1
+            anchormax_x += 0.1
+
+
+        playerView = json.to_json(gui)
+        objectList = json.makepretty(playerView)
+
+        Util.Log(str(objectList))
+
+        self.createOverlay(objectList)
+
+
+    def createPlayerList(self, playerList):
+        '''
+        TODO
+        needs to accept list of players for pagination
+        :return:
+        '''
+
+        Util.Log('creating player list')
+        gui = []
+
+        gui.append(self.componentUIImage('playerList', parent="playerView", color="0.1 0.1 0.1 0.85", anchormin="0.001 0.1", anchormax="0.999 0.82"))
+
+        anchormin_x = 0.005
+        anchormin_y = 0.95
+        anchormax_x = 0.1
+        anchormax_y = 0.99
+
+        for i, pl in enumerate(playerList):
+            if i!=0  and i%20 == 0:
+                anchormin_x += 0.1
+                anchormin_y = 0.95
+                anchormax_x += 0.1
+                anchormax_y = 0.99
             anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
             anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
-            gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name="player "+str(pl), text="player "+str(pl), parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
-            gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name="player "+str(pl), command="player "+str(pl), parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(text="player "+str(pl), parent="playerList", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(command="player "+str(pl), parent="playerList", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
             # Util.Log(str(pl.Name))
-            #gui.append(self.componentUIText(color="1.0 0.9 0.9 0.95", name=pl.Name, text=pl.Name, parent="TribeBgUI", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
-            # gui.append(self.componentUIButton(color="0.8 1.0 1.0 0.15", name=pl.Name, command="tribe+pl.Name", parent="TribeBgUI", anchormin=anchormin, anchormax=anchormax))
+            #gui.append(self.componentUIText(text=pl.Name, parent="TribeBgUI", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            # gui.append(self.componentUIButton(ommand="tribe+pl.Name", parent="TribeBgUI", color="0.8 1.0 1.0 0.15", canchormin=anchormin, anchormax=anchormax))
             anchormin_y -= 0.05
             anchormax_y -= 0.05
 
         playerListUI = json.to_json(gui)
         objectList = json.makepretty(playerListUI)
 
-        Util.Log(str(objectList))
+        self.currentView = 'playerView'
+
+        #Util.Log(str(objectList))
 
         self.createOverlay(objectList)
 
@@ -201,7 +248,13 @@ class GTribes():
         self.overlays holds the overlay objects for reference
         :return:
         '''
+        # dict for holding overlays with playerID keys
         self.overlays = {}
+        
+        # lists of online  and offline players
+        self.onlinePlayers = range(0, 200)
+        self.offlinePlayers = range(200, 0, -1)
+        
 
     def On_Command(self, cmd):
         command = cmd.cmd
@@ -225,22 +278,36 @@ class GTribes():
             playerID = player.GameID
             Util.Log("detekcija")
 
-        if cce.cmd == 'tribe.create':
+        if cce.cmd == 'tribeUI.create':
             if playerID not in self.overlays.keys():
                 Util.Log("Creating overlay for "+ player.Name)
                 ui = CreateUI(player)
                 ui.makeBackground()
                 self.overlays[playerID] = ui
-        if cce.cmd == 'tribe.close':
+        if cce.cmd == 'tribeUI.close':
             if playerID in self.overlays.keys():
                 Util.Log('Destroying overlay for '+player.Name)
                 ui = self.overlays[playerID]
                 ui.destroyOverlay("TribeBgUI")
                 self.overlays.pop(playerID, None)
+                Util.Log(str(self.overlays.keys()))
 
-        if cce.cmd == 'tribe.players':
+
+        if cce.cmd == 'tribeUI.players.online':
             if playerID in self.overlays.keys():
                 ui = self.overlays[playerID]
-                if ui.currentView != 'Players':
+                if ui.currentView != 'playerView':
+                    Util.Log('destroying '+str(ui.currentView))
+                    ui.destroyOverlay(ui.currentView)
+                    ui.currentView = 'playerView'
                     ui.createPlayerView()
-                    ui.currentView = 'Players'
+                    ui.createPlayerList(self.onlinePlayers)
+
+        if cce.cmd == 'tribeUI.players.offline':
+            if playerID in self.overlays.keys():
+                ui = self.overlays[playerID]
+                if ui.currentView != 'playerView':
+                    Util.Log('destroying '+str(ui.currentView))
+                    ui.destroyOverlay(ui.currentView)
+                    ui.currentView = 'playerView'
+                    ui.createPlayerList(self.offlinePlayers)
