@@ -19,6 +19,8 @@ try:
 except ImportError:
     raise ImportError("LegacyBroadcast: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
 
+#CACHE PART
+
 
 class InterfaceComponents():
 
@@ -108,10 +110,8 @@ class InterfaceComponents():
 
 class CreateUI(InterfaceComponents):
     def __init__(self, player):
-        #self.UI = InterfaceComponents()
         self.player = player
         self.currentView = None
-
 
     def createOverlay(self, objectlist):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
@@ -153,14 +153,19 @@ class CreateUI(InterfaceComponents):
         anchormax_x = 0.1
         anchormax_y = 0.89
         for item in menuItems:
-            if item[0] == selection:
-                color = "1.0 0.3 0.3 0.95"
-            else:
-                color = "1.0 0.9 0.9 0.95"
             anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
             anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
+
+            if item[0] == selection:
+                color = "1.0 0.3 0.3 0.95"
+                #gui.append(self.componentUIText(text=item[0], parent="MainMenu", color=color,  align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            else:
+                color = "1.0 0.9 0.9 0.95"
             gui.append(self.componentUIText(text=item[0], parent="MainMenu", color=color,  align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command=item[1], parent="MainMenu", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
+
+
+
             anchormin_x += 0.1
             anchormax_x += 0.1
 
@@ -171,7 +176,7 @@ class CreateUI(InterfaceComponents):
         self.createOverlay(objectList)
 
     ###
-    # PLAYERS 7VIEW
+    # PLAYERS VIEW
     ###
 
     def createPlayersView(self, selection):
@@ -202,51 +207,18 @@ class CreateUI(InterfaceComponents):
         playersView = json.to_json(gui)
         objectList = json.makepretty(playersView)
 
-        #Util.Log(str(objectList))
 
         self.createOverlay(objectList)
 
 
-    def createPlayerList(self, playerList):
+    def createPlayerList(self, objectList):
         '''
-        TODO
-        needs to accept list of players for pagination
         :return:
         '''
 
         self.destroyOverlay('playerList')
         #Util.Log('creating player list')
-
-        gui = []
-
-        gui.append(self.componentUIImage('playerList', parent="playersView", color="0.1 0.1 0.1 0.90", anchormin="0.001 0.0", anchormax="0.999 0.93"))
-
-        anchormin_x = 0.002
-        anchormin_y = 0.955
-        anchormax_x = 0.097
-        anchormax_y = 0.995
-
-
-        for i, pl in enumerate(playerList):
-            if i!=0  and i%20 == 0:
-                anchormin_x += 0.1
-                anchormin_y = 0.955
-                anchormax_x += 0.1
-                anchormax_y = 0.995
-            anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
-            anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
-            gui.append(self.componentUIText(text=str(pl[1]), parent="playerList", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="9", anchormin=anchormin, anchormax=anchormax))
-            gui.append(self.componentUIButton(command="command", parent="playerList", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
-            anchormin_y -= 0.05
-            anchormax_y -= 0.05
-
-        playerListUI = json.to_json(gui)
-        objectList = json.makepretty(playerListUI)
-
         self.currentView = 'playersView'
-
-        #Util.Log(str(objectList))
-
         self.createOverlay(objectList)
 
     ###
@@ -268,7 +240,7 @@ class CreateUI(InterfaceComponents):
         self.createOverlay(objectList)
 
     ###
-    # TRIBE VIEW
+    # PLAYER VIEW
     ###
 
     def createPlayerView(self, selection):
@@ -323,7 +295,7 @@ class GameUI(InterfaceComponents):
 
         self.createOverlay(objectList)
 
-class GTribes():
+class GTribes(InterfaceComponents):
 
     def On_PluginInit(self):
         '''
@@ -332,10 +304,6 @@ class GTribes():
         '''
         # dict for holding overlays with playerID keys
         self.overlays = {}
-        #
-        # # lists of online  and offline players
-        # self.onlinePlayers = range(0, 200)
-        # self.offlinePlayers = range(200, 0, -1)
 
         self.defaultSelection = "Tribes"
 
@@ -348,6 +316,52 @@ class GTribes():
 
         for player in Server.OfflinePlayers.Values:
             self._addToOfflinePLayers(player)
+
+        self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers)
+        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers)
+
+    ###
+    ## CACHED DATA GENERATION
+    ###
+
+    def _playerListObject(self, playerList):
+        '''
+        :param playerList: list
+        :return: objectList for UI generation
+        '''
+
+
+        gui = []
+
+        gui.append(self.componentUIImage('playerList', parent="playersView", color="0.1 0.1 0.1 0.90", anchormin="0.001 0.0", anchormax="0.999 0.93"))
+
+        anchormin_x = 0.002
+        anchormin_y = 0.955
+        anchormax_x = 0.097
+        anchormax_y = 0.995
+
+        for i, pl in enumerate(playerList):
+            if i!=0  and i%20 == 0:
+                anchormin_x += 0.1
+                anchormin_y = 0.955
+                anchormax_x += 0.1
+                anchormax_y = 0.995
+            anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
+            anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
+            gui.append(self.componentUIText(text=str(pl[1]), parent="playerList", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="9", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIButton(command="command", parent="playerList", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
+            anchormin_y -= 0.05
+            anchormax_y -= 0.05
+
+        playerListUI = json.to_json(gui)
+        objectList = json.makepretty(playerListUI)
+
+        return objectList
+
+    ###
+    ## CACHED DATA GENERATION END
+    ###
+
 
 
     def createGUI(self, player, currentView, selection=None):
@@ -368,9 +382,9 @@ class GTribes():
             ui.makeMenu("Players")
             ui.createPlayersView(selection)
             if selection == 'Online':
-                ui.createPlayerList(self.onlinePlayers)
+                ui.createPlayerList(self.onlinePlayersObjectList)
             elif selection == 'Offline':
-                ui.createPlayerList(self.offlinePlayers)
+                ui.createPlayerList(self.offlinePlayersObjectList)
 
         elif currentView == "tribesView":
             ui.makeMenu("Tribes")
@@ -428,12 +442,12 @@ class GTribes():
         if command == 'gwho':
             self.createGUI(player, "playersView", "Online")
 
-        if command == 'create_interface!':
+        if command == 'ci!':
             for pl in Server.ActivePlayers:
                 int = GameUI(pl)
                 int.createButtons()
 
-        if command == 'destroy_interface!':
+        if command == 'di!':
             for pl in Server.ActivePlayers:
                 int = GameUI(pl)
                 int.destroyOverlay('TribeMenuButtons')
@@ -449,10 +463,14 @@ class GTribes():
     def On_PlayerConnected(self, player):
         self._addToOnlinePlayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
+        self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers)
+        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers)
 
     def On_PlayerDisconnected(self, player):
         self._addToOfflinePLayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
+        self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers)
+        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers)
         try:
             self.playersWithMenu.remove(player.SteamID)
         except:
