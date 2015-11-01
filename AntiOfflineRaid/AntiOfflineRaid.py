@@ -34,7 +34,7 @@ flagmark = [
             {
                 "type": "RectTransform",
                 "anchormin": "0.005 0.975",
-                "anchormax": "0.035 0.995"
+                "anchormax": "0.15 0.995"
             }
         ]
     },
@@ -52,7 +52,7 @@ flagmark = [
             {
                 "type": "RectTransform",
                 "anchormin": "0.005 0.005",
-                "anchormax": "0.995 0.995"
+                "anchormax": "0.15 0.995"
             }
         ]
     }
@@ -405,7 +405,7 @@ class AntiOfflineRaid():
         victim = pde.Victim
         if attacker and attacker != victim:
             if attacker.IsPlayer():
-                Server.Broadcast(victim.Name + " was killed by " + attacker.Name + " with a hit to his " + pde.HitBone)
+                Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon) + ", hit to victims " + pde.HitBone)
             else:
                 name = str(attacker.Name.split('/')[-1].split('.')[0])
                 Server.Broadcast(victim.Name + " was killed by " + name)

@@ -280,7 +280,7 @@ helpgui = [
             {
                 "type": "UnityEngine.UI.Button",
                 "close": "helpUI",
-                "command": "close.help",
+                "command": "help.close",
                 "color": "0.2 0.2 0.2 0.5"
             },
             {
@@ -302,6 +302,8 @@ helpJson = json.makepretty(string)
 class TribesHelp():
 
     def On_PluginInit(self):
+
+        self.showingPlayers = []
         self.aorHelp="ANTIOFFLINERAID\n\n" \
                      "The point of the AntiOfflineRaid system is, well, to prevent offline raid.\n" \
                      "Since it's one of the kind, you'll have to get to know how it works.\n\n" \
@@ -371,24 +373,24 @@ class TribesHelp():
         if cce.cmd != 'chat.say':
             player = cce.User
             playerID = player.SteamID
-            self.destroyGUI(player)
-            if cce.cmd == 'help.create':
-                self.createBG(player)
-                self.createGUI(player, self.aorHelp)
-        if cce.cmd == 'close.help':
+
+        if cce.cmd == 'help.create' and playerID not in self.showingPlayers:
+            self.createBG(player)
+            self.createGUI(player, self.aorHelp)
+            self.showingPlayers.append(playerID)
+
+        if cce.cmd == 'help.close':
             self.destroyBG(player)
             self.destroyGUI(player)
+            self.showingPlayers.remove(playerID)
+
         if cce.cmd == "help.aor":
-            self.curWindow = 'aorHelp'
             self.createGUI(player, self.aorHelp)
         if cce.cmd == "help.tribes":
-            self.curWindow = 'tribeHelp'
             self.createGUI(player, self.tribeHelp)
         if cce.cmd == "help.doors":
-            self.curWindow = 'doorHelp'
             self.createGUI(player, self.doorHelp)
         if cce.cmd == "help.server":
-            self.curWindow = 'serverHelp'
             self.createGUI(player, self.serverInfo)
 
 
@@ -397,7 +399,6 @@ class TribesHelp():
         player = cmd.User
 
         if command == 'help':
-            Util.Log(str(bgJson))
             self.createBG(player)
             self.createGUI(player, self.aorHelp)
 

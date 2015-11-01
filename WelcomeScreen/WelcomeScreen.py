@@ -208,10 +208,11 @@ welcomegui = [
 string = json.encode(welcomegui)
 broadcast = json.makepretty(string)
 
-
 class WelcomeScreen():
 
     def On_PluginInit(self):
+        self.thisSessionShown = []
+
         if DataStore.GetTable("SkipWelcome"):
             self.shown_players = DataStore.Get("SkipWelcome", "players")
         else:
@@ -228,9 +229,9 @@ class WelcomeScreen():
                        "\nFor any additional questions, feel free to ask in chat, someone will know the answer.\n" \
                        "\nHappy gaming!"
 
-    def On_PlayerLoaded(self, player):
-        if player.SteamID not in self.shown_players:
-             Util.Log("showing welcome")
+    def On_PlayerWakeUp(self, player):
+        if player.SteamID not in self.shown_players and player.SteamID not in self.thisSessionShown:
+             self.thisSessionShown.append(player.SteamID)
              CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
@@ -243,3 +244,7 @@ class WelcomeScreen():
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
         if cce.cmd == "welcome.dontshow":
             self.shown_players.append(player.SteamID)
+
+    def On_PlayerDisconnected(self, player):
+        if player.SteamID in self.thisSessionShown:
+            self.thisSessionShown.remove(player.SteamID)
