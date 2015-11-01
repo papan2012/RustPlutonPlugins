@@ -24,7 +24,6 @@ except ImportError:
 flagmark = [
     {
         "name": "flagui",
-        #"parent": "Overlay",
         "components":
         [
             {
@@ -88,6 +87,7 @@ class AntiOfflineRaid():
 
     def _createNotification(self, player):
         flagText = "Flaged "
+        Util.Log(str(player.Name))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(flagged.Replace("[TEXT]", flagText)))
 
     def _removeNotification(self, player):

@@ -363,35 +363,51 @@ class TribesHelp():
     def destroyBG(self, player):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("bgUI"))
 
-    def createGUI(self, player, text):
+    def createGUI(self, player, text, curWindow):
+        self.destroyGUI(player, curWindow)
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(helpJson.Replace("[TEXT]", text)))
 
-    def destroyGUI(self, player):
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("helpUI"))
+    def destroyGUI(self, player, curWindow):
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(curWindow))
 
     def On_ClientConsole(self, cce):
-        if cce.cmd != 'chat.say':
+
+        commands = ['help.create', 'help.close', 'help.tribes', 'help.doors', 'help.server']
+        if cce.cmd in commands:
             player = cce.User
             playerID = player.SteamID
 
-        if cce.cmd == 'help.create' and playerID not in self.showingPlayers:
-            self.createBG(player)
-            self.createGUI(player, self.aorHelp)
-            self.showingPlayers.append(playerID)
+            if cce.cmd == 'help.create' and playerID not in self.showingPlayers:
+                self.destroyGUI(player, "helpUI")
+                self.createBG(player)
+                self.curWindow = 'AOR'
+                self.createGUI(player, self.aorHelp, self.curWindow)
+                self.showingPlayers.append(playerID)
 
-        if cce.cmd == 'help.close':
-            self.destroyBG(player)
-            self.destroyGUI(player)
-            self.showingPlayers.remove(playerID)
+            if cce.cmd == 'help.close':
+                self.destroyBG(player)
+                self.destroyGUI(player, "helpUI")
+                try:
+                    self.showingPlayers.remove(playerID)
+                except:
+                    pass
 
-        if cce.cmd == "help.aor":
-            self.createGUI(player, self.aorHelp)
-        if cce.cmd == "help.tribes":
-            self.createGUI(player, self.tribeHelp)
-        if cce.cmd == "help.doors":
-            self.createGUI(player, self.doorHelp)
-        if cce.cmd == "help.server":
-            self.createGUI(player, self.serverInfo)
+            if cce.cmd == "help.aor":
+                self.destroyGUI(player, "helpUI")
+                self.curWindow = 'AOR'
+                self.createGUI(player, self.aorHelp, self.curWindow)
+            if cce.cmd == "help.tribes":
+                self.destroyGUI(player, "helpUI")
+                self.curWindow = 'Tribes'
+                self.createGUI(player, self.tribeHelp, self.curWindow)
+            if cce.cmd == "help.doors":
+                self.destroyGUI(player, "helpUI")
+                self.curWindow = 'Door System'
+                self.createGUI(player, self.doorHelp, self.curWindow)
+            if cce.cmd == "help.server":
+                self.destroyGUI(player, "helpUI")
+                self.curWindow = 'Server Info'
+                self.createGUI(player, self.serverInfo, self.curWindow)
 
 
     def On_Command(self, cmd):
@@ -399,6 +415,7 @@ class TribesHelp():
         player = cmd.User
 
         if command == 'help':
+            self.curWindow = 'AOR'
             self.createBG(player)
-            self.createGUI(player, self.aorHelp)
+            self.createGUI(player, self.aorHelp, self.curWindow)
 

@@ -146,7 +146,7 @@ class CreateUI(InterfaceComponents):
 
         self.destroyOverlay("MainMenu")
 
-        gui.append(self.componentUIImage("MainMenu", parent="TribeBgUI", color="1.0 0.2 0.2 0.05", anchormin="0.0 0.89", anchormax="0.999 0.96"))
+        gui.append(self.componentUIImage("MainMenu", parent="TribeBgUI", color="0.6 0.2 0.2 0.05", anchormin="0.0 0.89", anchormax="0.999 0.96"))
 
         anchormin_x = 0.005
         anchormin_y = 0.1
@@ -256,6 +256,35 @@ class CreateUI(InterfaceComponents):
     def createTribesView(self, selection):
         self.destroyOverlay(self.currentView)
 
+        gui = []
+
+        gui.append(self.componentUIImage('tribeView', parent="TribeBgUI", color="0.1 0.1 0.1 0.90", anchormin="0.000 0.08", anchormax="0.999 0.88"))
+        gui.append(self.componentUIText(text="This is Tribe info panel. It's under development, will be implementation soon.", parent="tribeView", color="1.0 0.9 0.9 0.95", fontSize="16", anchormin="0.001 0.0", anchormax="0.999 0.93"))
+        playerListUI = json.to_json(gui)
+        objectList = json.makepretty(playerListUI)
+
+        self.currentView = 'tribeView'
+
+        self.createOverlay(objectList)
+
+    ###
+    # TRIBE VIEW
+    ###
+
+    def createPlayerView(self, selection):
+        self.destroyOverlay(self.currentView)
+
+        gui = []
+
+        gui.append(self.componentUIImage('tribeView', parent="TribeBgUI", color="0.1 0.1 0.1 0.90", anchormin="0.000 0.08", anchormax="0.999 0.88"))
+        gui.append(self.componentUIText(text="This is You info panel. It's under development, will be implementation soon.", parent="tribeView", color="1.0 0.9 0.9 0.95", fontSize="16", anchormin="0.001 0.0", anchormax="0.999 0.93"))
+        playerListUI = json.to_json(gui)
+        objectList = json.makepretty(playerListUI)
+
+        self.currentView = 'tribeView'
+
+        self.createOverlay(objectList)
+
 
 class GameUI(InterfaceComponents):
 
@@ -270,7 +299,7 @@ class GameUI(InterfaceComponents):
         #Util.Log('destroying '+str(name))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
-    def CreateButtons(self):
+    def createButtons(self):
         buttons = [("Tribes", 'tribeUI.tribes'), ("Players", 'tribeUI.players.online'), ("Help", 'help.create')]
 
         gui = []
@@ -293,7 +322,6 @@ class GameUI(InterfaceComponents):
         objectList = json.makepretty(playerListUI)
 
         self.createOverlay(objectList)
-
 
 class GTribes():
 
@@ -348,6 +376,10 @@ class GTribes():
             ui.makeMenu("Tribes")
             ui.createTribesView(selection)
 
+        elif currentView == "playerStatistics":
+            ui.makeMenu("You")
+            ui.createPlayerView(selection)
+
 
     def destroyGUI(self, player):
         ui = self.overlays[player.SteamID]
@@ -362,25 +394,30 @@ class GTribes():
         :param cce:
         :return:
         '''
-        if cce.cmd != 'chat.say':
+
+        commands = ['tribeUI.create', 'tribeUI.close', 'tribeUI.tribes', 'tribeUI.players.online', 'tribeUI.players.offline', 'tribeUI.you']
+        if cce.cmd in commands:
             player = cce.User
             playerID = player.GameID
-            Util.Log("detekcija " + str(cce.cmd))
+            Util.Log(str(player.Name)+"detekcija " + str(cce.cmd))
 
-        if cce.cmd == 'tribeUI.create':
-            self.createGUI(player, "playersView", "Online")
+            if cce.cmd == 'tribeUI.create':
+                self.createGUI(player, "playersView", "Online")
 
-        if cce.cmd == 'tribeUI.close':
-            self.destroyGUI(player)
+            if cce.cmd == 'tribeUI.close':
+                self.destroyGUI(player)
 
-        if cce.cmd == 'tribeUI.tribes':
-            self.createGUI(player, "tribesView", "selection")
+            if cce.cmd == 'tribeUI.tribes':
+                self.createGUI(player, "tribesView", "selection")
 
-        if cce.cmd == 'tribeUI.players.online':
-            self.createGUI(player, "playersView", "Online")
+            if cce.cmd == 'tribeUI.players.online':
+                self.createGUI(player, "playersView", "Online")
 
-        if cce.cmd == 'tribeUI.players.offline':
-            self.createGUI(player, "playersView", "Offline")
+            if cce.cmd == 'tribeUI.players.offline':
+                self.createGUI(player, "playersView", "Offline")
+
+            if cce.cmd == 'tribeUI.you':
+                self.createGUI(player, "playerStatistics", "selection")
 
 
     def On_Command(self, cmd):
@@ -391,14 +428,19 @@ class GTribes():
         if command == 'gwho':
             self.createGUI(player, "playersView", "Online")
 
-        if command == 'create_interface':
+        if command == 'create_interface!':
             for pl in Server.ActivePlayers:
                 int = GameUI(pl)
-                int.CreateButtons()
+                int.createButtons()
+
+        if command == 'destroy_interface!':
+            for pl in Server.ActivePlayers:
+                int = GameUI(pl)
+                int.destroyOverlay('TribeMenuButtons')
 
         if command == 'showMenu':
             int = GameUI(player)
-            int.CreateButtons()
+            int.createButtons()
 
         if command == 'hideMenu':
             int = GameUI(player)
@@ -420,7 +462,7 @@ class GTribes():
         if player.SteamID not in self.playersWithMenu:
             self.playersWithMenu.append(player.SteamID)
             int = GameUI(player)
-            int.CreateButtons()
+            int.createButtons()
 
 
     def _addToOnlinePlayers(self, player):
