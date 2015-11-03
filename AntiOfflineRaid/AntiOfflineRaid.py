@@ -75,6 +75,9 @@ class AntiOfflineRaid():
         self.tribeDiscPlayers = {}
         self.reFlag = True # used to avoid extra checks, timers extends in check one per minute
 
+        self.ownerCheckTools = ("Stone Hatchet", "Hatchet")
+        self.buildingOwnerInfo = []
+
     def loadIniSettings(self):
         if not Plugin.IniExists("settings"):
             Plugin.CreateIni("settings")
@@ -100,6 +103,28 @@ class AntiOfflineRaid():
 
         if playerData['tribe'] != 'Survivors':
             self.tribereAgress[playerData['tribe']] = reAgressTime
+
+    def On_BeingHammered(self, he):
+        '''
+        this is a dirty workaround
+        '''
+        if he.Victim.baseEntity.GetType().ToString() == "BuildingBlock":
+            player = he.Player
+            location = he.Victim.Location
+            victimID = DataStore.Get("BuildingPartOwner", location)
+            if not victimID:
+                if player.Name == 'PanDevas':
+                    player.Message("building was not found")
+                # else:
+                #     DataStore.Add("BuildingPartOwner", location, player.SteamID)
+            if victimID and player.SteamID in self.buildingOwnerInfo:
+                victimID = DataStore.Get("BuildingPartOwner", location)
+                victim = Server.FindPlayer(victimID).Name
+                if not victim:
+                    for pl in Server.SleepingPlayers:
+                        if pl.SteamID == victimID:
+                            victim = pl.Name
+                player.Message("This building belongs to "+str(victim))
 
 
     def On_CombatEntityHurt(self, HurtEvent):
@@ -132,6 +157,9 @@ class AntiOfflineRaid():
             # victimID check for database debuging
             if not victimID:
                 Util.Log("AOR: Victim not found "+str(victimLocation))
+            # elif attackerID in self.buildingOwnerInfo:
+            #     if HurtEvent.Weapon.Name in self.ownerCheckTools:
+            #         attacker.Message("This building belongs to "+str(Server.FindPlayer(victimID).Name))
 
             # trying to reduce checks for reflag to once every minute
             # for now only checks reagression, maybe extand to count from first aggression
@@ -153,6 +181,7 @@ class AntiOfflineRaid():
                 damageAmounts = HurtEvent.DamageAmounts
 
                 self.checkTribeBeforeFlag(attackerID)
+
                 if self.protectForOffline(victimID) and not self.tribeConditions(victimID):
                     for i, d in enumerate(damageAmounts):
                         if damageAmounts[i] != 0.0:
@@ -398,14 +427,19 @@ class AntiOfflineRaid():
                     self.flaggedPlayers.remove(playerID)
                     Util.Log("Clearing all flags!")
                     self._removeNotification(player)
-                    self.reAgress.pop(playerID)
+                    self.reAgress.pop(playerID, None)
+        if command == 'owner':
+            if player.SteamID not in self.buildingOwnerInfo:
+                self.buildingOwnerInfo.append(player.SteamID)
+            else:
+                self.buildingOwnerInfo.remove(player.SteamID)
 
     def On_PlayerDied(self, pde):
         attacker = pde.Attacker
         victim = pde.Victim
         if attacker and attacker != victim:
             if attacker.IsPlayer():
-                Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon) + ", hit to victims " + pde.HitBone)
+                Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon.Name) + ", with a hit to " + pde.HitBone)
             else:
                 name = str(attacker.Name.split('/')[-1].split('.')[0])
                 Server.Broadcast(victim.Name + " was killed by " + name)

@@ -120,7 +120,7 @@ welcomegui = [
             {
                 "type": "UnityEngine.UI.Button",
                 "close": "welcomeUI",
-                "command": "help.create",
+                "command": "tribeUI.help.tribes",
                 "color": "0.2 0.2 0.2 0.7"
             },
             {

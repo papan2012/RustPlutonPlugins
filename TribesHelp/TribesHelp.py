@@ -372,7 +372,7 @@ class TribesHelp():
 
     def On_ClientConsole(self, cce):
 
-        commands = ['help.create', 'help.close', 'help.tribes', 'help.doors', 'help.server']
+        commands = ['help.create', 'help.close','help.aor','help.tribes', 'help.doors', 'help.server']
         if cce.cmd in commands:
             player = cce.User
             playerID = player.SteamID
@@ -392,7 +392,7 @@ class TribesHelp():
                 except:
                     pass
 
-            if cce.cmd == "help.aor":
+            if cce.cmd == 'help.aor':
                 self.destroyGUI(player, "helpUI")
                 self.curWindow = 'AOR'
                 self.createGUI(player, self.aorHelp, self.curWindow)

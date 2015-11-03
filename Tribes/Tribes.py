@@ -383,3 +383,4 @@ class Tribes:
     def On_PlayerDisconnected(self, player):
         con_player = PlayerData(player)
         con_player.playerData['lastonline'] = time.time()
+        Server.Broadcast(player.Name+" disconnected.")
