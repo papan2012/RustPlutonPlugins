@@ -303,7 +303,7 @@ class Tribes:
     def kickFromTribe(self, cmd):
         creator = cmd.User
         kickPlayerName = ' '.join((cmd.args)[0:])
-        roninTribe = TribeData("Survivors")
+        survivorTribe = TribeData("Survivors")
         creatorD = PlayerData(creator)
         tribeName = creatorD.playerData['tribe']
         creatorTD = TribeData(tribeName)
@@ -328,7 +328,7 @@ class Tribes:
             elif kickPlayer.SteamID in creatorTD.tribeData['tribeMembers']:
                 kickPlayer.MessageFrom("Tribes", "You have been kicked from tribe "+tribeName)
                 creatorTD.removeMember(kickPlayer.SteamID)
-                roninTribe.addMember(kickPlayer.SteamID)
+                survivorTribe.addMember(kickPlayer.SteamID)
                 kickPlayerD.playerData['tribe'] = 'Survivors'
             else:
                 creator.MessageFrom("Tribes", "Member "+kickPlayerName +" is not part of the tribe")
@@ -372,7 +372,6 @@ class Tribes:
     def On_PlayerConnected(self, player):
         con_player = PlayerData(player)
         con_player.playerData['lastonline'] = time.time()
-        Server.Broadcast(player.Name+" connected.")
         #chek if player name has changed
         if con_player.playerData['name'] != player.Name:
             con_player.playerData['name'] = player.Name
@@ -383,4 +382,3 @@ class Tribes:
     def On_PlayerDisconnected(self, player):
         con_player = PlayerData(player)
         con_player.playerData['lastonline'] = time.time()
-        Server.Broadcast(player.Name+" disconnected.")

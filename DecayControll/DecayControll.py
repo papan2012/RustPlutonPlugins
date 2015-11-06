@@ -14,7 +14,7 @@ import time
 class DecayControll():
 
     def On_PluginInit(self):
-        self.scale = 0.2
+        self.scale = 0.25
 
     def On_CombatEntityHurt(self, HurtEvent):
         if str(HurtEvent.DamageType) == 'Decay':

@@ -116,9 +116,11 @@ class CreateUI(InterfaceComponents):
         self.selection = None
 
     def createOverlay(self, objectlist):
+        #Util.Log(str(objectlist))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
 
     def destroyOverlay(self, name, line):
+        Util.Log("destroying "+str(line))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
     def makeBackground(self, objectList):
@@ -158,7 +160,7 @@ class CreateUI(InterfaceComponents):
 
         gui = []
 
-        gui.append(self.componentUIImage('playerStats', parent="TribeBgUI", color="0.1 0.1 0.1 0.90", anchormin="0.000 0.08", anchormax="0.999 0.88"))
+        gui.append(self.componentUIImage('playerStats', parent="TribeBgUI", color="0.1 0.1 0.1 0.90", anchormin="0.0 0.08", anchormax="0.999 0.88"))
         gui.append(self.componentUIText(text="This is where you'll find your stats. It's under development, and it will be implementation soon (TM).", parent="playerStats", color="1.0 0.9 0.9 0.95", fontSize="16", align="MiddleCenter", anchormin="0.001 0.0", anchormax="0.999 0.93"))
         playerListUI = json.to_json(gui)
         objectList = json.makepretty(playerListUI)
@@ -260,7 +262,7 @@ class cachedMenuData(InterfaceComponents):
         ##Util.Log("making background")
         gui = []
         #bg
-        gui.append(self.componentUIImage("TribeBgUI", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.889 0.955", needsCursor=True))
+        gui.append(self.componentUIImage("TribeBgUI", parent="HUD", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.889 0.955", needsCursor=True))
         #toptray
         gui.append(self.componentUIImage("toptray", parent="TribeBgUI", color="0.2 0.2 0.2 0.35", anchormin="0.0 0.97", anchormax="1.0 1.0"))
         # toptitle
@@ -478,7 +480,7 @@ class cachedMenuData(InterfaceComponents):
                 color = "1.0 0.9 0.9 0.95"
             anchormin = str(anchormin_x)+' '+str(anchormin_y)
             anchormax = str(anchormax_x)+' '+str(anchormax_y)
-            gui.append(self.componentUIText(text=button[0], parent="helpView", color=color, align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(text=button[0], parent="helpView", color=color, align="MiddleCenter", fontSize="13", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command=button[1], parent="helpView", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
             anchormin_x += 0.1
             anchormax_x += 0.1
@@ -542,10 +544,11 @@ class cachedMenuData(InterfaceComponents):
                       "If you need some privacy, put code locks on chests. \n" \
                       "That will prevent anyone opening them without the code.\n\n",
         'tribeUI.help.server':"SERVER INNFO\n\n" \
-                        " - decay lowered to 20% effectiveness\n" \
-                        " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n" \
+                        " - decay lowered to 25% effectiveness\n" \
+                        " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n\n" \
+                        "If you wannt to hide the top menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n" \
                         "\n\n\nIf you got any questions, ask in chat, someone will know the answer.\n" \
-                        "For any problems with the server plugins, contact Pan Devas.\n" \
+                        "For any problems with the server plugins, contact the server owner, or plugin developer, Pan Devas on Steam.\n" \
                         "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information."}
 
         gui = []
@@ -580,20 +583,21 @@ class GameUI(InterfaceComponents):
         buttons = [("Tribes", 'tribeUI.tribes'), ("Players", 'tribeUI.players.online'), ("Help", 'tribeUI.help.tribes')]
 
         gui = []
-        gui.append(self.componentUIImage('TribeMenuButtons', color="0.1 0.1 0.1 0.50", anchormin="0.0 0.975", anchormax="0.999 0.999"))
-        anchormin_x = 0.152
+        gui.append(self.componentUIImage('TribeMenuButtons', parent="HUD", color="0.1 0.1 0.1 0.50", anchormin="0.0 0.005", anchormax="0.29 0.06"))
+        anchormin_x = 0.01
         anchormin_y = 0.01
-        anchormax_x = 0.250
+        anchormax_x = 0.2
         anchormax_y = 0.99
         for button in buttons:
             anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
             anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
             gui.append(self.componentUIText(text=button[0], parent="TribeMenuButtons", color="1.0 1.0 1.0 0.8",  align="MiddleCenter", fontSize="13", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command=button[1], parent="TribeMenuButtons", color="0.8 0.8 0.9 0.35", anchormin=anchormin, anchormax=anchormax))
-            anchormin_x += 0.1
+            anchormin_x += 0.2
             anchormin_y = 0.01
-            anchormax_x += 0.1
+            anchormax_x += 0.2
             anchormax_y = 0.99
+        gui.append(self.componentUIText(text="Menu is a bit broken after patch, WIP", parent="TribeMenuButtons", color="0.7 0.1 0.1 0.7", align="MiddleCenter", anchormin="0.6 0.01", anchormax="1.0 0.999"))
 
         playerListUI = json.to_json(gui)
         objectList = json.makepretty(playerListUI)
@@ -654,8 +658,8 @@ class GTribes(cachedMenuData):
 
         if ui.selection != selection or ui.currentView != currentView:
             #
-            # Util.Log('view '+currentView)
-            # Util.Log('selection'+str(selection))
+            Util.Log('view '+currentView)
+            Util.Log('selection'+str(selection))
             if ui.currentView != currentView and ui.currentView != None:
                 ui.destroyOverlay(ui.currentView, 536)
             if ui.selection != selection or ui.selection != None:
@@ -695,7 +699,7 @@ class GTribes(cachedMenuData):
 
     def destroyGUI(self, player):
         ui = self.overlays[player.SteamID]
-        ui.destroyOverlay("TribeBgUI",572)
+        ui.destroyOverlay("TribeBgUI",702)
         ui.currentView = None
         self.overlays.pop(player.SteamID, None)
 
@@ -777,14 +781,16 @@ class GTribes(cachedMenuData):
 
         if command == 'showmenu':
             int = GameUI(player)
+            self.playersWithMenu.append(pl.SteamID)
             int.createButtons()
 
         if command == 'hidemenu':
             int = GameUI(player)
+            self.playersWithMenu.remove(pl.SteamID)
             int.destroyOverlay('TribeMenuButtons')
 
-        # if command == 'test':
-        #     Util.Log(str(self.playersWithMenu))
+        if command == 'test':
+             Util.Log(str(self.playersWithMenu))
 
         if command in tribeDataRefreshCommands:
             self._getTribeData('Tribes')
@@ -794,12 +800,14 @@ class GTribes(cachedMenuData):
 
 
     def On_PlayerConnected(self, player):
+        Server.Broadcast(player.Name+" connected.")
         self._addToOnlinePlayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
 
     def On_PlayerDisconnected(self, player):
+        Server.Broadcast(player.Name+" is now sleeping.")
         self._addToOfflinePLayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
