@@ -262,7 +262,7 @@ class cachedMenuData(InterfaceComponents):
         ##Util.Log("making background")
         gui = []
         #bg
-        gui.append(self.componentUIImage("TribeBgUI", parent="HUD", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.889 0.955", needsCursor=True))
+        gui.append(self.componentUIImage("TribeBgUI", parent="Top", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.889 0.955", needsCursor=True))
         #toptray
         gui.append(self.componentUIImage("toptray", parent="TribeBgUI", color="0.2 0.2 0.2 0.35", anchormin="0.0 0.97", anchormax="1.0 1.0"))
         # toptitle

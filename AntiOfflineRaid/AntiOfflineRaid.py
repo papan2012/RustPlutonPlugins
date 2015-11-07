@@ -24,16 +24,17 @@ except ImportError:
 flagmark = [
     {
         "name": "flagui",
+        "parent": "Overlay",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Image",
-                "color": "0.1 0.1 0.1 0.3",
+                "color": "0.1 0.1 0.1 0.5",
             },
             {
                 "type": "RectTransform",
                 "anchormin": "0.005 0.975",
-                "anchormax": "0.15 0.995"
+                "anchormax": "0.05 0.995"
             }
         ]
     },
@@ -51,7 +52,7 @@ flagmark = [
             {
                 "type": "RectTransform",
                 "anchormin": "0.005 0.005",
-                "anchormax": "0.15 0.995"
+                "anchormax": "0.99 0.995"
             }
         ]
     }
@@ -89,7 +90,6 @@ class AntiOfflineRaid():
 
     def _createNotification(self, player):
         flagText = "Flaged "
-        Util.Log(str(player.Name))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(flagged.Replace("[TEXT]", flagText)))
 
     def _removeNotification(self, player):
@@ -133,22 +133,6 @@ class AntiOfflineRaid():
             # victimID check for database debuging
             if not victimID:
                 Util.Log("AOR: Victim not found "+str(victimLocation))
-            # elif attackerID in self.buildingOwnerInfo:
-            #     if HurtEvent.Weapon.Name in self.ownerCheckTools:
-            #         attacker.Message("This building belongs to "+str(Server.FindPlayer(victimID).Name))
-
-            # trying to reduce checks for reflag to once every minute
-            # for now only checks reagression, maybe extand to count from first aggression
-            #Moram odvojiti za attackera i victim
-      #       if attackerID in self.reAgress.keys() and victimID in self.reAgress.keys():
-      # #          Util.Log(" time: " +str(time.time() - self.reAgress[attackerID]))
-      #           if (time.time() - self.reAgress[attackerID]) < 60000 and (time.time() - self.reAgress[victimID]) < 60000:
-      #               self.reFlag = False
-      #       else:
-      #           self.reFlag = True
-      #           Util.Log('reflag')
-            #uncomment condition below to see the speed advantage
-            #Util.Log(str(dontreFlag))
 
             if (attackerID and victimID) and (attackerID != victimID) and (not self.victInAttTribe(attackerID, victimID)):
                 victimData = DataStore.Get('Players', victimID)
@@ -177,16 +161,12 @@ class AntiOfflineRaid():
             if attacker and attacker.IsPlayer() and victim.IsPlayer():
                 attackerID = attacker.SteamID
                 victimID = victim.SteamID
-                #Util.Log("Player "+attacker.Name+" is attacking "+victim.Name)
                 if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                     if not self.checkPVPFlag(attackerID):
                         self.checkTribeBeforeFlag(attackerID)
                     if not self.checkPVPFlag(victimID) and Server.FindPlayer(victimID):
                         self.checkTribeBeforeFlag(victimID)
-        # # performance test
-        # now = time.time()
-        # Util.Log("On_PlayerHurt took "+str(now-self.now))
-        # # performance test end
+
 
     def victInAttTribe(self, attackerID, victimID):
         attackerD = DataStore.Get("Players", attackerID)
@@ -330,7 +310,6 @@ class AntiOfflineRaid():
                 self.flagPlayerPVP(playerID, timeDiff)
             else:
                 timer.Kill()
-                #Util.Log("Killing timer for player "+playerName)
                 player = Server.FindPlayer(playerID)
                 self.flaggedPlayers.remove(playerID)
                 if player:
@@ -342,12 +321,10 @@ class AntiOfflineRaid():
             tribe = playerD['tribe']
             timeDiff = now - self.tribereAgress[tribe]
             if timeDiff < self.timerLenght:
-                #Util.Log("reflaging tribe member")
                 timer.Kill()
                 self.reAgress.pop(playerID, None)
                 self.flagPlayerPVP(playerID, int(timeDiff))
             else:
-                #Util.Log("killing tribe timer")
                 timer.Kill()
                 self.flaggedPlayers.remove(playerID)
                 if player:
@@ -370,40 +347,41 @@ class AntiOfflineRaid():
         playerID = data['playerID']
         self.notifiedPlayers.remove(playerID)
 
-
     def On_Command(self, cmd):
         player = cmd.User
         command = cmd.cmd
         args = str.join(' ', cmd.args)
+        commands = ('flag', 'flags', 'aor', 'clearflags1')
 
-        if command == 'flag':
-            if self.checkPVPFlag(player.SteamID):
-                player.MessageFrom("AOR", "You are flagged, your buildings won't be protected if you go offline while you're flagged!")
-            else:
-                player.MessageFrom("AOR", "You are not flagged")
+        if command in commands:
+            if command == 'flag':
+                if self.checkPVPFlag(player.SteamID):
+                    player.MessageFrom("AOR", "You are flagged, your buildings won't be protected if you go offline while you're flagged!")
+                else:
+                    player.MessageFrom("AOR", "You are not flagged")
 
-        if command == 'flags':
-            players = []
-            for playerID in self.flaggedPlayers:
-                player = Server.FindPlayer(playerID)
-                players.append(player.Name)
-            Util.Log(str(players))
+            if command == 'flags':
+                players = []
+                for playerID in self.flaggedPlayers:
+                    player = Server.FindPlayer(playerID)
+                    players.append(player.Name)
+                Util.Log(str(players))
 
-        if command == 'aor':
-            player.Message("Antiraid system works in the following way:")
-            player.Message("When you go offline, your buildings are protected for 24 hours from player damage.")
-            player.Message("If you attack or someone attacks you or your buildings, you'll be flagged for 15 minutes.")
-            player.Message("If you're flagged for pvp, and you log off, your buildings will not be protected for the next 15 minutes.")
-            player.Message("Type /flag to see if you are flagged.")
+            if command == 'aor':
+                player.Message("Antiraid system works in the following way:")
+                player.Message("When you go offline, your buildings are protected for 24 hours from player damage.")
+                player.Message("If you attack or someone attacks you or your buildings, you'll be flagged for 15 minutes.")
+                player.Message("If you're flagged for pvp, and you log off, your buildings will not be protected for the next 15 minutes.")
+                player.Message("Type /flag to see if you are flagged.")
 
-        if command == 'clearflags1':
-            for playerID in self.flaggedPlayers:
-                player = Server.FindPlayer(playerID)
-                if player:
-                    self.flaggedPlayers.remove(playerID)
-                    Util.Log("Clearing all flags!")
-                    self._removeNotification(player)
-                    self.reAgress.pop(playerID, None)
+            if player.Name == 'PanDevas' and command == 'clearflags1':
+                for playerID in self.flaggedPlayers:
+                    player = Server.FindPlayer(playerID)
+                    if player:
+                        self.flaggedPlayers.remove(playerID)
+                        Util.Log("Clearing all flags!")
+                        self._removeNotification(player)
+                        self.reAgress.pop(playerID, None)
 
 
     def On_PlayerDied(self, pde):

@@ -98,5 +98,11 @@ class TribesDebugger():
             else:
                 print "No tribes found"
 
+        if command == "fixcortez":
+            player = Server.FindPlayer("COrt3z")
+            playerID = player.SteamID
+            playerD = DataStore.Get("Players", playerID)
+            playerD['tribe'] = "Survivors"
+
         if command == 'savedata':
             DataStore.Save()

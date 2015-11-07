@@ -240,7 +240,7 @@ class Tribes:
             elif playerR.playerData['tribe'] == 'Survivors':
                 playerr.MessageFrom("Tribes", "You are not in a tribe.")
             else:
-                playerr.MessageFrom("Tribes", "Player"+ playeri.Name+ "\" invited!")
+                playerr.MessageFrom("Tribes", "Player "+ playeri.Name+ "\" invited!")
                 playeri.MessageFrom("Tribes", playerr.Name+" invited you to his tribe \"" + playerR.playerData['tribe']+"\"")
                 playerI.playerData['pendingInvites'] = playerR.playerData['tribe']
 

@@ -14,54 +14,54 @@ class BuildingOwner():
     Mozda cu trebati podesiti cesci save zbog building checka u antiofflineraid pluginu
     '''
     def __init__(self):
-        self.skipRemoveForTypes = ["Door"]
+        self.admin = 'PanDevas'
+        self.skipRemoveForTypes = ["door", 'pillar']
         self.buildingOwnerInfo = []
 
     def On_ServerSaved(self):
         DataStore.Save()
         Server.Broadcast("Server saved.")
 
-    def On_PluginInit(self):
-        Util.Log("Plutin BuildingOwner Initialized!")
-
     def On_Placement(self, buildingpart):
         player = buildingpart.Builder
         location = buildingpart.BuildingPart.Location
+        locationCheck = DataStore.Get("BuildingPartOwner", location)
+        if locationCheck:
+            player.Message("Building already in datastore")
+
         DataStore.Add("BuildingPartOwner", location, player.SteamID)
-        Util.Log("Building Added to datastore "+str(location) + str(player.SteamID))
+
 
     def On_BuildingPartDemolished(self, bpde):
         self.removeFromDatastore(bpde)
 
     def On_BuildingPartDestroyed(self, bpde):
         self.removeFromDatastore(bpde)
-        # location = bpde.BuildingPart.Location
-        # DataStore.Remove("BuildingPartOwner", location)
-        # Util.Log("Building removed "+str(location))
+
 
     def removeFromDatastore(self, bpde):
-        objectRemove = bpde.BuildingPart.baseEntity.GetType().ToString()
+        bpdeEntitiName = bpde.BuildingPart.baseEntity.LookupShortPrefabName().split('.')[0]
         location = bpde.BuildingPart.Location
 
-        if objectRemove not in self.skipRemoveForTypes:
-            Util.Log("Building removed "+str(location))
+        if bpdeEntitiName not in self.skipRemoveForTypes:
             DataStore.Remove("BuildingPartOwner", location)
-        Util.Log("Building still in datastore? "+str(DataStore.Get("BuildingPartOwner", location)))
+
 
     def On_BeingHammered(self, he):
         '''
-        this is a dirty workaround
+        this is a dirty workaround and a helper function
         '''
         getOwnerObjects = ["BuildingBlock", "Door"]
+
         if he.Victim.baseEntity.GetType().ToString() in getOwnerObjects:
             player = he.Player
             location = he.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", location)
             if not victimID:
-                if player.Name == 'PanDevas':
+                if player.Name == self.admin:
                     player.Message("building was not found")
-                # else:
-                #     DataStore.Add("BuildingPartOwner", location, player.SteamID)
+                else:
+                    DataStore.Add("BuildingPartOwner", location, player.SteamID)
             if victimID and player.SteamID in self.buildingOwnerInfo:
                 victimID = DataStore.Get("BuildingPartOwner", location)
                 victim = Server.FindPlayer(victimID)
