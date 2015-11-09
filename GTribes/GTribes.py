@@ -116,11 +116,9 @@ class CreateUI(InterfaceComponents):
         self.selection = None
 
     def createOverlay(self, objectlist):
-        #Util.Log(str(objectlist))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
 
     def destroyOverlay(self, name, line):
-        Util.Log("destroying "+str(line))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
     def makeBackground(self, objectList):
@@ -262,7 +260,7 @@ class cachedMenuData(InterfaceComponents):
         ##Util.Log("making background")
         gui = []
         #bg
-        gui.append(self.componentUIImage("TribeBgUI", parent="Top", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.889 0.955", needsCursor=True))
+        gui.append(self.componentUIImage("TribeBgUI", parent="HUD/Overlay", color="0.1 0.1 0.1 0.85", anchormin="0.105 0.165", anchormax="0.889 0.955", needsCursor=True))
         #toptray
         gui.append(self.componentUIImage("toptray", parent="TribeBgUI", color="0.2 0.2 0.2 0.35", anchormin="0.0 0.97", anchormax="1.0 1.0"))
         # toptitle
@@ -304,6 +302,8 @@ class cachedMenuData(InterfaceComponents):
                 color = "1.0 0.9 0.9 0.95"
             gui.append(self.componentUIText(text=item[0], parent="MainMenu", color=color,  align="MiddleCenter", fontSize="16", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command=item[1], parent="MainMenu", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
+
+
 
 
 
@@ -583,7 +583,7 @@ class GameUI(InterfaceComponents):
         buttons = [("Tribes", 'tribeUI.tribes'), ("Players", 'tribeUI.players.online'), ("Help", 'tribeUI.help.tribes')]
 
         gui = []
-        gui.append(self.componentUIImage('TribeMenuButtons', parent="HUD", color="0.1 0.1 0.1 0.50", anchormin="0.0 0.005", anchormax="0.29 0.06"))
+        gui.append(self.componentUIImage('TribeMenuButtons', parent="HUD", color="0.1 0.1 0.1 0.75", anchormin="0.0 0.005", anchormax="0.3 0.05"))
         anchormin_x = 0.01
         anchormin_y = 0.01
         anchormax_x = 0.2
@@ -597,7 +597,7 @@ class GameUI(InterfaceComponents):
             anchormin_y = 0.01
             anchormax_x += 0.2
             anchormax_y = 0.99
-        gui.append(self.componentUIText(text="Menu is a bit broken after patch, WIP", parent="TribeMenuButtons", color="0.7 0.1 0.1 0.7", align="MiddleCenter", anchormin="0.6 0.01", anchormax="1.0 0.999"))
+        gui.append(self.componentUIText(text="Press Enter or Tab to activate the mouse", parent="TribeMenuButtons", color="0.8 0.7 0.7 0.7", align="MiddleCenter", anchormin="0.6 0.01", anchormax="1.0 0.999"))
 
         playerListUI = json.to_json(gui)
         objectList = json.makepretty(playerListUI)
@@ -656,10 +656,10 @@ class GTribes(cachedMenuData):
             ui.selection = None
             self.overlays[player.SteamID] = ui
 
+
         if ui.selection != selection or ui.currentView != currentView:
             #
-            Util.Log('view '+currentView)
-            Util.Log('selection'+str(selection))
+
             if ui.currentView != currentView and ui.currentView != None:
                 ui.destroyOverlay(ui.currentView, 536)
             if ui.selection != selection or ui.selection != None:

@@ -134,7 +134,7 @@ class AntiOfflineRaid():
             if not victimID:
                 Util.Log("AOR: Victim not found "+str(victimLocation))
 
-            if (attackerID and victimID) and (attackerID != victimID) and (not self.victInAttTribe(attackerID, victimID)):
+            if (attackerID and victimID) and (attackerID == victimID) and (not self.victInAttTribe(attackerID, victimID)):
                 victimData = DataStore.Get('Players', victimID)
                 victimName = victimData['name']
                 victim = Server.FindPlayer(str(victimID))
@@ -255,17 +255,19 @@ class AntiOfflineRaid():
         :return:
         '''
         playerD = DataStore.Get('Players', playerID)
-        player = Server.FindPlayer(playerID)
+
         if playerD['tribe'] != 'Survivors':
             tribeD = DataStore.Get('Tribes', playerD['tribe'])
+            self.tribereAgress[playerD['tribe']] = time.time()
             for memberID in tribeD['tribeMembers']:
+                player = Server.FindPlayer(playerID)
                 if player:
                     if not self.checkPVPFlag(playerID):
                         self.flagPlayerPVP(player.SteamID, self.timerLenght)
-                        self.tribereAgress[playerD['tribe']] = time.time()
                     else:
                         self._reflag(playerID)
         else:
+            player = Server.FindPlayer(playerID)
             if player:
                 if not self.checkPVPFlag(playerID):
                     self.flagPlayerPVP(player.SteamID, self.timerLenght )
@@ -360,21 +362,25 @@ class AntiOfflineRaid():
                 else:
                     player.MessageFrom("AOR", "You are not flagged")
 
-            if command == 'flags':
+            elif command == 'flags':
                 players = []
                 for playerID in self.flaggedPlayers:
                     player = Server.FindPlayer(playerID)
-                    players.append(player.Name)
+                    if player:
+                        players.append(player.Name)
+                    else:
+                        player = Server.OfflinePlayers.Values
+                        player.append(player.Name)
                 Util.Log(str(players))
 
-            if command == 'aor':
+            elif command == 'aor':
                 player.Message("Antiraid system works in the following way:")
                 player.Message("When you go offline, your buildings are protected for 24 hours from player damage.")
                 player.Message("If you attack or someone attacks you or your buildings, you'll be flagged for 15 minutes.")
                 player.Message("If you're flagged for pvp, and you log off, your buildings will not be protected for the next 15 minutes.")
                 player.Message("Type /flag to see if you are flagged.")
 
-            if player.Name == 'PanDevas' and command == 'clearflags1':
+            elif player.Name == 'PanDevas' and command == 'clearflags1':
                 for playerID in self.flaggedPlayers:
                     player = Server.FindPlayer(playerID)
                     if player:
@@ -382,6 +388,10 @@ class AntiOfflineRaid():
                         Util.Log("Clearing all flags!")
                         self._removeNotification(player)
                         self.reAgress.pop(playerID, None)
+                    else:
+                        self.flaggedPlayers.remove(playerID)
+                        self.reAgress.pop(playerID, None)
+
 
 
     def On_PlayerDied(self, pde):

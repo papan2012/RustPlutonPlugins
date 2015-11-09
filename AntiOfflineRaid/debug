@@ -1,3 +1,13 @@
+report za flags mi vraæa nonetype ako igraè ode offline (NoneType object has no attribute 'Name' player.Name line 380)
+ - i to kad upišem /flags, a on mi tražio 380! WTF!
+možda je to riješeno sa elifom
+
+ponekad ne flega sve èlanove tribe-a
+
+
+GTRIBES ima problem rekreirati GUI kad ubijem offline igraèa
+
+
 FIRST THINNG IN THE MORNING
 Start moderator tools:
 Mute.

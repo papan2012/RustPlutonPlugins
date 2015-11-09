@@ -26,9 +26,8 @@ class BuildingOwner():
         player = buildingpart.Builder
         location = buildingpart.BuildingPart.Location
         locationCheck = DataStore.Get("BuildingPartOwner", location)
-        if locationCheck:
+        if player.Name == 'PanDevas' and locationCheck:
             player.Message("Building already in datastore")
-
         DataStore.Add("BuildingPartOwner", location, player.SteamID)
 
 
@@ -57,6 +56,7 @@ class BuildingOwner():
             player = he.Player
             location = he.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", location)
+
             if not victimID:
                 if player.Name == self.admin:
                     player.Message("building was not found")
@@ -66,9 +66,10 @@ class BuildingOwner():
                 victimID = DataStore.Get("BuildingPartOwner", location)
                 victim = Server.FindPlayer(victimID)
                 if not victim:
-                    for pl in Server.SleepingPlayers:
+                    for pl in Server.OfflinePlayers.Values:
                         if pl.SteamID == victimID:
                             victim = pl
+
                 player.Message("This building belongs to "+str(victim.Name))
 
     def On_Command(self, cmd):
