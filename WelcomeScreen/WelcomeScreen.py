@@ -107,8 +107,8 @@ welcomegui = [
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.08 0.05",
-                "anchormax": "0.24 0.15"
+                "anchormin": "0.08 0.06",
+                "anchormax": "0.24 0.14"
             }
          ]
      },
@@ -121,12 +121,12 @@ welcomegui = [
                 "type": "UnityEngine.UI.Button",
                 "close": "welcomeUI",
                 "command": "tribeUI.help.tribes",
-                "color": "0.2 0.2 0.2 0.7"
+                "color": "0.8 0.8 0.9 0.35"
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.08 0.05",
-                "anchormax": "0.24 0.15"
+                "anchormin": "0.08 0.06",
+                "anchormax": "0.24 0.14"
             }
         ]
     },
@@ -136,15 +136,15 @@ welcomegui = [
         [
             {
                 "type": "UnityEngine.UI.Text",
-                "color": "0.8 0.3 0.1 1.0",
+                "color": "1.0 0.1 0.1 1.0",
                 "text": "Don't show again",
                 "fontSize": 12,
                 "align": "MiddleCenter"
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.73 0.05",
-                "anchormax": "0.83 0.15"
+                "anchormin": "0.70 0.07",
+                "anchormax": "0.83 0.13"
             }
          ]
      },
@@ -157,12 +157,12 @@ welcomegui = [
                 "type": "UnityEngine.UI.Button",
                 "close": "welcomeUI",
                 "command": "welcome.dontshow",
-                "color": "0.2 0.2 0.2 0.5"
+                "color": "0.8 0.8 0.9 0.15"
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.73 0.05",
-                "anchormax": "0.83 0.15"
+                "anchormin": "0.70 0.07",
+                "anchormax": "0.83 0.13"
             }
         ]
     },
@@ -172,15 +172,15 @@ welcomegui = [
         [
             {
                 "type": "UnityEngine.UI.Text",
-                "color": "0.1 0.6 0.1 1.0",
+                "color": "1.0 1.0 1.0 0.8",
                 "text": "OK",
                 "fontSize": 18,
                 "align": "MiddleCenter"
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.85 0.05",
-                "anchormax": "0.95 0.15"
+                "anchormin": "0.85 0.06",
+                "anchormax": "0.95 0.14"
             }
          ]
      },
@@ -193,12 +193,12 @@ welcomegui = [
                 "type": "UnityEngine.UI.Button",
                 "close": "welcomeUI",
                 "command": "close.window",
-                "color": "0.2 0.2 0.2 0.5"
+                "color": "0.8 0.8 0.9 0.35"
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.85 0.05",
-                "anchormax": "0.95 0.15"
+                "anchormin": "0.85 0.06",
+                "anchormax": "0.95 0.14"
             }
         ]
     }
@@ -225,7 +225,6 @@ class WelcomeScreen():
                        "Be sure to check available commands and additional help by issuing following commands in chat:\n" \
                        "1. /help\n" \
                        "2. /trhelp\n" \
-                       "3. /aor\n" \
                        "\nFor any additional questions, feel free to ask in chat, someone will know the answer.\n" \
                        "\nHappy gaming!"
 
@@ -244,6 +243,8 @@ class WelcomeScreen():
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
         if cce.cmd == "welcome.dontshow":
             self.shown_players.append(player.SteamID)
+        if cce.cmd == 'clear.dontshow':
+            slef.shown_players = []
 
     def On_PlayerDisconnected(self, player):
         if player.SteamID in self.thisSessionShown:

@@ -395,16 +395,16 @@ class cachedMenuData(InterfaceComponents):
         gui.append(self.componentUIImage('tribesView', parent="TribeBgUI", color="0.1 0.1 0.1 0.90", anchormin="0.000 0.08", anchormax="0.999 0.88"))
 
         anchormin_x = 0.002
-        anchormin_y = 0.90
+        anchormin_y = 0.9
         anchormax_x = 0.15
         anchormax_y = 0.99
 
         for i, tribeName in enumerate(self.tribeNames):
             if i!=0  and i%9 == 0:
                 anchormin_x += 0.15
-                anchormin_y = 0.955
+                anchormin_y = 0.9
                 anchormax_x += 0.15
-                anchormax_y = 0.995
+                anchormax_y = 0.99
             anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
             anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
             name = tribeName[0]+' ('+str(tribeName[1])+' members)'
@@ -426,11 +426,11 @@ class cachedMenuData(InterfaceComponents):
         gui = []
         anchormin_x = 0.01
         anchormin_y = 0.85
-        anchormax_x = 0.1
+        anchormax_x = 0.2
         anchormax_y = 0.89
 
         ##Util.Log(str(self.tribeMembers[tribeName]))
-        gui.append(self.componentUIImage(tribeName, parent="TribeBgUI", color="0.5 0.5 0.5 0.25", anchormin="0.2 0.15", anchormax="0.9 0.88"))
+        gui.append(self.componentUIImage(tribeName, parent="TribeBgUI", color="0.4 0.4 0.4 0.98", anchormin="0.2 0.15", anchormax="0.9 0.88"))
         gui.append(self.componentUIButton(command="tribe.details.close", parent=tribeName, close=tribeName, color="0.8 1.0 1.0 0.0", anchormin="0.0 0.0", anchormax="1.0 1.0" ))
         gui.append(self.componentUIText(text="Tribename: " + tribeName, parent=tribeName, color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin="0.0 0.94", anchormax="0.99 0.99"))
 
@@ -438,9 +438,9 @@ class cachedMenuData(InterfaceComponents):
         for i, pl in enumerate(self.tribeMembers[tribeName]):
             ##Util.Log(str(self.playerDetails[pl]))
             if i!=0  and i%15 == 0:
-                anchormin_x += 0.1
+                anchormin_x += 0.21
                 anchormin_y = 0.85
-                anchormax_x += 0.1
+                anchormax_x += 0.2
                 anchormax_y = 0.89
             anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
             anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
@@ -449,7 +449,7 @@ class cachedMenuData(InterfaceComponents):
             anchormin_y -= 0.05
             anchormax_y -= 0.05
 
-        gui.append(self.componentUIText(text="click anywhere on this window to close", parent=tribeName, color="1.0 0.3 0.3 0.95", align="MiddleCenter", fontSize="11", anchormin="0.0 0.05", anchormax="0.99 0.09"))
+        gui.append(self.componentUIText(text="click anywhere on this window to close", parent=tribeName, color="1.0 0.3 0.3 0.95", align="MiddleCenter", fontSize="9", anchormin="0.0 0.05", anchormax="0.99 0.09"))
 
         tribeDetails = json.to_json(gui)
         objectList = json.makepretty(tribeDetails)
@@ -538,15 +538,16 @@ class cachedMenuData(InterfaceComponents):
                       " 1. We couldn't allow players using door on buildings whose owners were offline.\n" \
                       " 2. There's a rare glitch, or a hack, that lets people open doors without the code authorization.\n" \
                       "   - this system prevents both problems.\n\n" \
-                      "When you place a door, they are bound to your SteamID. Only you can open and close them.\n" \
-                      "So there's no real need for code locks on doors any longer.\n\n" \
+                      "When you place a door, they are bound to your SteamID. Only you can open and close them.\n"\
+                      "So there's no real need for code locks on doors any longer.\n" \
+                      "(IMPORTANT: owner of the door frame is the owner of the door)\n\n" \
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n\n" \
                       "If you need some privacy, put code locks on chests. \n" \
                       "That will prevent anyone opening them without the code.\n\n",
         'tribeUI.help.server':"SERVER INNFO\n\n" \
                         " - decay lowered to 25% effectiveness\n" \
                         " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n\n" \
-                        "If you wannt to hide the top menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n" \
+                        "If you want to hide the top menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n" \
                         "\n\n\nIf you got any questions, ask in chat, someone will know the answer.\n" \
                         "For any problems with the server plugins, contact the server owner, or plugin developer, Pan Devas on Steam.\n" \
                         "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information."}
@@ -554,7 +555,7 @@ class cachedMenuData(InterfaceComponents):
         gui = []
 
         gui.append(self.componentUIImage(selection, parent="helpView", color="0.1 0.1 0.1 0.90", anchormin="0.001 0.0", anchormax="0.999 0.93"))
-        gui.append(self.componentUIText(text="TEXT", parent=selection, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin="0.001 0.0", anchormax="0.999 0.93"))
+        gui.append(self.componentUIText(text="TEXT", parent=selection, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin="0.01 0.0", anchormax="0.999 0.93"))
 
 
         playerListUI = json.to_json(gui)
@@ -597,7 +598,7 @@ class GameUI(InterfaceComponents):
             anchormin_y = 0.01
             anchormax_x += 0.2
             anchormax_y = 0.99
-        gui.append(self.componentUIText(text="Press Enter or Tab to activate the mouse", parent="TribeMenuButtons", color="0.8 0.7 0.7 0.7", align="MiddleCenter", anchormin="0.6 0.01", anchormax="1.0 0.999"))
+        gui.append(self.componentUIText(text="Press Enter or Tab to use the menu", parent="TribeMenuButtons", color="0.8 0.7 0.7 0.7", align="MiddleCenter", fontSize="8", anchormin="0.6 0.01", anchormax="1.0 0.999"))
 
         playerListUI = json.to_json(gui)
         objectList = json.makepretty(playerListUI)
@@ -764,35 +765,36 @@ class GTribes(cachedMenuData):
         playerID = player.GameID
         tribeDataRefreshCommands = ['trcreate', 'trleave', 'trkick', 'traccept']
 
-        if command == 'gwho':
-            self.createGUI(player, "playersView", "Online")
+        commands = ('gwho', 'help', 'ci!', 'di!', 'showmenu', 'hidemenu')
+        if command in commands:
+            if command == 'gwho':
+                self.createGUI(player, "playersView", "Online")
+            elif command == 'help':
+                self.createGUI(player, "helpView", 'tribeUI.help.server')
 
-        if command == 'ci!':
-            for pl in Server.ActivePlayers:
+            elif command == 'ci!':
+                for pl in Server.ActivePlayers:
+                    self.playersWithMenu.append(pl.SteamID)
+                    int = GameUI(pl)
+                    int.createButtons()
+
+            elif command == 'di!':
+                for pl in Server.ActivePlayers:
+                    self.playersWithMenu.remove(pl.SteamID)
+                    int = GameUI(pl)
+                    int.destroyOverlay('TribeMenuButtons')
+
+            elif command == 'showmenu':
+                int = GameUI(player)
                 self.playersWithMenu.append(pl.SteamID)
-                int = GameUI(pl)
                 int.createButtons()
 
-        if command == 'di!':
-            for pl in Server.ActivePlayers:
+            elif command == 'hidemenu':
+                int = GameUI(player)
                 self.playersWithMenu.remove(pl.SteamID)
-                int = GameUI(pl)
                 int.destroyOverlay('TribeMenuButtons')
 
-        if command == 'showmenu':
-            int = GameUI(player)
-            self.playersWithMenu.append(pl.SteamID)
-            int.createButtons()
-
-        if command == 'hidemenu':
-            int = GameUI(player)
-            self.playersWithMenu.remove(pl.SteamID)
-            int.destroyOverlay('TribeMenuButtons')
-
-        if command == 'test':
-             Util.Log(str(self.playersWithMenu))
-
-        if command in tribeDataRefreshCommands:
+        elif command in tribeDataRefreshCommands:
             self._getTribeData('Tribes')
             self._cachedTribeData()
             self.tribesViewObjectList = self._createTribesView(self.tribesData)
