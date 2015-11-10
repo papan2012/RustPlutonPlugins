@@ -404,13 +404,14 @@ class AntiOfflineRaid():
                         self.reAgress.pop(playerID, None)
 
 
-
     def On_PlayerDied(self, pde):
         attacker = pde.Attacker
         victim = pde.Victim
+        distance = round(Util.GetVectorsDistance(attacker.Location, victim.Location), 2)
+        Util.Log(str(distance))
         if attacker and attacker != victim:
             if attacker.IsPlayer():
-                Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon.Name) + ", with a hit to " + pde.HitBone)
+                Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon.Name) + ", with a hit to " + pde.HitBone+ " from "+distance+" meters.")
             else:
                 name = str(attacker.Name.split('/')[-1].split('.')[0])
                 Server.Broadcast(victim.Name + " was killed by " + name)
