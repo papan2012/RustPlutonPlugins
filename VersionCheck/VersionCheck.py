@@ -14,10 +14,6 @@ import time
 
 
 
-
-
-
-
 class VersionCheck():
     '''
     1. ini file u kojem ce se upisivati URL-ovi pluginova
@@ -33,7 +29,6 @@ class VersionCheck():
         plugins = {}
 
         for dir in os.listdir((path + "\\Plugins\\")):
-
             try:
                 s = Plugin.GetPlugin(dir)
             except:
@@ -56,8 +51,7 @@ class VersionCheck():
         for pluginName in self.plugins.keys():
             if pluginName in self.curVersions.keys():
                 if self.plugins[pluginName] != self.curVersions[pluginName]:
-                    Util.Log(pluginName+' needs updating')
-                #Util.Log(lvkey+ ' '+self.plugins[lvkey]+ ' version on web '+ self.curVersions[lvkey])
+                    Util.Log("PLUGIN UPDATE NEEDED: "+pluginName)
 
 
     def On_Command(self, cmd):
