@@ -29,6 +29,7 @@ class BuildingOwner():
         if player.Name == 'PanDevas' and locationCheck:
             player.Message("Building already in datastore")
         DataStore.Add("BuildingPartOwner", location, player.SteamID)
+        Util.Log("Building added to datastore "+str(location))
 
 
     def On_BuildingPartDemolished(self, bpde):
@@ -59,7 +60,7 @@ class BuildingOwner():
 
             if not victimID:
                 if player.Name == self.admin:
-                    player.Message("building was not found")
+                    player.Message("building was not found "+str(he.Victim.Location))
                 else:
                     DataStore.Add("BuildingPartOwner", location, player.SteamID)
             if victimID and player.SteamID in self.buildingOwnerInfo:
@@ -71,6 +72,8 @@ class BuildingOwner():
                             victim = pl
 
                 player.Message("This building belongs to "+str(victim.Name))
+                if player.Name == self.admin:
+                    player.Message(str(he.Victim.Location))
 
     def On_Command(self, cmd):
         player = cmd.User

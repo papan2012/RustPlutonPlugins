@@ -1,8 +1,13 @@
-report za flags mi vraæa nonetype ako igraè ode offline (NoneType object has no attribute 'Name' player.Name line 380)
- - i to kad upišem /flags, a on mi tražio 380! WTF!
-možda je to riješeno sa elifom
+AOR
+- ponekad se ljudi flegaju sami (debugin string ukljuèen)
 
-ponekad ne flega sve èlanove tribe-a
+reflag ne funkcionira na cijeli tribe
+Trebam cijelu tribe agresiju i reagresiju rekreirati sa tribe, a ne player checkovima
+Takoðer, prebaciti flagove u Datastore, radi bolje robusnosti
+Kreirati timer notifikaciju, da ljudi znaju koliko su još dugo flegani
+
+Door system:
+velika external vrata se ne bilježe kao building deployed
 
 
 GTRIBES ima problem rekreirati GUI kad ubijem offline igraèa
