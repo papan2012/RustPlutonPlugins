@@ -33,6 +33,12 @@ class TribeDoors():
         doorUserTribe = DataStore.Get("Players", doorUserID)
         doorOwnerTribe = DataStore.Get("Players", doorOwnerID)
 
+        if not doorUserTribe or not doorOwnerTribe:
+            '''
+            for shutters that don't have window baars
+            '''
+            return False
+
         if doorOwnerTribe['tribe'] == 'Survivors':
             return False
         elif doorUserTribe['tribe'] != doorOwnerTribe['tribe']:

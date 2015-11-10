@@ -614,6 +614,7 @@ class GTribes(cachedMenuData):
         '''
         # dict for holding overlays with playerID keys
         self.overlays = {}
+        self.playersWithMenu = {}
 
         # for cached data
         self.onlinePlayers = []
@@ -622,7 +623,7 @@ class GTribes(cachedMenuData):
 
 
 
-        self.playersWithMenu = []
+
 
         for player in Server.ActivePlayers:
             self._addToOnlinePlayers(player)
@@ -762,7 +763,7 @@ class GTribes(cachedMenuData):
     def On_Command(self, cmd):
         command = cmd.cmd
         player = cmd.User
-        playerID = player.GameID
+        playerID = player.SteamID
         tribeDataRefreshCommands = ['trcreate', 'trleave', 'trkick', 'traccept']
 
         commands = ('gwho', 'help', 'ci!', 'di!', 'showmenu', 'hidemenu')
@@ -774,25 +775,28 @@ class GTribes(cachedMenuData):
 
             elif command == 'ci!':
                 for pl in Server.ActivePlayers:
-                    self.playersWithMenu.append(pl.SteamID)
                     int = GameUI(pl)
+                    self.playersWithMenu[pl.SteamID] = int
                     int.createButtons()
 
             elif command == 'di!':
                 for pl in Server.ActivePlayers:
-                    self.playersWithMenu.remove(pl.SteamID)
-                    int = GameUI(pl)
+                    int = self.playersWithMenu[pl.SteamID]
                     int.destroyOverlay('TribeMenuButtons')
+                    self.playersWithMenu.pop(pl.SteamID)
 
             elif command == 'showmenu':
-                int = GameUI(player)
-                self.playersWithMenu.append(pl.SteamID)
-                int.createButtons()
+                Util.Log(str(self.playersWithMenu.keys()))
+                if playerID not in self.playersWithMenu.keys():
+                    int = GameUI(player)
+                    self.playersWithMenu[playerID] = int
+                    int.createButtons()
 
             elif command == 'hidemenu':
-                int = GameUI(player)
-                self.playersWithMenu.remove(pl.SteamID)
+                int = self.playersWithMenu[player.SteamID]
                 int.destroyOverlay('TribeMenuButtons')
+                self.playersWithMenu.pop(playerID)
+
 
         elif command in tribeDataRefreshCommands:
             self._getTribeData('Tribes')
@@ -814,13 +818,14 @@ class GTribes(cachedMenuData):
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
-        try:
-            self.playersWithMenu.remove(player.SteamID)
-        except:
-            pass
+        #destroy the menu
+        int = self.playersWithMenu[player.SteamID]
+        int.destroyOverlay('TribeMenuButtons')
+        self.playersWithMenu.pop(player.SteamID)
+
 
     def On_PlayerWakeUp(self, player):
-        if player.SteamID not in self.playersWithMenu:
-            self.playersWithMenu.append(player.SteamID)
+        if player.SteamID not in self.playersWithMenu.keys():
             int = GameUI(player)
+            self.playersWithMenu[player.SteamID] = int
             int.createButtons()
