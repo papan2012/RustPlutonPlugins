@@ -1,10 +1,31 @@
+fixes:
+AOR:
+fixed hanndling for tribe flagging on building aggresion when tribe member is offline
+
+
+
+tests
+SURVIVOR VS SURVIVOR FLEGING
+survivor vs 2 member tribe, flega li oba tribe membera
+tribe member vs survivor, flega li oba
+2 vs 2 tribemembers, flega li svu èetvoricu
+
+ako se jedan tribe member diskonekta, produžuje li timer (ne bi smio)
+ako se svi tribe memberi diskonektaju, produžuje li timer
+<TODO>
+ AOR
+ # Need to implement timer kill as well
+
+</TODO>
+
 AOR
 - ponekad se ljudi flegaju sami (debugin string ukljuèen)
 
-reflag ne funkcionira na cijeli tribe
+
 Trebam cijelu tribe agresiju i reagresiju rekreirati sa tribe, a ne player checkovima
 Takoðer, prebaciti flagove u Datastore, radi bolje robusnosti
 Kreirati timer notifikaciju, da ljudi znaju koliko su još dugo flegani
+Aplajati agresiju ako se rekonekta igraè, on_wakeup ne radi u trenutnoj verziji
 
 Door system:
 velika external vrata se ne bilježe kao building deployed

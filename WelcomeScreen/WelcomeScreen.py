@@ -229,9 +229,10 @@ class WelcomeScreen():
                        "\nHappy gaming!"
 
     def On_PlayerWakeUp(self, player):
-        if player.SteamID not in self.shown_players and player.SteamID not in self.thisSessionShown:
-             self.thisSessionShown.append(player.SteamID)
-             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
+        if player in Server.ActivePlayers:
+            if player.SteamID not in self.shown_players and player.SteamID not in self.thisSessionShown:
+                self.thisSessionShown.append(player.SteamID)
+                CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
         if cce.cmd != 'chat.say':
