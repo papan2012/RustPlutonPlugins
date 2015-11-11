@@ -118,15 +118,14 @@ class AntiOfflineRaid():
         ignoredDamagesList = ['Heat']
         # Have to nulify heat damage for calculations, taking 10 times longer (incendiary rockets and ammo)
         # best solution for now is to have it do zero dmg to buildings and avoiding checks
-        # players still get damaged
-        if str(HurtEvent.DamageType) in ignoredDamagesList and HurtEvent.Victim.IsBuildingPart():
+        # players and deployables will still get damaged
+        if str(HurtEvent.DamageType) in ignoredDamagesList and (HurtEvent.Victim.IsBuildingPart() or hurtEntity in self.protectedItems):
             damageAmounts = HurtEvent.DamageAmounts
             for i, d in enumerate(damageAmounts):
                 if damageAmounts[i] != 0.0:
                     damageAmounts[i] = 0.0
                 HurtEvent.DamageAmounts = damageAmounts
 
-        #if attacker and attacker.IsPlayer() and HurtEvent.Victim.IsBuildingPart():
         if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and (HurtEvent.Victim.IsBuildingPart() or hurtEntity in self.protectedItems):
             attackerID = attacker.SteamID
             victimLocation = HurtEvent.Victim.Location
@@ -158,7 +157,6 @@ class AntiOfflineRaid():
                         attackerName = attacker.Name
                     except:
                         attackerName = attacker
-                    Util.Log(str(victim.Name)+' attacked by '+str(attackerName))
                     self.checkTribeBeforeFlag(victimID)
                 else:
                     Util.Log("All checks bypassed, shouldn't happen "+victimID+' '+victimData['tribe'])
@@ -218,7 +216,6 @@ class AntiOfflineRaid():
         playerData = DataStore.Get('Players', playerID)
         player = Server.FindPlayer(playerID)
         if not player and (playerData['tribe'] == 'Survivors') and ((time.time() - playerData['lastonline']) < self.offlineProtectionTimeout) and not self.checkPVPFlag(playerID):
-            Util.Log("Tribe survivor, protecting")
             return True
         elif playerData['tribe'] != 'Survivors':
             playerTribe = playerData['tribe']
@@ -229,15 +226,12 @@ class AntiOfflineRaid():
                 playerD = DataStore.Get('Players', tribeMemberID)
                 player = Server.FindPlayer(tribeMemberID)
                 if player:
-                    Util.Log("Player online: "+player.Name)
                     return False
                     break
                 elif (time.time() - playerD['lastonline']) < self.offlineProtectionTimeout and not self.checkPVPFlag(tribeMemberID):
-                    Util.Log("Protecting tribe member house")
                     protect = True
             return protect
         else:
-            Util.Log("Not protecting for offline"+str(playerID)+' timecheck: '+str((time.time() - playerData['lastonline']) < self.offlineProtectionTimeout))
             return False
 
 
@@ -257,19 +251,19 @@ class AntiOfflineRaid():
                 if player:
                     if not self.checkPVPFlag(memberID):
                         self.tribereAgress[playerD['tribe']] = time.time()
-                        self.flagPlayerPVP(player, self.timerLenght)
+                        self.flagPlayerPVP(memberID, self.timerLenght)
                     else:
                         self.tribereAgress[playerD['tribe']] = time.time()
         else:
             player = Server.FindPlayer(playerID)
             if player:
                 if not self.checkPVPFlag(playerID):
-                    self.flagPlayerPVP(player, self.timerLenght )
+                    self.flagPlayerPVP(player.SteamID, self.timerLenght )
                 else:
                     self._reflag(playerID)
 
 
-    def flagPlayerPVP(self, player, timerLenght):
+    def flagPlayerPVP(self, playerID, timerLenght):
         '''
         flags players or extends the initial timer if happened while flaged
         :param playerID:
@@ -277,13 +271,14 @@ class AntiOfflineRaid():
         :return: None
         '''
 
-        if not self.checkPVPFlag(player.SteamID):
-            self.flaggedPlayers.append(player.SteamID)
-            self._createNotification(player)
+        if not self.checkPVPFlag(playerID):
+            player = Server.FindPlayer(playerID)
+            if player:
+                self.flaggedPlayers.append(playerID)
+                self._createNotification(player)
         fpData = Plugin.CreateDict()
-        fpData['SteamID'] = player.SteamID
+        fpData['SteamID'] = playerID
         if timerLenght > 0:
-            Util.Log("Creating timer "+ player.Name)
             Plugin.CreateParallelTimer("PVPFlag", timerLenght*1000, fpData).Start()
 
 
@@ -294,16 +289,19 @@ class AntiOfflineRaid():
         playerD = DataStore.Get("Players", playerID)
         player = Server.FindPlayer(playerID)
 
-        if playerD['tribe'] == 'Survivors' and playerID in self.disconnectedPlayers.keys():
-            #napravi timer kill i podesi novi timer od vremena disconnecta
-            self.disconnectedPlayers.pop(playerID, None)
-        elif playerD['tribe'] == 'Survivors':
+        if playerD['tribe'] == 'Survivors':
             if playerID in self.reAgress.keys():
+                Util.Log("Reagress, extending")
+                timer.Kill()
                 now = time.time()
                 timeDiff = now - self.reAgress[playerID]
                 self.reAgress.pop(playerID, None)
+                self.flagPlayerPVP(playerID, timeDiff)
+            elif playerID in self.disconnectedPlayers.keys():
+                Util.Log("Player disconnected, extending")
                 timer.Kill()
-                self.flagPlayerPVP(player, timeDiff)
+                self.disconnectedPlayers.pop(playerID, None)
+                self.flagPlayerPVP(playerID, self.timerLenght)
             else:
                 timer.Kill()
                 self.flaggedPlayers.remove(playerID)
@@ -314,10 +312,17 @@ class AntiOfflineRaid():
             now = time.time()
             tribe = playerD['tribe']
             timeDiff = now - self.tribereAgress[tribe]
-            if timeDiff < self.timerLenght:
+            if playerID in self.disconnectedPlayers.keys():
+                Util.Log("Player disconnected, extending")
+                timer.Kill()
+                self.disconnectedPlayers.pop(playerID, None)
+                self.flagPlayerPVP(playerID, self.timerLenght)
+            elif timeDiff < self.timerLenght:
+                Util.Log("Reagress, extending tribe")
                 timer.Kill()
                 self.reAgress.pop(playerID, None)
-                self.flagPlayerPVP(player, int(timeDiff))
+                self.flagPlayerPVP(playerID, int(timeDiff))
+
             else:
                 timer.Kill()
                 self.flaggedPlayers.remove(playerID)
@@ -357,7 +362,6 @@ class AntiOfflineRaid():
             elif command == 'flags':
                 players = []
                 for playerID in self.flaggedPlayers:
-                    playerIDS.append(playerID)
                     player = Server.FindPlayer(playerID)
                     if player:
                         players.append(player.Name)
@@ -375,7 +379,6 @@ class AntiOfflineRaid():
                 for playerID in self.flaggedPlayers:
                     player = Server.FindPlayer(playerID)
                     if player:
-                        Util.Log(player.Name)
                         flags.remove(playerID)
                         self._removeNotification(player)
                         self.reAgress.pop(playerID, None)
@@ -389,7 +392,7 @@ class AntiOfflineRaid():
     def On_PlayerDied(self, pde):
         attacker = pde.Attacker
         victim = pde.Victim
-        if attacker and attacker != victim:
+        if attacker and victim and attacker != victim:
             if attacker.IsPlayer():
                 distance = round(Util.GetVectorsDistance(attacker.Location, victim.Location), 2)
                 Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon.Name) + ", with a hit to " + pde.HitBone+ " from "+str(distance)+" meters.")
