@@ -24,19 +24,6 @@ class TribesStatistics():
                         'WeaponKills': {'weapon_name':0}
                         }
         '''
-
-    # CLASSES FOR HANDLING STATISTICS BELLOW
-
-    def _checkIfKeyExists(self, playerID, key, value=None):
-        playerData = DataStore.Get("Players", playerID)
-        if key not in playerData.keys():
-            playerData[key] = value
-        else:
-            Util.Log('key exists')
-        Util.Log('type value '+str(type(value)))
-        Util.Log('VALUE: '+str(value))
-
-
     def On_PlayerDied(self, pde):
         attacker = pde.Attacker
         victim = pde.Victim
@@ -96,9 +83,6 @@ class TribesStatistics():
             playerData['ResStatistics'] = 0
         playerData['ResStatistics'] += gatherAmount
 
-        test = DataStore.Get("Players", playerID)
-        Util.Log(str(playerData['PVPstatistics']))
-        Util.Log(str(test['ResStatistics']))
 
 
     def On_Command(self, cmd):
@@ -113,16 +97,17 @@ class TribesStatistics():
         player = cmd.User
 
         updateKeys = [('PVPstatistics', {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0}), ('killedBy', {}), ('killed', {}), ('WeaponKills', {})]
-        if command == 'update!':
-            i=0
-            for playerID in DataStore.GetTable("Players").Keys:
-                playerData = DataStore.Get('Players', playerID)
-                playerData['timeonline'] = 20
-                Util.Log(playerData['name']+' '+str(playerData['timeonline']))
-                playerData['ResStatistics'] = 0
-                # for i, item in enumerate(updateKeys):
-                #     #Util.Log(str(playerData[updateKeys[i][0]])+ ' ' +str(dict(updateKeys[i][1])))
-                #     playerData[updateKeys[i][0]] = dict(updateKeys[i][1])
+        if command == 'online':
+            Util.Log(str(player.TimeOnline))
+            # i=0
+            # for playerID in DataStore.GetTable("Players").Keys:
+            #     playerData = DataStore.Get('Players', playerID)
+            #     playerData['timeonline'] = 20
+                # Util.Log(playerData['name']+' '+str(playerData['timeonline']))
+                # playerData['ResStatistics'] = 0
+                # # for i, item in enumerate(updateKeys):
+                # #     #Util.Log(str(playerData[updateKeys[i][0]])+ ' ' +str(dict(updateKeys[i][1])))
+                # #     playerData[updateKeys[i][0]] = dict(updateKeys[i][1])
 
         if command == 'stats':
             playerD = DataStore.Get('Players', cmd.User.SteamID)

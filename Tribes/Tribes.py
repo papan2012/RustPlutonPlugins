@@ -399,7 +399,7 @@ class Tribes:
     def On_PlayerConnected(self, player):
         con_player = PlayerData(player)
         con_player.playerData['lastonline'] = time.time()
-        con_player.playerData['timeonline'] = player.TimeOnline/60/24
+        con_player.playerData['timeonline'] = player.TimeOnline/3600
         #chek if player name has changed
         if con_player.playerData['name'] != player.Name:
             con_player.playerData['name'] = player.Name
@@ -410,4 +410,4 @@ class Tribes:
     def On_PlayerDisconnected(self, player):
         con_player = PlayerData(player)
         con_player.playerData['lastonline'] = time.time()
-        con_player.playerData['timeonline'] = player.TimeOnline/60/24
+        con_player.playerData['timeonline'] = player.TimeOnline/3600

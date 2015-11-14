@@ -374,7 +374,6 @@ class AntiOfflineRaid():
         now = time.time()
         playerID = player.SteamID
         playerData = DataStore.Get('Players', playerID)
-        playerData['timeonline'] = player.TimeOnline/60/24
         if playerID in DataStore.Keys('PVPFlags'):
             if playerData['tribe'] != 'Survivors':
                 self.checkTribeForOnlineMembers(playerData['tribe'])
