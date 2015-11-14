@@ -179,9 +179,7 @@ class AntiOfflineRaid():
 
 
     def checkPVPFlag(self, playerID):
-        Util.Log(str(DataStore.Keys('PVPFlags')))
         if playerID in DataStore.Keys('PVPFlags'):
-            Util.Log("player already flagged")
             return True
         else:
             return False
@@ -198,7 +196,7 @@ class AntiOfflineRaid():
         playerData = DataStore.Get('Players', playerID)
         player = Server.FindPlayer(playerID)
         if not player and (playerData['tribe'] == 'Survivors') and ((time.time() - playerData['lastonline']) < self.offlineProtectionTimeout) and not self.checkPVPFlag(playerID):
-            Util.Log("Tribe Survivor, player offline for "+str((time.time() - playerData['lastonline'])))
+            Util.Log("Tribe Survivor, player offline for "+str((time.time() - playerData['lastonline'])/60/24))
             return True
         elif playerData['tribe'] != 'Survivors':
             playerTribe = playerData['tribe']
@@ -276,7 +274,9 @@ class AntiOfflineRaid():
         if lastAggresion:
             timediff = self.timerLenght - (time.time() - lastAggresion)
         else:
+            timediff = 0
             timer.Kill()
+
 
         if timediff > 0:
             if player:

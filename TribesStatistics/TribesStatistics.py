@@ -97,6 +97,7 @@ class TribesStatistics():
         playerData['ResStatistics'] += gatherAmount
 
         test = DataStore.Get("Players", playerID)
+        Util.Log(str(playerData['PVPstatistics']))
         Util.Log(str(test['ResStatistics']))
 
 
@@ -111,20 +112,19 @@ class TribesStatistics():
         command = cmd.cmd
         player = cmd.User
 
-        updateKeys = [('PVPstatistics', {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0}), ('ResStatistics', 0), ('killedBy', {}), ('killed', {}), ('WeaponKills', {})]
+        updateKeys = [('PVPstatistics', {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0}), ('killedBy', {}), ('killed', {}), ('WeaponKills', {})]
         if command == 'update!':
             i=0
             for playerID in DataStore.GetTable("Players").Keys:
                 playerData = DataStore.Get('Players', playerID)
                 playerData['timeonline'] = 20
                 Util.Log(playerData['name']+' '+str(playerData['timeonline']))
-                for i, item in enumerate(updateKeys):
-                    playerData[updateKeys[i][0]] = updateKeys[i][1]
+                playerData['ResStatistics'] = 0
+                # for i, item in enumerate(updateKeys):
+                #     #Util.Log(str(playerData[updateKeys[i][0]])+ ' ' +str(dict(updateKeys[i][1])))
+                #     playerData[updateKeys[i][0]] = dict(updateKeys[i][1])
 
         if command == 'stats':
             playerD = DataStore.Get('Players', cmd.User.SteamID)
             for key in playerD.keys():
                 player.Message(str(key)+' '+str(playerD[key]))
-            playerD['PVPstatistics']['max_range'] = 0
-            playerD['PVPstatistics']['suicides'] = 0
-            playerD['PVPstatistics']['suicides'] = 1

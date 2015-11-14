@@ -401,17 +401,27 @@ class cachedMenuData(InterfaceComponents):
         if Server.FindPlayer(playerID):
             onlineStatus = 'Now'
         else:
-            onlineStatus = (time.time() - playerData['lastonline'])/60/24
+            onlineStatus = str(round((time.time() - playerData['lastonline'])/60/24, 2))+ ' hours ago'
+        timeOnline = str(round(playerData['timeonline'],2))+' hours'
 
         columnTitles = ("Player Details:", "Statistics:", "Top Weapons:")
-        playerDetails = (('Tribe', playerData['tribe']), ('Tribe Rank', playerData['tribeRank']), ('Last Online', onlineStatus), ('Time Online', playerData['timeonline']),('Res gathered', playerData['ResStatistics']))
+        playerDetails = (('Tribe', playerData['tribe']), ('Tribe Rank', playerData['tribeRank']), ('Last Online', onlineStatus), ('Time Online', timeOnline),('Res gathered', playerData['ResStatistics']))
         statistics = (('Killls', playerData['PVPstatistics']['kills']), ('Deaths', playerData['PVPstatistics']['deaths']), ('Suicides', playerData['PVPstatistics']['suicides']),('Max Range', playerData['PVPstatistics']['max_range']))
-        topWeapons = ()
+        topWeapons = []
+
+        weaponUse = []
+        for weapon in playerData['WeaponKills'].keys():
+            weaponUse.append((weapon, playerData['WeaponKills'][weapon]))
+        weaponUse.sort(key=lambda tup: tup[1], reverse=True)
+        for i in range(len(weaponUse)):
+            topWeapons.append((weaponUse[i][0], weaponUse[i][1]))
+            if i > 5:
+                break
+
         columns = [playerDetails, statistics, topWeapons]
 
         ##Util.Log(str(self.tribeMembers[tribeName]))
         gui.append(self.componentUIImage(playerID, parent="playerList", color="0.4 0.4 0.4 0.98", anchormin="0.0 0.01", anchormax="0.999 0.99"))
-        gui.append(self.componentUIButton(command="tribe.player.close", parent=playerID, close=playerID, color="0.8 1.0 1.0 0.0", anchormin="0.0 0.0", anchormax="1.0 1.0" ))
         gui.append(self.componentUIText(text=playerData['name'], parent=playerID, color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin="0.0 0.94", anchormax="0.99 0.99"))
 
 
@@ -431,8 +441,8 @@ class cachedMenuData(InterfaceComponents):
                 gui.append(self.componentUIText(text=columns[i][j][0]+': '+str(columns[i][j][1]), parent=playerID, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
 
 
-
-        gui.append(self.componentUIText(text="click anywhere on this window to close", parent=playerID, color="1.0 0.3 0.3 0.95", align="MiddleCenter", fontSize="9", anchormin="0.0 0.05", anchormax="0.99 0.09"))
+        gui.append(self.componentUIText(text="Click here to close", parent=playerID, color="1.0 0.3 0.3 0.95", align="MiddleCenter", fontSize="11", anchormin="0.0 0.05", anchormax="1.0 0.09"))
+        gui.append(self.componentUIButton(command="tribe.player.close", parent=playerID, close=playerID, color="0.8 1.0 1.0 0.1", anchormin="0.0 0.05", anchormax="1.0 0.09" ))
 
         tribeDetails = json.to_json(gui)
         objectList = json.makepretty(tribeDetails)
@@ -709,7 +719,6 @@ class GTribes(cachedMenuData):
 
             self.overlays[player.SteamID] = ui
 
-        Util.Log(currentView+', '+ str(selection))
         if ui.selection != selection or ui.currentView != currentView or ui.playerPopup != popup:
             if ui.currentView != currentView and ui.currentView != None:
                 ui.destroyOverlay(ui.currentView, 536)
@@ -776,7 +785,7 @@ class GTribes(cachedMenuData):
                     'tribeUI.players.offline', 'tribeUI.you', 'tribe.members',
                     'tribeUI.help', 'tribeUI.help.doors', 'tribeUI.help.tribes','tribeUI.help.aor',
                     'tribeUI.help.server', 'tribe.details.close', 'tribe.player', 'tribe.player.close']
-        Util.Log(cce.cmd)
+
         if cce.cmd in commands:
             player = cce.User
             playerID = player.SteamID
@@ -859,7 +868,6 @@ class GTribes(cachedMenuData):
                     self.playersWithMenu.pop(pl.SteamID)
 
             elif command == 'showmenu':
-                Util.Log(str(self.playersWithMenu.keys()))
                 if playerID not in self.playersWithMenu.keys():
                     int = GameUI(player)
                     self.playersWithMenu[playerID] = int

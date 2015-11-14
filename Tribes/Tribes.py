@@ -55,7 +55,12 @@ class PlayerData():
                             'pendingInvites' : [],
                             'lastonline': 0,
                             'timeonline': 0,
-                            'ResStatistics': 0
+                            'ResStatistics': 0,
+                            'PVPstatistics': {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0, 'headshots': 0},
+                            'ResStatistics': 0,
+                            'killedBy': {},
+                            'killed': {playerID: 0},
+                            'WeaponKills': {}
                            }
             DataStore.Add("Players", self.playerID, self.playerData)
             tribe = TribeData('Survivors')
@@ -171,7 +176,7 @@ class Tribes:
                    'trdetails': (self.getTribeDetails, " - Get tribe details"),
                    'trleave' : (self.leaveTribe, "- leave your tribe"),
                    'trdeny': (self.denyInvite, " - deny tribe invite"),
-                   'trkick': (self.kickFromTribe, "-  kick member from tribe")
+                   'trkick': (self.kickFromTribe, "-  kick member from tribe"),
                    }
 
 
