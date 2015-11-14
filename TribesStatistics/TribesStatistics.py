@@ -51,15 +51,8 @@ class TribesStatistics():
                 victimData['PVPstatistics']['deaths'] += 1
 
                 # update distance
-                Util.Log("update distance"+attackerData['name'])
-                Util.Log(attackerData['name']+' '+str(attackerData['PVPstatistics']['max_range']))
-                Util.Log(victimData['name']+' '+str((victimData['PVPstatistics']['max_range'])))
                 if attackerData['PVPstatistics']['max_range'] < distance:
                     attackerData['PVPstatistics']['max_range'] = distance
-
-                Util.Log("NAKON UPDEJTA")
-                Util.Log(attackerData['name']+' '+str(attackerData['PVPstatistics']['max_range']))
-                Util.Log(victimData['name']+' '+str((victimData['PVPstatistics']['max_range'])))
 
                 # update attacker killed list
                 Util.Log("attacker killed "+attackerData['name'])
@@ -69,13 +62,11 @@ class TribesStatistics():
                     attackerData['killed'][victim.SteamID] = 1
 
                 # update victim killedby dict
-                Util.Log("wictim weapon killed by "+victimData['name'])
                 if attacker.SteamID in victimData['killedBy'].keys():
                     victimData['killedBy'][attacker.SteamID] += 1
                 else:
                     victimData['killedBy'][attacker.SteamID] = 1
                 # update attacker weapon use dict
-                Util.Log("attacker weapon use "+attackerData['name'])
                 if pde.Weapon.Name in attackerData['WeaponKills'].keys():
                     attackerData['WeaponKills'][pde.Weapon.Name] += 1
                 else:
@@ -92,11 +83,7 @@ class TribesStatistics():
             Server.Broadcast(victim.Name + " died from " + str(pde.DamageType))
             victimData['PVPstatistics']['deaths'] +=  1
             if str(pde.DamageType) == 'Suicide':
-                Util.Log("Sucide "+ victimData['name'])
-                Util.Log("Sucide "+ str(victimData['PVPstatistics']['suicides']))
                 victimData['PVPstatistics']['suicides'] += 1
-                Util.Log("Sucide "+ str(victimData['PVPstatistics']['suicides']))
-
 
 
     # ResStatistics
