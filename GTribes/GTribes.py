@@ -114,6 +114,7 @@ class CreateUI(InterfaceComponents):
         self.player = player
         self.currentView = None
         self.selection = None
+        self.playerPopup=None
 
     def createOverlay(self, objectlist):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
@@ -142,6 +143,7 @@ class CreateUI(InterfaceComponents):
         self.createOverlay(objectList)
 
     def createPlayerPopup(self, objectList):
+        self.destroyOverlay(self.playerPopup, 145)
         self.createOverlay(objectList)
 
     ###
@@ -394,18 +396,43 @@ class cachedMenuData(InterfaceComponents):
         # windowSizeX=len(self.tribeMembers[tribeName])/10. * 0.25
         # #Util.Log(str(windowSizeX))
         gui = []
-        anchormin_x = 0.01
-        anchormin_y = 0.85
-        anchormax_x = 0.2
-        anchormax_y = 0.89
+        playerData = DataStore.Get('Players', playerID)
+
+        if Server.FindPlayer(playerID):
+            onlineStatus = 'Now'
+        else:
+            onlineStatus = (time.time() - playerData['lastonline'])/60/24
+
+        columnTitles = ("Player Details:", "Statistics:", "Top Weapons:")
+        playerDetails = (('Tribe', playerData['tribe']), ('Tribe Rank', playerData['tribeRank']), ('Last Online', onlineStatus), ('Time Online', playerData['timeonline']),('Res gathered', playerData['ResStatistics']))
+        statistics = (('Killls', playerData['PVPstatistics']['kills']), ('Deaths', playerData['PVPstatistics']['deaths']), ('Suicides', playerData['PVPstatistics']['suicides']),('Max Range', playerData['PVPstatistics']['max_range']))
+        topWeapons = ()
+        columns = [playerDetails, statistics, topWeapons]
 
         ##Util.Log(str(self.tribeMembers[tribeName]))
-        gui.append(self.componentUIImage(playerID, parent="TribeBgUI", color="0.9 0.4 0.4 0.98", anchormin="0.2 0.15", anchormax="0.9 0.88"))
+        gui.append(self.componentUIImage(playerID, parent="playerList", color="0.4 0.4 0.4 0.98", anchormin="0.0 0.01", anchormax="0.999 0.99"))
         gui.append(self.componentUIButton(command="tribe.player.close", parent=playerID, close=playerID, color="0.8 1.0 1.0 0.0", anchormin="0.0 0.0", anchormax="1.0 1.0" ))
-        gui.append(self.componentUIText(text="Player: " + str(playerID), parent=playerID, color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin="0.0 0.94", anchormax="0.99 0.99"))
+        gui.append(self.componentUIText(text=playerData['name'], parent=playerID, color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="16", anchormin="0.0 0.94", anchormax="0.99 0.99"))
 
-        gui.append(self.componentUIText(text="Statistics: ", parent=playerID, color="1.0 0.9 0.9 0.95", fontSize="15", anchormin="0.01 0.89", anchormax="0.2 0.93"))
 
+        for i, title in enumerate(columnTitles):
+            anchormin_x = 0.01+(i*0.2)
+            anchormin_y = 0.85
+            anchormax_x = 0.3+(i*0.2)
+            anchormax_y = 0.9
+            anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
+            anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
+            gui.append(self.componentUIText(text=columnTitles[i], parent=playerID, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
+            for j, detail in enumerate(columns[i]):
+                anchormin_y = 0.85-((j+1)*0.05)
+                anchormax_y = 0.9-((j+1)*0.05)
+                anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
+                anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
+                gui.append(self.componentUIText(text=columns[i][j][0]+': '+str(columns[i][j][1]), parent=playerID, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
+
+
+
+        gui.append(self.componentUIText(text="click anywhere on this window to close", parent=playerID, color="1.0 0.3 0.3 0.95", align="MiddleCenter", fontSize="9", anchormin="0.0 0.05", anchormax="0.99 0.09"))
 
         tribeDetails = json.to_json(gui)
         objectList = json.makepretty(tribeDetails)
@@ -679,10 +706,11 @@ class GTribes(cachedMenuData):
             ui.makeBackground(self.backGround)
             ui.currentView = None
             ui.selection = None
+
             self.overlays[player.SteamID] = ui
 
         Util.Log(currentView+', '+ str(selection))
-        if ui.selection != selection or ui.currentView != currentView or popup:
+        if ui.selection != selection or ui.currentView != currentView or ui.playerPopup != popup:
             if ui.currentView != currentView and ui.currentView != None:
                 ui.destroyOverlay(ui.currentView, 536)
             if ui.selection != selection or ui.selection != None:
@@ -696,7 +724,6 @@ class GTribes(cachedMenuData):
                 ui.makeMenu(self._makeMenu("Tribes"))
                 ui.createTribesView(self.tribesViewObjectList)
                 if selection:
-                    #ui.destroyOverlay(ui.selection, 562)
                     ui.createTribePopup(self.tribeDetails[selection])
             if currentView == "playersView":
                 ui.makeMenu(self._makeMenu("Players"))
@@ -704,10 +731,14 @@ class GTribes(cachedMenuData):
                 if selection == 'Online':
                     ui.createPlayerList(self.onlinePlayersObjectList)
                     if popup:
+                        ui.destroyOverlay(ui.playerPopup, 710)
+                        ui.playerPopup = popup
                         ui.createPlayerPopup(self._createPlayerPopup(popup))
                 elif selection == 'Offline':
                     ui.createPlayerList(self.offlinePlayersObjectList)
                     if popup:
+                        ui.destroyOverlay(ui.playerPopup, 710)
+                        ui.playerPopup = popup
                         ui.createPlayerPopup(self._createPlayerPopup(popup))
 
             if currentView == 'playerStats':
@@ -784,7 +815,9 @@ class GTribes(cachedMenuData):
             if cce.cmd == 'tribe.player.close':
                 playerDetailsID = str.join('', cce.Args)
                 ui = self.overlays[playerID]
+                ui.playerPopup = None
                 self.createGUI(player, ui.currentView, ui.selection)
+
 
 
             # tribe menu & submenu
@@ -858,10 +891,7 @@ class GTribes(cachedMenuData):
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
-        #destroy the menu
-        # int = self.playersWithMenu[player.SteamID]
-        # int.destroyOverlay('TribeMenuButtons')
-        self.playersWithMenu.pop(player.SteamID)
+        self.playersWithMenu.pop(player.SteamID, None)
 
 
     def On_PlayerWakeUp(self, player):

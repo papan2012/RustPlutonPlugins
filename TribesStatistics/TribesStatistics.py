@@ -1,0 +1,143 @@
+__author__ = 'PanDevas'
+__version__ = '1.2'
+
+import clr
+
+clr.AddReferenceByPartialName("Pluton")
+import Pluton
+
+
+class TribesStatistics():
+
+    def On_PluginInit(self):
+        '''
+        self.playerData = {'name': self.playerName,
+                        'tribe': self.playerTribe,
+                        'tribeRank': self.playerTribeRank,
+                        'pendingInvites' : [],
+                        'lastonline': 0,
+                        'timeonline': 0,
+                        'PVPstatistics': {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0, 'headshots': 0},
+                        'ResStatistics': 0
+                        'killedBy': {playerID: 0},
+                        'killed': {playerID: 0},
+                        'WeaponKills': {'weapon_name':0}
+                        }
+        '''
+
+    # CLASSES FOR HANDLING STATISTICS BELLOW
+
+    def _checkIfKeyExists(self, playerID, key, value=None):
+        playerData = DataStore.Get("Players", playerID)
+        if key not in playerData.keys():
+            playerData[key] = value
+        else:
+            Util.Log('key exists')
+        Util.Log('type value '+str(type(value)))
+        Util.Log('VALUE: '+str(value))
+
+
+    def On_PlayerDied(self, pde):
+        attacker = pde.Attacker
+        victim = pde.Victim
+
+        if attacker and victim and attacker != victim:
+            if attacker.IsPlayer():
+                attackerData = DataStore.Get("Players", attacker.SteamID)
+                victimData = DataStore.Get("Players", victim.SteamID)
+                distance = round(Util.GetVectorsDistance(attacker.Location, victim.Location), 2)
+                Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon.Name) + ", with a hit to " + pde.HitBone+ " from "+str(distance)+" meters.")
+                attackerData['PVPstatistics']['kills'] +=1
+                victimData['PVPstatistics']['deaths'] += 1
+
+                # update distance
+                Util.Log("update distance"+attackerData['name'])
+                Util.Log(attackerData['name']+' '+str(attackerData['PVPstatistics']['max_range']))
+                Util.Log(victimData['name']+' '+str((victimData['PVPstatistics']['max_range'])))
+                if attackerData['PVPstatistics']['max_range'] < distance:
+                    attackerData['PVPstatistics']['max_range'] = distance
+
+                Util.Log("NAKON UPDEJTA")
+                Util.Log(attackerData['name']+' '+str(attackerData['PVPstatistics']['max_range']))
+                Util.Log(victimData['name']+' '+str((victimData['PVPstatistics']['max_range'])))
+
+                # update attacker killed list
+                Util.Log("attacker killed "+attackerData['name'])
+                if victim.SteamID in attackerData['killed'].keys():
+                    attackerData['killed'][victim.SteamID] +=1
+                else:
+                    attackerData['killed'][victim.SteamID] = 1
+
+                # update victim killedby dict
+                Util.Log("wictim weapon killed by "+victimData['name'])
+                if attacker.SteamID in victimData['killedBy'].keys():
+                    victimData['killedBy'][attacker.SteamID] += 1
+                else:
+                    victimData['killedBy'][attacker.SteamID] = 1
+                # update attacker weapon use dict
+                Util.Log("attacker weapon use "+attackerData['name'])
+                if pde.Weapon.Name in attackerData['WeaponKills'].keys():
+                    attackerData['WeaponKills'][pde.Weapon.Name] += 1
+                else:
+                    attackerData['WeaponKills'][pde.Weapon.Name] = 1
+
+            else:
+                victimData = DataStore.Get("Players", victim.SteamID)
+                name = str(attacker.Name.split('/')[-1].split('.')[0])
+                Server.Broadcast(victim.Name + " was killed by " + name)
+                victimData['PVPstatistics']['deaths'] += 1
+
+        else:
+            victimData = DataStore.Get("Players", victim.SteamID)
+            Server.Broadcast(victim.Name + " died from " + str(pde.DamageType))
+            victimData['PVPstatistics']['deaths'] +=  1
+            if str(pde.DamageType) == 'Suicide':
+                Util.Log("Sucide "+ victimData['name'])
+                Util.Log("Sucide "+ str(victimData['PVPstatistics']['suicides']))
+                victimData['PVPstatistics']['suicides'] += 1
+                Util.Log("Sucide "+ str(victimData['PVPstatistics']['suicides']))
+
+
+
+    # ResStatistics
+    def On_PlayerGathering(self, ge):
+        playerID = ge.Gatherer.SteamID
+        gatherAmount = ge.Amount
+
+        playerData = DataStore.Get("Players", playerID)
+        if 'ResStatistics' not in playerData.keys():
+            playerData['ResStatistics'] = 0
+        playerData['ResStatistics'] += gatherAmount
+
+        test = DataStore.Get("Players", playerID)
+        Util.Log(str(test['ResStatistics']))
+
+
+    def On_Command(self, cmd):
+        '''
+                        'PVPstatistics': {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0},
+                        'ResStatistics': 0
+                        'killedBy': {},
+                        'killed': {},
+                        'WeaponKills': {}
+        '''
+        command = cmd.cmd
+        player = cmd.User
+
+        updateKeys = [('PVPstatistics', {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0}), ('ResStatistics', 0), ('killedBy', {}), ('killed', {}), ('WeaponKills', {})]
+        if command == 'update!':
+            i=0
+            for playerID in DataStore.GetTable("Players").Keys:
+                playerData = DataStore.Get('Players', playerID)
+                playerData['timeonline'] = 20
+                Util.Log(playerData['name']+' '+str(playerData['timeonline']))
+                for i, item in enumerate(updateKeys):
+                    playerData[updateKeys[i][0]] = updateKeys[i][1]
+
+        if command == 'stats':
+            playerD = DataStore.Get('Players', cmd.User.SteamID)
+            for key in playerD.keys():
+                player.Message(str(key)+' '+str(playerD[key]))
+            playerD['PVPstatistics']['max_range'] = 0
+            playerD['PVPstatistics']['suicides'] = 0
+            playerD['PVPstatistics']['suicides'] = 1

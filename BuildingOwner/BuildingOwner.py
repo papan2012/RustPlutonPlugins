@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.1'
+__version__ = '1.12'
 
 import clr
 clr.AddReferenceByPartialName("Pluton")
@@ -15,7 +15,7 @@ class BuildingOwner():
     '''
     def __init__(self):
         self.admin = 'PanDevas'
-        self.skipRemoveForTypes = ["door", 'pillar']
+        self.skipRemoveForTypes = ['pillar']
         self.buildingOwnerInfo = []
 
     def On_ServerSaved(self):
@@ -26,10 +26,12 @@ class BuildingOwner():
         player = buildingpart.Builder
         location = buildingpart.BuildingPart.Location
         locationCheck = DataStore.Get("BuildingPartOwner", location)
-        if player.Name == 'PanDevas' and locationCheck:
-            player.Message("Building already in datastore")
+        if locationCheck and player.Name == self.admin:
+            player.Message("BuildingPart already in datastore")
         DataStore.Add("BuildingPartOwner", location, player.SteamID)
-        Util.Log("Building added to datastore "+str(location))
+        if not DataStore.Get("BuildingPartOwner", location):
+            Util.Log("BuildingPart was not found in Datastore after placement")
+            player.Message("BuildingPart not in Datastore, hit it with a Hammer to add it!")
 
 
     def On_BuildingPartDemolished(self, bpde):
@@ -49,38 +51,42 @@ class BuildingOwner():
 
     def On_BeingHammered(self, he):
         '''
-        this is a dirty workaround and a helper function
+        this is a dirty workaround when the doors are not placed in exact location with the frame
+        and a helper function for determining ownership of building parts
         '''
+
         getOwnerObjects = ["BuildingBlock", "Door"]
 
         if he.Victim.baseEntity.GetType().ToString() in getOwnerObjects:
+
             player = he.Player
             location = he.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", location)
 
             if not victimID:
-                if player.Name == self.admin:
-                    player.Message("building was not found "+str(he.Victim.Location))
-                else:
-                    DataStore.Add("BuildingPartOwner", location, player.SteamID)
-            if victimID and player.SteamID in self.buildingOwnerInfo:
-                victimID = DataStore.Get("BuildingPartOwner", location)
+                DataStore.Add("BuildingPartOwner", location, player.SteamID)
+                player.Message("BuildingPart added to Datastore")
+                victimID = player.SteamID
+
+            if player.SteamID in self.buildingOwnerInfo:
                 victim = Server.FindPlayer(victimID)
                 if not victim:
                     for pl in Server.OfflinePlayers.Values:
                         if pl.SteamID == victimID:
                             victim = pl
+                player.Message("This BuildingPart belongs to "+str(victim.Name))
 
-                player.Message("This building belongs to "+str(victim.Name))
-                if player.Name == self.admin:
-                    player.Message(str(he.Victim.Location))
+
 
     def On_Command(self, cmd):
         player = cmd.User
         command = cmd.cmd
         args = str.join(' ', cmd.args)
-        if command == 'owner':
-            if player.SteamID not in self.buildingOwnerInfo:
-                self.buildingOwnerInfo.append(player.SteamID)
-            else:
-                self.buildingOwnerInfo.remove(player.SteamID)
+
+        commands = ('owner', 'ownerme')
+        if command in commands:
+            if command == 'owner':
+                if player.SteamID not in self.buildingOwnerInfo:
+                    self.buildingOwnerInfo.append(player.SteamID)
+                else:
+                    self.buildingOwnerInfo.remove(player.SteamID)
