@@ -100,7 +100,7 @@ class OfflineProtection():
     def _removeNotification(self, player):
         if player.SteamID in self.flaggedPlayers:
             self.flaggedPlayers.remove(player.SteamID)
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", "flagui")
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
 
     def On_CombatEntityHurt(self, HurtEvent):
         '''
@@ -439,8 +439,16 @@ class OfflineProtection():
 
         if command in commands:
             if command == 'flag':
+                playerD = DataStore.Get('Players', player.SteamID)
+                tribeName = playerD['tribe']
+
                 if self.checkPVPFlag(player.SteamID):
-                    player.MessageFrom("AOR", "You are flagged, your buildings won't be protected if you go offline while you're flagged!")
+                    if tribeName == 'Survivors':
+                        lastAggression = DataStore.Get("pvpFlags", player.SteamID)
+                    elif tribeName != 'Survivors':
+                        lastAggression = DataStore.Get("pvpTribeFlags", tribeName)
+                    timediff = self.timerLenght - (time.time() - lastAggression)
+                    player.MessageFrom("AOR", "You will be flagged for "+ str(round(timediff/60, 2)) + ' minutes.')
                 else:
                     player.MessageFrom("AOR", "You are not flagged")
 
