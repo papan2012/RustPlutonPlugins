@@ -24,6 +24,8 @@ class TribesStatistics():
                         'WeaponKills': {'weapon_name':0}
                         }
         '''
+        pass
+
     def On_PlayerDied(self, pde):
         attacker = pde.Attacker
         victim = pde.Victim
@@ -33,7 +35,8 @@ class TribesStatistics():
                 attackerData = DataStore.Get("Players", attacker.SteamID)
                 victimData = DataStore.Get("Players", victim.SteamID)
                 distance = round(Util.GetVectorsDistance(attacker.Location, victim.Location), 2)
-                Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon.Name) + ", with a hit to " + pde.HitBone+ " from "+str(distance)+" meters.")
+                if victim:
+                    Server.Broadcast(attacker.Name+ " killed " + victim.Name + " using "+ str(pde.Weapon.Name) + ", with a hit to " + pde.HitBone+ " from "+str(distance)+" meters.")
                 attackerData['PVPstatistics']['kills'] +=1
                 victimData['PVPstatistics']['deaths'] += 1
 
@@ -96,18 +99,20 @@ class TribesStatistics():
         command = cmd.cmd
         player = cmd.User
 
-        updateKeys = [('PVPstatistics', {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0}), ('killedBy', {}), ('killed', {}), ('WeaponKills', {})]
-        if command == 'online':
-            Util.Log(str(player.TimeOnline))
-            # i=0
-            # for playerID in DataStore.GetTable("Players").Keys:
-            #     playerData = DataStore.Get('Players', playerID)
-            #     playerData['timeonline'] = 20
-                # Util.Log(playerData['name']+' '+str(playerData['timeonline']))
-                # playerData['ResStatistics'] = 0
-                # # for i, item in enumerate(updateKeys):
-                # #     #Util.Log(str(playerData[updateKeys[i][0]])+ ' ' +str(dict(updateKeys[i][1])))
-                # #     playerData[updateKeys[i][0]] = dict(updateKeys[i][1])
+        # updateKeys = [('PVPstatistics', {'kills': 0, 'deaths': 0, 'suicides': 0, 'max_range': 0}), ('killedBy', {}), ('killed', {}), ('WeaponKills', {})]
+        # if command == 'update!':
+        #     Util.Log("Updating database")
+        #     j=0
+        #     for playerID in DataStore.GetTable("Players").Keys:
+        #         playerData = DataStore.Get('Players', playerID)
+        #         playerData['timeonline'] = 20
+        #         Util.Log(playerData['name']+' '+str(playerData['timeonline']))
+        #         playerData['ResStatistics'] = 0
+        #         j+=1
+        #         for i, item in enumerate(updateKeys):
+        #             #Util.Log(str(i)+str(playerData['name']))
+        #             #Util.Log(str(playerData[updateKeys[i][0]])+ ' ' +str(dict(updateKeys[i][1])))
+        #             playerData[updateKeys[i][0]] = dict(updateKeys[i][1])
 
         if command == 'stats':
             playerD = DataStore.Get('Players', cmd.User.SteamID)

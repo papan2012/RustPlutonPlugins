@@ -401,7 +401,7 @@ class cachedMenuData(InterfaceComponents):
         if Server.FindPlayer(playerID):
             onlineStatus = 'Now'
         else:
-            onlineStatus = str(round((time.time() - playerData['lastonline'])/60/24, 2))+ ' hours ago'
+            onlineStatus = str(round((time.time() - playerData['lastonline'])/3600, 2))+ ' hours ago'
         timeOnline = str(round(playerData['timeonline'],2))+' hours'
 
         columnTitles = ("Player Details:", "Statistics:", "Top Weapons:")

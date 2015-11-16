@@ -62,13 +62,15 @@ class BuildingOwner():
             player = he.Player
             location = he.Victim.Location
             victimID = DataStore.Get("BuildingPartOwner", location)
-
             if not victimID:
-                DataStore.Add("BuildingPartOwner", location, player.SteamID)
-                player.Message("BuildingPart added to Datastore")
-                victimID = player.SteamID
+                player.Message("Owner not found, type /owner in chat and hit the building part with a hammer")
+
 
             if player.SteamID in self.buildingOwnerInfo:
+                if not victimID:
+                    DataStore.Add("BuildingPartOwner", location, player.SteamID)
+                    player.Message("BuildingPart not founnd, but added to Datastore")
+                    victimID = player.SteamID
                 victim = Server.FindPlayer(victimID)
                 if not victim:
                     for pl in Server.OfflinePlayers.Values:

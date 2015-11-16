@@ -248,5 +248,6 @@ class WelcomeScreen():
             slef.shown_players = []
 
     def On_PlayerDisconnected(self, player):
-        if player.SteamID in self.thisSessionShown:
-            self.thisSessionShown.remove(player.SteamID)
+        if player:
+            if player.SteamID in self.thisSessionShown:
+                self.thisSessionShown.remove(player.SteamID)

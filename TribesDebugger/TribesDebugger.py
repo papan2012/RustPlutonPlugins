@@ -94,7 +94,6 @@ class TribesDebugger():
                     for item in DataStore.Get("Tribes", key)['tribeMembers']:
                         pd = DataStore.Get('Players', item)
                         list_of_players.append(pd['name'])
-
                     Util.Log("List of players: "+str(list_of_players))
             else:
                 print "No tribes found"
@@ -104,6 +103,3 @@ class TribesDebugger():
             playerID = player.SteamID
             playerD = DataStore.Get("Players", playerID)
             playerD['tribe'] = "Survivors"
-
-        if command == 'savedata':
-            DataStore.Save()
