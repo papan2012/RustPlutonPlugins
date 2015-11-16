@@ -1,7 +1,0 @@
-Provjeri radi li odbijanje napuštanja tribe-a za tribe leadera, ako ima još membera u trajbu
-Ako radi, poveæaj check za +1
-
-
-flagPlayerPVP sada uzima steamID umjesto player objekta
-
-makni playera iz self.reAgress dicta nakon micanja flaga

@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.51'
+__version__ = '1.7'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -61,7 +61,7 @@ string = json.encode(flagmark)
 flagged = json.makepretty(string)
 
 
-class AntiOfflineRaid():
+class OfflineProtection():
 
     def On_PluginInit(self):
         DataStore.Add('pvpFlags', 'flagtableinit', time.time())
@@ -100,7 +100,7 @@ class AntiOfflineRaid():
     def _removeNotification(self, player):
         if player.SteamID in self.flaggedPlayers:
             self.flaggedPlayers.remove(player.SteamID)
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
+        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", "flagui")
 
     def On_CombatEntityHurt(self, HurtEvent):
         '''
@@ -409,10 +409,12 @@ class AntiOfflineRaid():
                 #Util.Log("Flagged tribe member disconnnected")
                 DataStore.Add('pvpTribeFlags', tribeName, time.time())
                 self.flaggedPlayers.remove(playerID)
+                self._removeNotification(player)
         elif playerID in DataStore.Keys('pvpFlags'):
             #Util.Log("Survivor disconnected")
             DataStore.Add('pvpFlags', playerID, time.time())
             self.flaggedPlayers.remove(playerID)
+            self._removeNotification(player)
 
 
 

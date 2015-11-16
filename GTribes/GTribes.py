@@ -119,7 +119,7 @@ class CreateUI(InterfaceComponents):
     def createOverlay(self, objectlist):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
 
-    def destroyOverlay(self, name, line):
+    def destroyOverlay(self, name):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
     def makeBackground(self, objectList):
@@ -127,7 +127,7 @@ class CreateUI(InterfaceComponents):
 
 
     def makeMenu(self, objectList):
-        self.destroyOverlay("MainMenu", 130)
+        self.destroyOverlay("MainMenu")
         self.createOverlay(objectList)
 
     ###
@@ -135,15 +135,15 @@ class CreateUI(InterfaceComponents):
     ###
 
     def createPlayersView(self, objectList):
-        self.destroyOverlay(self.currentView, 138)
+        self.destroyOverlay(self.currentView)
         self.createOverlay(objectList)
 
     def createPlayerList(self, objectList):
-        self.destroyOverlay('playerList', 144)
+        self.destroyOverlay('playerList')
         self.createOverlay(objectList)
 
     def createPlayerPopup(self, objectList):
-        self.destroyOverlay(self.playerPopup, 145)
+        self.destroyOverlay(self.playerPopup)
         self.createOverlay(objectList)
 
     ###
@@ -151,7 +151,7 @@ class CreateUI(InterfaceComponents):
     ###
 
     def createTribesView(self, objectList):
-        self.destroyOverlay(self.currentView, 153)
+        self.destroyOverlay(self.currentView)
         self.createOverlay(objectList)
 
     ###
@@ -159,7 +159,7 @@ class CreateUI(InterfaceComponents):
     ###
 
     def createPlayerStatistics(self, selection):
-        #self.destroyOverlay('playerStats', 161)
+        self.destroyOverlay('playerStats')
 
         gui = []
 
@@ -182,11 +182,11 @@ class CreateUI(InterfaceComponents):
     ###
 
     def createHelpMenu(self, objectList):
-        self.destroyOverlay(self.currentView, 182)
+        self.destroyOverlay(self.currentView)
         self.createOverlay(objectList)
 
     def createHelpScreen(self, objectList):
-        self.destroyOverlay('helptext', 187)
+        self.destroyOverlay('helptext')
         self.createOverlay(objectList)
 
 ###
@@ -642,6 +642,7 @@ class GameUI(InterfaceComponents):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
 
     def destroyOverlay(self, name):
+        Util.Log(str(name))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
     def createButtons(self):
@@ -721,9 +722,9 @@ class GTribes(cachedMenuData):
 
         if ui.selection != selection or ui.currentView != currentView or ui.playerPopup != popup:
             if ui.currentView != currentView and ui.currentView != None:
-                ui.destroyOverlay(ui.currentView, 536)
+                ui.destroyOverlay(ui.currentView)
             if ui.selection != selection or ui.selection != None:
-                ui.destroyOverlay(ui.selection, 538)
+                ui.destroyOverlay(ui.selection)
 
 
             ui.currentView = currentView
@@ -740,13 +741,13 @@ class GTribes(cachedMenuData):
                 if selection == 'Online':
                     ui.createPlayerList(self.onlinePlayersObjectList)
                     if popup:
-                        ui.destroyOverlay(ui.playerPopup, 710)
+                        ui.destroyOverlay(ui.playerPopup)
                         ui.playerPopup = popup
                         ui.createPlayerPopup(self._createPlayerPopup(popup))
                 elif selection == 'Offline':
                     ui.createPlayerList(self.offlinePlayersObjectList)
                     if popup:
-                        ui.destroyOverlay(ui.playerPopup, 710)
+                        ui.destroyOverlay(ui.playerPopup)
                         ui.playerPopup = popup
                         ui.createPlayerPopup(self._createPlayerPopup(popup))
 
@@ -757,7 +758,7 @@ class GTribes(cachedMenuData):
             if currentView == 'helpView':
                 ui.makeMenu(self._makeMenu("Help"))
                 ui.createHelpMenu(self._createHelpMenu(selection))
-                ui.destroyOverlay(selection, 682)
+                ui.destroyOverlay(selection)
                 ui.createHelpScreen(self._createHelpScreen(selection))
 
 
@@ -768,7 +769,7 @@ class GTribes(cachedMenuData):
 
     def destroyGUI(self, player):
         ui = self.overlays[player.SteamID]
-        ui.destroyOverlay("TribeBgUI",702)
+        ui.destroyOverlay("TribeBgUI")
         ui.currentView = None
         self.overlays.pop(player.SteamID, None)
 
@@ -894,12 +895,15 @@ class GTribes(cachedMenuData):
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
 
     def On_PlayerDisconnected(self, player):
-        Server.Broadcast(player.Name+" is now sleeping.")
+        int = self.playersWithMenu[player.SteamID]
+        int.destroyOverlay('TribeMenuButtons')
+        self.playersWithMenu.pop(playerID)
         self._addToOfflinePLayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
         self.playersWithMenu.pop(player.SteamID, None)
+        Server.Broadcast(player.Name+" is now sleeping.")
 
 
     def On_PlayerWakeUp(self, player):

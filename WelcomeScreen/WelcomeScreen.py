@@ -239,7 +239,7 @@ class WelcomeScreen():
             player = cce.User
             playerID = player.SteamID
         if cce.cmd == 'close.welcome':
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeUI"))
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", "welcomeUI")
         if cce.cmd == "create.welcome":
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
         if cce.cmd == "welcome.dontshow":
