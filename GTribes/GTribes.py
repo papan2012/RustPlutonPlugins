@@ -526,7 +526,7 @@ class cachedMenuData(InterfaceComponents):
         :param selection:
         :return:
         '''
-        helpButtons = [('Tribes', 'tribeUI.help.tribes'), ('Door System', 'tribeUI.help.doors'), ('AntiOfflineRaid', 'tribeUI.help.aor'),('Server Info', 'tribeUI.help.server')]
+        helpButtons = [('Tribes', 'tribeUI.help.tribes'), ('Door System', 'tribeUI.help.doors'), ('Offline Protection', 'tribeUI.help.aor'),('Server Info', 'tribeUI.help.server')]
         gui = []
 
         anchormin_x = 0.105
@@ -560,23 +560,23 @@ class cachedMenuData(InterfaceComponents):
         :return: objectList for UI generation
         '''
 
-        helpText = {'tribeUI.help.aor':"ANTIOFFLINERAID\n\n" \
-                     "The point of the AntiOfflineRaid system is, well, to prevent offline raid.\n" \
+        helpText = {'tribeUI.help.aor':"Offline Protection\n\n" \
+                     "The point of the Offline Protection system is, well, to prevent offline raid.\n" \
                      "Since it's one of the kind, you'll have to get to know how it works.\n\n" \
                      "Basically, when you go offline, your buildings get total protection from any player made damage for 24 hours.\n" \
                      "In case you don't come online in the next 24 hours, your building will be susceptible to damage.\n" \
                      "So, if you can't play, be sure to log in at least once in that 24 hour period to refresh the timer." \
-                     "AntiofflineRaid system doesn't prevent decay!\n\n" \
+                     "Offline Protection system doesn't prevent decay or helicopter damage!\n\n" \
                      "if a player attacks you or one of or your buildings, while you are online, you and the attacking player will be flagged with a 15 minute timer.\n" \
                      "If you log off while the timer is still on, when the timer runs out it will be extended for another 15 minutes, and you're building will not be protected until that timer runs out.\n" \
                      "That will prevent logouts in the middle of the raid to prevent raiders to take what they came for.\n" \
                      "So, if you wan't to protect your stuff, you'll have to fight for it!\n\n" \
-                     "Tribe system is implemented to prevent players that are in the tribe to trigger AntiOfflineRaid system mechanisms.\n" \
+                     "Tribe system is implemented to prevent players that are in the tribe to trigger Offline Protection system mechanisms.\n" \
                      "If you're playing with someone, join a Tribe to avoid any inconvenience and get some benefits.\n" \
-                     "More about tribe mechanism in Tribes help section.\n\n"\
-                     "In you get raided, raiders might put their walls on the location they entered through.\n" \
-                     "If you suspect such actions ware taken, type /owner in chat and hit your walls with the Hammer. It will tell you who do they belong to.\n"\
-                     "Turn the owner check off when you're done with repeated /owner command in chat.",
+                     "More about Tribe mechanism in Tribes help section.\n\n"\
+                     "Usefull commands:.\n" \
+                     " - /owner - turns on/off building part ownnership reporting\n"\
+                     " - /flag - tells you for how long you'll be flaged\n",
         'tribeUI.help.tribes':"TRIBES\n\n" \
                        "If you wan't to live with someone, or use his doors, you'll have to join the tribe with him.\n" \
                        "Tribe members can access all doors belonging to other tribe members. \n" \
@@ -611,9 +611,10 @@ class cachedMenuData(InterfaceComponents):
                       "That will prevent anyone opening them without the code.\n\n",
         'tribeUI.help.server':"SERVER INNFO\n\n" \
                         " - decay lowered to 25% effectiveness\n" \
-                        " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n\n" \
-                        "If you want to hide the top menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n" \
-                        "\n\n\nIf you got any questions, ask in chat, someone will know the answer.\n" \
+                        " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n" \
+                        " - when destroying a building part, another building part won't be placeable on that location for 2 minutes.\n\n"\
+                        "If you want to hide the menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n" \
+                        "\nIf you have any other questions, ask in chat, someone will know the answer.\n" \
                         "For any problems with the server plugins, contact the server owner, or plugin developer, Pan Devas on Steam.\n" \
                         "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information."}
 
@@ -643,7 +644,7 @@ class GameUI(InterfaceComponents):
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(objectlist))
 
     def destroyOverlay(self, name):
-        Util.Log(str(name))
+        #Util.Log(str(name))
         CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(self.player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList(name))
 
     def createButtons(self):

@@ -168,7 +168,8 @@ class OfflineProtection():
                 victimID = victim.SteamID
                 if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                     self.checkTribeBeforeFlag(attackerID)
-                    self.checkTribeBeforeFlag(victimID)
+                    if victim in Server.ActivePlayers:
+                        self.checkTribeBeforeFlag(victimID)
 
 
     def victInAttTribe(self, attackerID, victimID):
@@ -417,17 +418,15 @@ class OfflineProtection():
             self._removeNotification(player)
 
 
-
-
     def On_PlayerWakeUp(self, player):
         playerD = DataStore.Get('Players', player.SteamID)
 
         if playerD['tribe'] == 'Survivors' and player.SteamID in DataStore.Keys("pvpFlags"):
-            if playerID not in self.flaggedPlayers:
+            if player.SteamID not in self.flaggedPlayers:
                 self._createNotification(player)
         elif playerD['tribe'] != 'Survivors':
             if DataStore.ContainsKey("pvpTribeFlags", playerD['tribe']):
-                if player.SteamID not in self.flaggedPlayers:
+                if player in Server.ActivePlayers and player.SteamID not in self.flaggedPlayers:
                     self._createNotification(player)
 
 
