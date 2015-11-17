@@ -241,6 +241,7 @@ class cachedMenuData(InterfaceComponents):
             self.tribeNames.append((key, len(tribesTable[key]['tribeMembers'])))
             self.tribeMembers[key] = tribesTable[key]['tribeMembers']
 
+
         self._sortListByKey(self.tribeNames, 1,reverse=True)
         self._getPlayerData("Players")
 
@@ -897,7 +898,7 @@ class GTribes(cachedMenuData):
     def On_PlayerDisconnected(self, player):
         int = self.playersWithMenu[player.SteamID]
         int.destroyOverlay('TribeMenuButtons')
-        self.playersWithMenu.pop(playerID)
+        self.playersWithMenu.pop(player.SteamID)
         self._addToOfflinePLayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")

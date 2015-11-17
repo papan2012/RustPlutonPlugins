@@ -15,7 +15,6 @@ class BuildingOwner():
     '''
     def __init__(self):
         self.admin = 'PanDevas'
-        self.skipRemoveForTypes = ['pillar']
         self.buildingOwnerInfo = []
 
     def On_ServerSaved(self):
@@ -25,12 +24,19 @@ class BuildingOwner():
     def On_Placement(self, buildingpart):
         player = buildingpart.Builder
         location = buildingpart.BuildingPart.Location
+        buildingPartName = buildingpart.BuildingPart.baseEntity.LookupShortPrefabName().split('.')[0]
+        # for shared locations of buildingparts (mozda ovako)
         locationCheck = DataStore.Get("BuildingPartOwner", location)
-        if locationCheck and player.Name == self.admin:
-            player.Message("BuildingPart already in datastore")
-        DataStore.Add("BuildingPartOwner", location, player.SteamID)
+        if locationCheck:
+            alredayPlacedList = DataStore.Get("SharedBuildingLocations", location)
+            if alredayPlacedList:
+                alredayPlacedList.append(buildingPartName)
+                DataStore.Add("SharedBuildingLocations", location, alredayPlacedList)
+            else:
+                DataStore.Add("SharedBuildingLocations", location, [buildingPartName])
+        else:
+            DataStore.Add("BuildingPartOwner", location, player.SteamID)
         if not DataStore.Get("BuildingPartOwner", location):
-            Util.Log("BuildingPart was not found in Datastore after placement")
             player.Message("BuildingPart not in Datastore, hit it with a Hammer to add it!")
 
 
@@ -45,8 +51,18 @@ class BuildingOwner():
         bpdeEntitiName = bpde.BuildingPart.baseEntity.LookupShortPrefabName().split('.')[0]
         location = bpde.BuildingPart.Location
 
-        if bpdeEntitiName not in self.skipRemoveForTypes:
+        sharedPlacements = DataStore.Get("SharedBuildingLocations", location)
+
+        if sharedPlacements:
+            if bpdeEntitiName in sharedPlacements:
+                sharedPlacements.remove(bpdeEntitiName)
+            else:
+                DataStore.Remove("SharedBuildingLocations", location)
+                DataStore.Remove("BuildingPartOwner", location)
+        else:
             DataStore.Remove("BuildingPartOwner", location)
+
+
 
 
     def On_BeingHammered(self, he):
@@ -68,9 +84,9 @@ class BuildingOwner():
 
             if player.SteamID in self.buildingOwnerInfo:
                 if not victimID:
-                    DataStore.Add("BuildingPartOwner", location, player.SteamID)
-                    player.Message("BuildingPart not founnd, but added to Datastore")
-                    victimID = player.SteamID
+                    #DataStore.Add("BuildingPartOwner", location, player.SteamID)
+                    player.Message("BuildingPart not found")
+                    #victimID = player.SteamID
                 victim = Server.FindPlayer(victimID)
                 if not victim:
                     for pl in Server.OfflinePlayers.Values:
