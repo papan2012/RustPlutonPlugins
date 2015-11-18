@@ -222,8 +222,7 @@ class cachedMenuData(InterfaceComponents):
             pass
 
 
-
-    def _addToOfflinePLayers(self, player):
+    def _addToOfflinePlayers(self, player):
         try:
             playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
             self.offlinePlayers.append((player.SteamID, playerName))
@@ -275,6 +274,8 @@ class cachedMenuData(InterfaceComponents):
         #close button text
         gui.append(self.componentUIText(text="close", parent="TribeBgUI", align="MiddleCenter", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.96 0.968", anchormax="0.995 0.999"))
         gui.append(self.componentUIButton(command="tribeUI.close" ,parent="TribeBgUI", color="0.8 1.0 1.0 0.15",anchormin="0.96 0.968", anchormax="0.995 0.999"))
+
+        gui.append(self.componentUIText(text="Visit us on <color=blue>http//crohq.org</color>, facebook page <color=blue>'Croatian Gaming Headquarters'</color>, and join our Steam Group <color=blue>'CroHQ Rust TribeWars'</color>", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.01 0.001", anchormax="0.99 0.05"))
 
         tribesUI = json.to_json(gui)
         objectList = json.makepretty(tribesUI)
@@ -403,7 +404,7 @@ class cachedMenuData(InterfaceComponents):
             onlineStatus = 'Now'
         else:
             onlineStatus = str(round((time.time() - playerData['lastonline'])/3600, 2))+ ' hours ago'
-        timeOnline = str(round(playerData['timeonline'],2))+' hours'
+        timeOnline = str(round((playerData['timeonline'] + (time.time() - playerData['lastonline']))/3600,2))+' hours'
 
         columnTitles = ("Player Details:", "Statistics:", "Top Weapons:")
         playerDetails = (('Tribe', playerData['tribe']), ('Tribe Rank', playerData['tribeRank']), ('Last Online', onlineStatus), ('Time Online', timeOnline),('Res gathered', playerData['ResStatistics']))
@@ -433,9 +434,13 @@ class cachedMenuData(InterfaceComponents):
             anchormax_y = 0.9
             anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
             anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
-            gui.append(self.componentUIText(text=columnTitles[i], parent=playerID, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
+            anchorminB = str(anchormin_x)+ ' 0.4'
+            anchormaxB = str(anchormax_x-0.1)+ ' ' + str(anchormax_y+0.02)
+
+            gui.append(self.componentUIText(text=columnTitles[i], parent=playerID, color="1.0 0.9 0.9 0.95", fontSize="15", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIImage("statsBG", parent=playerID, color="0.1 0.1 0.1 0.38", anchormin=anchorminB, anchormax=anchormaxB))
             for j, detail in enumerate(columns[i]):
-                anchormin_y = 0.85-((j+1)*0.05)
+                anchormin_y = 0.8-((j+1)*0.05)
                 anchormax_y = 0.9-((j+1)*0.05)
                 anchormin = str(anchormin_x) + ' ' + str(anchormin_y)
                 anchormax = str(anchormax_x) + ' ' + str(anchormax_y)
@@ -529,7 +534,7 @@ class cachedMenuData(InterfaceComponents):
         helpButtons = [('Tribes', 'tribeUI.help.tribes'), ('Door System', 'tribeUI.help.doors'), ('Offline Protection', 'tribeUI.help.aor'),('Server Info', 'tribeUI.help.server')]
         gui = []
 
-        anchormin_x = 0.105
+        anchormin_x = 0.05
         anchormin_y = 0.95
         anchormax_x = 0.19
         anchormax_y = 0.99
@@ -545,8 +550,8 @@ class cachedMenuData(InterfaceComponents):
             anchormax = str(anchormax_x)+' '+str(anchormax_y)
             gui.append(self.componentUIText(text=button[0], parent="helpView", color=color, align="MiddleCenter", fontSize="13", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command=button[1], parent="helpView", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
-            anchormin_x += 0.1
-            anchormax_x += 0.1
+            anchormin_x += 0.15
+            anchormax_x += 0.15
 
 
         helpView = json.to_json(gui)
@@ -560,7 +565,7 @@ class cachedMenuData(InterfaceComponents):
         :return: objectList for UI generation
         '''
 
-        helpText = {'tribeUI.help.aor':"Offline Protection\n\n" \
+        helpText = {'tribeUI.help.aor':"<color=blue>Offline Protection</color>\n\n" \
                      "The point of the Offline Protection system is, well, to prevent offline raid.\n" \
                      "Since it's one of the kind, you'll have to get to know how it works.\n\n" \
                      "Basically, when you go offline, your buildings get total protection from any player made damage for 24 hours.\n" \
@@ -577,7 +582,7 @@ class cachedMenuData(InterfaceComponents):
                      "Usefull commands:.\n" \
                      " - /owner - turns on/off building part ownnership reporting\n"\
                      " - /flag - tells you for how long you'll be flaged\n",
-        'tribeUI.help.tribes':"TRIBES\n\n" \
+        'tribeUI.help.tribes':"<color=blue>TRIBES</color>\n\n" \
                        "If you wan't to live with someone, or use his doors, you'll have to join the tribe with him.\n" \
                        "Tribe members can access all doors belonging to other tribe members. \n" \
                        "If you're not part of the Tribe, you won't be able to use doors on tribe member buildings, even if they don't have a code lock, or you know the lock code.\n" \
@@ -596,7 +601,7 @@ class cachedMenuData(InterfaceComponents):
                        " - /trdeny - deny tribe invite \n" \
                        " - /trkick -  kick member from tribe \n\n" \
                        "You can also type /trhelp in chat to get the list of available commands.\n\n",
-        'tribeUI.help.doors':"DOORS\n\n" \
+        'tribeUI.help.doors':"<color=blue>DOORS</color>\n\n" \
                       "Door system was implemented for two reasons:\n" \
                       " 1. We couldn't allow players using door on buildings whose owners were offline.\n" \
                       " 2. There's a rare glitch, or a hack, that lets people open doors without the code authorization.\n" \
@@ -609,7 +614,7 @@ class cachedMenuData(InterfaceComponents):
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n\n" \
                       "If you need some privacy, put code locks on chests. \n" \
                       "That will prevent anyone opening them without the code.\n\n",
-        'tribeUI.help.server':"SERVER INNFO\n\n" \
+        'tribeUI.help.server':"<color=blue>SERVER INNFO</color>\n\n" \
                         " - decay lowered to 25% effectiveness\n" \
                         " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n" \
                         " - when destroying a building part, another building part won't be placeable on that location for 2 minutes.\n\n"\
@@ -624,8 +629,8 @@ class cachedMenuData(InterfaceComponents):
         gui.append(self.componentUIText(text="TEXT", parent=selection, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin="0.01 0.0", anchormax="0.999 0.93"))
 
 
-        playerListUI = json.to_json(gui)
-        objectList = json.makepretty(playerListUI)
+        helpUI = json.to_json(gui)
+        objectList = json.makepretty(helpUI)
 
         return objectList.Replace("TEXT", helpText[selection])
 
@@ -667,8 +672,8 @@ class GameUI(InterfaceComponents):
             anchormax_y = 0.99
         gui.append(self.componentUIText(text="Press Enter or Tab to use the menu", parent="TribeMenuButtons", color="0.8 0.7 0.7 0.7", align="MiddleCenter", fontSize="8", anchormin="0.6 0.01", anchormax="1.0 0.999"))
 
-        playerListUI = json.to_json(gui)
-        objectList = json.makepretty(playerListUI)
+        gameUI = json.to_json(gui)
+        objectList = json.makepretty(gameUI)
 
         self.createOverlay(objectList)
 
@@ -692,7 +697,7 @@ class GTribes(cachedMenuData):
             self._addToOnlinePlayers(player)
 
         for player in Server.OfflinePlayers.Values:
-            self._addToOfflinePLayers(player)
+            self._addToOfflinePlayers(player)
 
         self._sortListByKey(self.onlinePlayers, 1)
         self._sortListByKey(self.offlinePlayers, 1)
@@ -719,6 +724,8 @@ class GTribes(cachedMenuData):
             ui.makeBackground(self.backGround)
             ui.currentView = None
             ui.selection = None
+            ui.playerPopup = None
+
 
             self.overlays[player.SteamID] = ui
 
@@ -727,7 +734,9 @@ class GTribes(cachedMenuData):
                 ui.destroyOverlay(ui.currentView)
             if ui.selection != selection or ui.selection != None:
                 ui.destroyOverlay(ui.selection)
-
+            if ui.playerPopup != popup:
+                ui.destroyOverlay(ui.playerPopup)
+                ui.playerPopup = None
 
             ui.currentView = currentView
             ui.selection = selection
@@ -764,9 +773,6 @@ class GTribes(cachedMenuData):
                 ui.createHelpScreen(self._createHelpScreen(selection))
 
 
-            # elif currentView == 'tribeDetails':
-            #     #not cached yet
-            #     ui.createTribePopup(self._createTribePopup(selection))
 
 
     def destroyGUI(self, player):
@@ -899,8 +905,8 @@ class GTribes(cachedMenuData):
     def On_PlayerDisconnected(self, player):
         int = self.playersWithMenu[player.SteamID]
         int.destroyOverlay('TribeMenuButtons')
-        self.playersWithMenu.pop(player.SteamID)
-        self._addToOfflinePLayers(player)
+        self.playersWithMenu.pop(player.SteamID, None)
+        self._addToOfflinePlayers(player)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
