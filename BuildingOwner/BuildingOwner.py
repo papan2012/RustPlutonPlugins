@@ -23,9 +23,9 @@ class BuildingOwner():
 
     def On_Placement(self, buildingpart):
         player = buildingpart.Builder
-        location = buildingpart.BuildingPart.Location
+        location = str(buildingpart.BuildingPart.Location)
         buildingPartName = buildingpart.BuildingPart.baseEntity.LookupShortPrefabName().split('.')[0]
-        # for shared locations of buildingparts (mozda ovako)
+        # for shared locations of buildingparts
         locationCheck = DataStore.Get("BuildingPartOwner", location)
         if locationCheck:
             alredayPlacedList = DataStore.Get("SharedBuildingLocations", location)
@@ -36,8 +36,8 @@ class BuildingOwner():
                 DataStore.Add("SharedBuildingLocations", location, [buildingPartName])
         else:
             DataStore.Add("BuildingPartOwner", location, player.SteamID)
-        if not DataStore.Get("BuildingPartOwner", location):
-            player.Message("BuildingPart not in Datastore, hit it with a Hammer to add it!")
+        # if not DataStore.Get("BuildingPartOwner", location):
+        #     player.Message("BuildingPart not in Datastore, hit it with a Hammer to add it!")
 
 
     def On_BuildingPartDemolished(self, bpde):
@@ -49,7 +49,7 @@ class BuildingOwner():
 
     def removeFromDatastore(self, bpde):
         bpdeEntitiName = bpde.BuildingPart.baseEntity.LookupShortPrefabName().split('.')[0]
-        location = bpde.BuildingPart.Location
+        location = str(bpde.BuildingPart.Location)
 
         sharedPlacements = DataStore.Get("SharedBuildingLocations", location)
 
@@ -76,7 +76,7 @@ class BuildingOwner():
         if he.Victim.baseEntity.GetType().ToString() in getOwnerObjects:
 
             player = he.Player
-            location = he.Victim.Location
+            location = str(he.Victim.Location)
             victimID = DataStore.Get("BuildingPartOwner", location)
             if not victimID:
                 player.Message("Owner not found, type /owner in chat and hit the building part with a hammer")
@@ -92,7 +92,9 @@ class BuildingOwner():
                     for pl in Server.OfflinePlayers.Values:
                         if pl.SteamID == victimID:
                             victim = pl
-                player.Message("This BuildingPart belongs to "+str(victim.Name))
+                #victimD = DataStore.Get("Players", player.SteamID)
+                #player.Message("This BuildingPart belongs to"+victimD['name'])
+                player.Message("This BuildingPart belongs to "+victim.Name)
 
 
 

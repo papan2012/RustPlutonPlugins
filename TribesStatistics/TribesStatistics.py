@@ -45,7 +45,6 @@ class TribesStatistics():
                     attackerData['PVPstatistics']['max_range'] = distance
 
                 # update attacker killed list
-                Util.Log("attacker killed "+attackerData['name'])
                 if victim.SteamID in attackerData['killed'].keys():
                     attackerData['killed'][victim.SteamID] +=1
                 else:

@@ -17,9 +17,13 @@ class TribeDoors():
 
 
     def On_DoorUse(self, due):
-        doorLocation = due.Door.Location
+        doorLocation = str(due.Door.Location)
         doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
         doorUserID = due.Player.SteamID
+        if not doorOwnerID:
+            Util.Log("Door owner not found")
+            DataStore.Add("BuildingPartOwner", doorLocation, doorUserID)
+            doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
 
         if doorOwnerID == doorUserID:
             due.Allow

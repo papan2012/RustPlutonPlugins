@@ -212,24 +212,50 @@ class cachedMenuData(InterfaceComponents):
         for key in playersTable.Keys:
             self.playerDetails[key] = playersTable[key]
 
-    def _addToOnlinePlayers(self, player):
+    def _addToOnlinePlayers(self, playerID):
+        playerD = DataStore.Get("Players", playerID)
+        if playerD:
+            playerName = playerD['name']
+        else:
+            playerName = Server.FindPlayer(playerID)
         try:
-            playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
-            self.onlinePlayers.append((player.SteamID, playerName))
-            if (player.SteamID, playerName) in self.offlinePlayers:
-                self.offlinePlayers.remove((player.SteamID, playerName))
+            self.onlinePlayers.append((playerID, playerName))
+            if (playerID, playerName) in self.offlinePlayers:
+                self.offlinePlayers.remove((playerID, player.Name.encode('utf-8')))
         except:
-            pass
+            Util.Log("Unable to add player to online "+playerID)
 
 
-    def _addToOfflinePlayers(self, player):
+    def _addToOfflinePlayers(self, playerID):
+        playerD = DataStore.Get("Players", playerID)
         try:
-            playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
-            self.offlinePlayers.append((player.SteamID, playerName))
-            if (player.SteamID, playerName) in self.onlinePlayers:
-                self.onlinePlayers.remove((player.SteamID, playerName))
+            playerName = playerD['name']
+            self.offlinePlayers.append((playerID, playerName))
+            if (playerID, playerName) in self.onlinePlayers:
+                self.onlinePlayers.remove((playerID, playerName))
         except:
-            pass
+            Util.Log("Unable to add player to offline "+playerID)
+
+    # def _addToOnlinePlayers(self, player):
+    #     try:
+    #         playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
+    #         if (player.SteamID, playerName) not in self.offlinePlayers:
+    #             self.onlinePlayers.append((player.SteamID, playerName))
+    #         if (player.SteamID, playerName) in self.offlinePlayers:
+    #             self.offlinePlayers.remove((player.SteamID, playerName))
+    #     except:
+    #         Util.Log(player.Name)
+    #
+    #
+    # def _addToOfflinePlayers(self, player):
+    #     try:
+    #         playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
+    #         if (player.SteamID, playerName) not in self.onlinePlayers:
+    #             self.offlinePlayers.append((player.SteamID, playerName))
+    #         if (player.SteamID, playerName) in self.onlinePlayers:
+    #             self.onlinePlayers.remove((player.SteamID, playerName))
+    #     except:
+    #         pass
 
     def _getTribeData(self, tablename):
         tribesTable = DataStore.GetTable(tablename)
@@ -383,7 +409,7 @@ class cachedMenuData(InterfaceComponents):
                 anchormax_y = 0.995
             anchormin = str(anchormin_x) + ' ' +str(anchormin_y)
             anchormax = str(anchormax_x) + ' '+ str(anchormax_y)
-            gui.append(self.componentUIText(text=str(pl[1]), parent="playerList", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="11", anchormin=anchormin, anchormax=anchormax))
+            gui.append(self.componentUIText(text=pl[1], parent="playerList", color="1.0 0.9 0.9 0.95", align="MiddleCenter", fontSize="11", anchormin=anchormin, anchormax=anchormax))
             gui.append(self.componentUIButton(command='tribe.player '+str(pl[0]), parent="playerList", color="0.8 1.0 1.0 0.15", anchormin=anchormin, anchormax=anchormax))
             anchormin_y -= 0.05
             anchormax_y -= 0.05
@@ -404,7 +430,11 @@ class cachedMenuData(InterfaceComponents):
             onlineStatus = 'Now'
         else:
             onlineStatus = str(round((time.time() - playerData['lastonline'])/3600, 2))+ ' hours ago'
-        timeOnline = str(round((playerData['timeonline'] + (time.time() - playerData['lastonline']))/3600,2))+' hours'
+        if onlineStatus == 'Now' :
+            timeOnline = str(round((playerData['timeonline'] + (time.time() - playerData['lastonline']))/3600,2))+' hours'
+        else:
+            timeOnline = str(round(playerData['timeonline']/3600,2))+' hours'
+
 
         columnTitles = ("Player Details:", "Statistics:", "Top Weapons:")
         playerDetails = (('Tribe', playerData['tribe']), ('Tribe Rank', playerData['tribeRank']), ('Last Online', onlineStatus), ('Time Online', timeOnline),('Res gathered', playerData['ResStatistics']))
@@ -694,10 +724,10 @@ class GTribes(cachedMenuData):
         self.tribeDetails = {}
 
         for player in Server.ActivePlayers:
-            self._addToOnlinePlayers(player)
+            self._addToOnlinePlayers(player.SteamID)
 
         for player in Server.OfflinePlayers.Values:
-            self._addToOfflinePlayers(player)
+            self._addToOfflinePlayers(player.SteamID)
 
         self._sortListByKey(self.onlinePlayers, 1)
         self._sortListByKey(self.offlinePlayers, 1)
@@ -710,9 +740,6 @@ class GTribes(cachedMenuData):
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
 
         self.tribesViewObjectList = self._createTribesView(self.tribesData)
-
-
-
 
     def createGUI(self, player, currentView, selection=None, popup=None):
         views =  ["Tribes", "Players", "You"]
@@ -897,16 +924,19 @@ class GTribes(cachedMenuData):
 
     def On_PlayerConnected(self, player):
         Server.Broadcast(player.Name+" connected.")
-        self._addToOnlinePlayers(player)
+        self._addToOnlinePlayers(player.SteamID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
 
     def On_PlayerDisconnected(self, player):
-        int = self.playersWithMenu[player.SteamID]
-        int.destroyOverlay('TribeMenuButtons')
+        try:
+            int = self.playersWithMenu[player.SteamID]
+            int.destroyOverlay('TribeMenuButtons')
+        except:
+            Util.Log("Unable to destroy overlay for "+ player.Name)
         self.playersWithMenu.pop(player.SteamID, None)
-        self._addToOfflinePlayers(player)
+        self._addToOfflinePlayers(player.SteamID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")

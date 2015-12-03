@@ -408,8 +408,6 @@ class Tribes:
     def On_PlayerConnected(self, player):
         con_player = PlayerData(player)
         con_player.playerData['lastonline'] = time.time()
-        Util.Log(str(con_player.playerData['lastonline']))
-        #con_player.playerData['timeonline'] = player.TimeOnline/3600
         #chek if player name has changed
         if con_player.playerData['name'] != player.Name:
             con_player.playerData['name'] = player.Name
@@ -419,10 +417,5 @@ class Tribes:
 
     def On_PlayerDisconnected(self, player):
         playerD = DataStore.Get("Players", player.SteamID)
-        Util.Log("Now:" +str(time.time()))
-        Util.Log('Last Online: '+str(playerD['lastonline']))
-        Util.Log("timedifff: "+str(time.time()- playerD['lastonline']))
-        Util.Log('Timeonline before: '+str(playerD['timeonline']))
         playerD['timeonline'] = playerD['timeonline']+(time.time()- playerD['lastonline'])
         playerD['lastonline'] = time.time()
-        Util.Log('TimeOnline after: '+str(playerD['timeonline']))
