@@ -2,7 +2,7 @@ __author__ = 'PanDevas'
 __version__ = '1.72'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
+clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 
 import Pluton
 import sys
@@ -12,12 +12,12 @@ import time
 
 import Facepunch
 import CommunityEntity
-import Network
+#import Network
 
 try:
     import json
 except ImportError:
-    raise ImportError("LegacyBroadcast: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
+    raise ImportError("Offline Protection: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
 
 
 # Thanks to Jakkee for helping me with overview thingy <3
@@ -96,12 +96,18 @@ class OfflineProtection():
         flagText = "Flaged "
         if player.SteamID not in self.flaggedPlayers:
             self.flaggedPlayers.append(player.SteamID)
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(flagged.Replace("[TEXT]", flagText)))
+        try:
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(flagged.Replace("[TEXT]", flagText)))
+        except:
+            Util.Log("Unable to create flag")
 
     def _removeNotification(self, player):
         if player.SteamID in self.flaggedPlayers:
             self.flaggedPlayers.remove(player.SteamID)
-        CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
+        try:
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
+        except:
+            Util.Log("Unable to remove flag")
 
 
     def On_CombatEntityHurt(self, HurtEvent):
@@ -419,7 +425,7 @@ class OfflineProtection():
         elif playerD['tribe'] != 'Survivors':
             if DataStore.ContainsKey("pvpTribeFlags", playerD['tribe']):
                 if player in Server.ActivePlayers and player.SteamID not in self.flaggedPlayers:
-                    Util.Log("creating notification for connected player")
+                    Util.Log("creating notification for reconnected flagged player")
                     self._createNotification(player)
 
 
@@ -444,16 +450,6 @@ class OfflineProtection():
                     player.MessageFrom("AOR", "You will be flagged for "+ str(round(timediff/60, 2)) + ' minutes.')
                 else:
                     player.MessageFrom("AOR", "You are not flagged")
-
-                # if self.checkPVPFlag(player.SteamID):
-                #     if tribeName == 'Survivors':
-                #         lastAggression = DataStore.Get("pvpFlags", player.SteamID)
-                #     elif tribeName != 'Survivors':
-                #         lastAggression = DataStore.Get("pvpTribeFlags", tribeName)
-                #     timediff = self.timerLenght - (time.time() - lastAggression)
-                #     player.MessageFrom("AOR", "You will be flagged for "+ str(round(timediff/60, 2)) + ' minutes.')
-                # else:
-                #     player.MessageFrom("AOR", "You are not flagged")
 
             elif command == 'flags':
                 players = []

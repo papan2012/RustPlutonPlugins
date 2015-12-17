@@ -2,7 +2,7 @@ __author__ = 'PanDevas'
 __version__ = '0.5'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
+clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp", "Facepunch.Network")
 
 import Pluton
 import sys
@@ -17,7 +17,7 @@ import Network
 try:
     import json
 except ImportError:
-    raise ImportError("LegacyBroadcast: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
+    raise ImportError("Welcome Screen: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
 
 
 # Thanks to Jakkee for helping me with overview thingy <3

@@ -3,7 +3,7 @@ __version__ = '1.11'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
+clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 import Pluton
 import sys
 path = Util.GetPublicFolder()
@@ -17,7 +17,7 @@ import Network
 try:
     import json
 except ImportError:
-    raise ImportError("LegacyBroadcast: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
+    raise ImportError("GTribes: Can not find JSON in Libs folder [Pluton\Python\Libs\] *DOWNLOAD: http://forum.pluton-team.org/resources/microjson.54/*")
 
 
 class InterfaceComponents():
@@ -218,44 +218,26 @@ class cachedMenuData(InterfaceComponents):
             playerName = playerD['name']
         else:
             playerName = Server.FindPlayer(playerID)
-        try:
+        if playerName:
             self.onlinePlayers.append((playerID, playerName))
             if (playerID, playerName) in self.offlinePlayers:
-                self.offlinePlayers.remove((playerID, player.Name.encode('utf-8')))
-        except:
+                self.offlinePlayers.remove((playerID, playerName))
+        else:
             Util.Log("Unable to add player to online "+playerID)
 
 
     def _addToOfflinePlayers(self, playerID):
         playerD = DataStore.Get("Players", playerID)
-        try:
+        if playerD:
             playerName = playerD['name']
+        else:
+            playerName = Server.FindPlayer(playerID)
+        if playerName:
             self.offlinePlayers.append((playerID, playerName))
             if (playerID, playerName) in self.onlinePlayers:
                 self.onlinePlayers.remove((playerID, playerName))
-        except:
+        else:
             Util.Log("Unable to add player to offline "+playerID)
-
-    # def _addToOnlinePlayers(self, player):
-    #     try:
-    #         playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
-    #         if (player.SteamID, playerName) not in self.offlinePlayers:
-    #             self.onlinePlayers.append((player.SteamID, playerName))
-    #         if (player.SteamID, playerName) in self.offlinePlayers:
-    #             self.offlinePlayers.remove((player.SteamID, playerName))
-    #     except:
-    #         Util.Log(player.Name)
-    #
-    #
-    # def _addToOfflinePlayers(self, player):
-    #     try:
-    #         playerName = unicode(player.Name, encoding='utf-8', errors='ignore')
-    #         if (player.SteamID, playerName) not in self.onlinePlayers:
-    #             self.offlinePlayers.append((player.SteamID, playerName))
-    #         if (player.SteamID, playerName) in self.onlinePlayers:
-    #             self.onlinePlayers.remove((player.SteamID, playerName))
-    #     except:
-    #         pass
 
     def _getTribeData(self, tablename):
         tribesTable = DataStore.GetTable(tablename)
@@ -610,7 +592,7 @@ class cachedMenuData(InterfaceComponents):
                      "If you're playing with someone, join a Tribe to avoid any inconvenience and get some benefits.\n" \
                      "More about Tribe mechanism in Tribes help section.\n\n"\
                      "Usefull commands:.\n" \
-                     " - /owner - turns on/off building part ownnership reporting\n"\
+                     " - /owner - turns on/off building part ownnership reporting when hitting a building part with a hammer\n"\
                      " - /flag - tells you for how long you'll be flaged\n",
         'tribeUI.help.tribes':"<color=blue>TRIBES</color>\n\n" \
                        "If you wan't to live with someone, or use his doors, you'll have to join the tribe with him.\n" \
@@ -640,15 +622,23 @@ class cachedMenuData(InterfaceComponents):
                       "So there's no real need for code locks on doors any longer.\n" \
                       "IMPORTANT: \n"\
                       "  - owner of the door frame is the owner of the door\n" \
-                      "  - shutters are treated as doors, owner of the baars is the owner of the shutters, so to be able to open them you have to place window bars first\n\n" \
+                      "  - shutters are treated as doors, owner of the baars is the owner of the shutters, so to be able to open them you have to place window bars or open/close them right after placement.\n\n" \
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n\n" \
                       "If you need some privacy, put code locks on chests. \n" \
                       "That will prevent anyone opening them without the code.\n\n",
-        'tribeUI.help.server':"<color=blue>SERVER INNFO</color>\n\n" \
+        'tribeUI.help.server':"<color=blue>SERVER INFO</color>\n\n" \
                         " - decay lowered to 25% effectiveness\n" \
                         " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n" \
                         " - when destroying a building part, another building part won't be placeable on that location for 2 minutes.\n\n"\
-                        "If you want to hide the menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n" \
+                        "If you want to hide the menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n"\
+                        "You can also bind keys in F1 console to automate the process of openinng the UI:\n"\
+                        " bind <key> <commmand>\n"
+                        "Commands:\n"\
+                        "- tribeUI.tribes - show tribes\n"\
+                        "- tribeUI.players - show online players\n"\
+                        "- tribeUI.players.offline - show offline players\n"\
+                        "- tribeUI.help - show help\n"\
+                        "- tribeUI.close - close the UI\n\n" \
                         "\nIf you have any other questions, ask in chat, someone will know the answer.\n" \
                         "For any problems with the server plugins, contact the server owner, or plugin developer, Pan Devas on Steam.\n" \
                         "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information."}
@@ -803,10 +793,13 @@ class GTribes(cachedMenuData):
 
 
     def destroyGUI(self, player):
-        ui = self.overlays[player.SteamID]
-        ui.destroyOverlay("TribeBgUI")
-        ui.currentView = None
-        self.overlays.pop(player.SteamID, None)
+        try:
+            ui = self.overlays[player.SteamID]
+            ui.destroyOverlay("TribeBgUI")
+            ui.currentView = None
+            self.overlays.pop(player.SteamID, None)
+        except:
+            pass
 
 
     def On_ClientConsole(self, cce):
@@ -817,7 +810,7 @@ class GTribes(cachedMenuData):
         '''
 
         #Util.Log(str(cce.cmd))
-        commands = ['tribeUI.create', 'tribeUI.close', 'tribeUI.tribes', 'tribeUI.players.online',
+        commands = ['tribeUI.players', 'tribeUI.close', 'tribeUI.tribes', 'tribeUI.players.online',
                     'tribeUI.players.offline', 'tribeUI.you', 'tribe.members',
                     'tribeUI.help', 'tribeUI.help.doors', 'tribeUI.help.tribes','tribeUI.help.aor',
                     'tribeUI.help.server', 'tribe.details.close', 'tribe.player', 'tribe.player.close']
@@ -827,7 +820,7 @@ class GTribes(cachedMenuData):
             playerID = player.SteamID
             ##Util.Log(str(player.Name)+"detekcija " + str(cce.cmd))
             #
-            if cce.cmd == 'tribeUI.create':
+            if cce.cmd == 'tribeUI.players':
                 self.createGUI(player, "playersView", "Online")
 
             if cce.cmd == 'tribeUI.close':

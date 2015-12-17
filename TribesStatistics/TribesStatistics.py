@@ -78,6 +78,8 @@ class TribesStatistics():
     # ResStatistics
     def On_PlayerGathering(self, ge):
         playerID = ge.Gatherer.SteamID
+        if str(ge.ItemAmount.itemDef).split('.')[0] == 'sulfur_ore':
+           ge.Amount *= 2
         gatherAmount = ge.Amount
 
         playerData = DataStore.Get("Players", playerID)
