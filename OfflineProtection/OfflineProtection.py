@@ -12,7 +12,7 @@ import time
 
 import Facepunch
 import CommunityEntity
-#import Network
+import Network
 
 try:
     import json
@@ -81,6 +81,8 @@ class OfflineProtection():
         self.tribeAgress = {}
         self.notifiedPlayers = []
 
+        self.clearFlags()
+
 
     def loadIniSettings(self):
         if not Plugin.IniExists("settings"):
@@ -93,21 +95,21 @@ class OfflineProtection():
         return Plugin.GetIni("settings")
 
     def _createNotification(self, player):
-        flagText = "Flaged "
+        flagText = "PVPflag "
         if player.SteamID not in self.flaggedPlayers:
             self.flaggedPlayers.append(player.SteamID)
-        try:
+        if player:
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(flagged.Replace("[TEXT]", flagText)))
-        except:
-            Util.Log("Unable to create flag")
+        else:
+            Util.Log("Unable to create flag"+str(player))
 
     def _removeNotification(self, player):
         if player.SteamID in self.flaggedPlayers:
             self.flaggedPlayers.remove(player.SteamID)
-        try:
+        if player:
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
-        except:
-            Util.Log("Unable to remove flag")
+        else:
+            Util.Log("Unable to remove flag"+str(player))
 
 
     def On_CombatEntityHurt(self, HurtEvent):
@@ -141,7 +143,7 @@ class OfflineProtection():
 
             # victimID check for database debuging
             if not victimID:
-                Util.Log("AOR: Victim not found "+str(victimLocation))
+                Util.Log("OP: Victim not found "+str(victimLocation))
 
             if (attackerID and victimID) and (attackerID != victimID) and not self.victInAttTribe(attackerID, victimID):
                 #Util.Log(attackerData['name'] + ' is attacking '+ victimData['name'])
@@ -161,8 +163,6 @@ class OfflineProtection():
                 elif victim or victimData['tribe'] != "Survivors":
                     #Util.Log("Flagging "+victimData['tribe']+', attacker '+attackerData['name'])
                     self.checkTribeBeforeFlag(victimID)
-                else:
-                    Util.Log("All checks bypassed, happens when not protected "+victimID+' '+victimData['tribe'])
 
 
     def On_PlayerHurt(self, HurtEvent):
@@ -300,7 +300,6 @@ class OfflineProtection():
         else:
             timediff = 0
 
-
         if timediff > 1:
             timer.Kill()
             Util.Log("Extending timer for tribe "+tribeD['tribe'][0]+' '+str(timediff))
@@ -309,13 +308,13 @@ class OfflineProtection():
             timer.Kill()
             Util.Log("Clearing flag for tribe "+tribeD['tribe'][0])
             DataStore.Remove("pvpTribeFlags", tribeD['tribe'][0])
-            Util.Log("Killing tribe flag timer "+ tribeD['tribe'][0])
+
             for memberID in tribeD['tribe'][1]['tribeMembers']:
-                player = Server.FindPlayer(memberID)
                 if memberID in DataStore.Keys("pvpFlags"):
                     if memberID in self.flaggedPlayers:
                         self.flaggedPlayers.remove(memberID)
                     DataStore.Remove("pvpFlags", memberID)
+                player = Server.FindPlayer(memberID)
                 if player:
                     #Util.Log("Removing notification "+player.Name)
                     self._removeNotification(player)
@@ -371,7 +370,7 @@ class OfflineProtection():
             self.notifiedPlayers.append(playerID)
             pData = Plugin.CreateDict()
             pData['playerID'] = playerID
-            player.MessageFrom("AOR", "Player "+victimName+" is offline and you can't damage his buildings!")
+            player.MessageFrom("OP", "Player "+victimName+" is offline and you can't damage his buildings!")
             Plugin.CreateParallelTimer('notify', self.nofityTimer*1000, pData).Start()
 
 
@@ -401,6 +400,26 @@ class OfflineProtection():
                 extendTimer = True
         return extendTimer
 
+    def clearFlags(self):
+        Util.Log("Clearing flags")
+        for playerID in DataStore.Keys('pvpFlags'):
+            pl = Server.FindPlayer(playerID)
+            DataStore.Remove('pvpFlags', playerID)
+            if pl:
+                self._removeNotification(pl)
+
+        for tribeName in DataStore.Keys("pvpTribeFlags"):
+            if tribeName != 'system':
+                tribeD = DataStore.Get("Tribes", tribeName)
+                for memberID in tribeD['tribeMembers']:
+                    member = Server.FindPlayer(memberID)
+                    if member:
+                        self._removeNotification(member)
+                DataStore.Remove("pvpTribeFlags", tribeName)
+                Util.Log("Unflaged tribe "+tribeName)
+
+        self.flaggedPlayers = []
+
 
     def On_PlayerDisconnected(self, player):
         now = time.time()
@@ -411,7 +430,7 @@ class OfflineProtection():
             self._removeNotification(player)
             if self.checkTribeForOnlineMembers(playerData['tribe']):
                 DataStore.Add('pvpTribeFlags', tribeName, time.time())
-        elif playerID in DataStore.Keys('pvpFlags'):
+        elif tribeName == 'Survivors' and playerID in DataStore.Keys('pvpFlags'):
             DataStore.Add('pvpFlags', playerID, time.time())
             self._removeNotification(player)
 
@@ -447,14 +466,19 @@ class OfflineProtection():
 
                 if lastAggression:
                     timediff = self.timerLenght - (time.time() - lastAggression)
-                    player.MessageFrom("AOR", "You will be flagged for "+ str(round(timediff/60, 2)) + ' minutes.')
+                    player.MessageFrom("OP", "You will be flagged for "+ str(round(timediff/60, 2)) + ' minutes.')
                 else:
-                    player.MessageFrom("AOR", "You are not flagged")
+                    player.MessageFrom("OP", "You are not flagged")
 
             elif command == 'flags':
                 players = []
                 Util.Log("Flags:")
                 for playerID in DataStore.Keys('pvpFlags'):
+                    lastAggression = DataStore.Get("pvpFlags", playerID)
+                    if lastAggression:
+                        timediff = self.timerLenght - (time.time() - lastAggression)
+                    else:
+                        timediff = 0
                     player = Server.FindPlayer(playerID)
                     if player:
                         players.append(player.Name)
@@ -464,27 +488,13 @@ class OfflineProtection():
                                 players.append(player.Name)
                 for player in players:
                     Util.Log(player)
+
                 for tribe in DataStore.Keys("pvpTribeFlags"):
-                    Util.Log('Tribe:'+tribe)
+                    lastAggression = DataStore.Get("pvpTribeFlags", tribe)
+                    if lastAggression:
+                        timediff = self.timerLenght - (time.time() - lastAggression)
+                    Util.Log('Tribe:'+tribe+str(timediff))
 
             elif player.Name == 'PanDevas' and command == 'clearflags1':
                 # Need to implement timer kill as well
-                Util.Log("Removing flags")
-
-                for playerID in DataStore.Keys('pvpFlags'):
-                    pl = Server.FindPlayer(playerID)
-                    DataStore.Remove('pvpFlags', playerID)
-                    if pl:
-                        self._removeNotification(pl)
-
-                for tribeName in DataStore.Keys("pvpTribeFlags"):
-                    if tribeName != 'system':
-                        tribeD = DataStore.Get("Tribes", tribeName)
-                        for memberID in tribeD['tribeMembers']:
-                            member = Server.FindPlayer(memberID)
-                            if member:
-                                self._removeNotification(member)
-                        DataStore.Remove("pvpTribeFlags", tribeName)
-                        Util.Log("Unflaged tribe "+tribeName)
-
-                self.flaggedPlayers = []
+                self.clearFlags()

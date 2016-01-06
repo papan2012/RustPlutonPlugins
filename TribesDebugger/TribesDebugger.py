@@ -39,48 +39,48 @@ class TribesDebugger():
         command = cmd.cmd
         print cmd.cmd
 
-        if command == 'test':
-            dataInput = DataInput(cmd.User)
-
-
-        if command == 'pl':
-            playerKeys = DataStore.Keys('Players')
-            Util.Log("tdpl: "+str(playerKeys))
-            for playerID in playerKeys:
-                playerData = DataStore.Get('Players', playerID)
-                Util.Log(playerID+' '+str(playerData['name']))
-                Util.Log(str(DataStore.Get('Players', playerID)))
-                player = Server.FindPlayer('76561197996829381')
-                Util.Log(str(player.Name))
-
-
-        if command == 'name':
-            newName = str.join(' ', cmd.args)
-            print newName
-            print cmd.User.basePlayer.displayName
-            cmd.User.Name = newName
-
-
-        if command == 'dpd':
-            print 'PlayerData: '
-            playerDataKeys = DataStore.Keys('Players')
-            print "Found ", DataStore.Count('Players'), ' players in DataStore'
-            if playerDataKeys:
-                for key in playerDataKeys:
-                    print key
-                    print DataStore.Get("Players", key)
-                    print ''
-            else:
-                print "No player data found"
-
-        if command == 'clearinvites':
-            player = str.join(' ', cmd.args)
-            playerD = Server.FindPlayer(player)
-            print "clearing invites for player", playerD.Name
-
-            playerd = DataStore.Get("Players", playerD.SteamID)
-            playerd['pendingInvites'] = 'No pending invites'
-
+        # if command == 'test':
+        #     dataInput = DataInput(cmd.User)
+        #
+        #
+        # if command == 'pl':
+        #     playerKeys = DataStore.Keys('Players')
+        #     Util.Log("tdpl: "+str(playerKeys))
+        #     for playerID in playerKeys:
+        #         playerData = DataStore.Get('Players', playerID)
+        #         Util.Log(playerID+' '+str(playerData['name']))
+        #         Util.Log(str(DataStore.Get('Players', playerID)))
+        #         player = Server.FindPlayer('76561197996829381')
+        #         Util.Log(str(player.Name))
+        #
+        #
+        # if command == 'name':
+        #     newName = str.join(' ', cmd.args)
+        #     print newName
+        #     print cmd.User.basePlayer.displayName
+        #     cmd.User.Name = newName
+        #
+        #
+        # if command == 'dpd':
+        #     print 'PlayerData: '
+        #     playerDataKeys = DataStore.Keys('Players')
+        #     print "Found ", DataStore.Count('Players'), ' players in DataStore'
+        #     if playerDataKeys:
+        #         for key in playerDataKeys:
+        #             print key
+        #             print DataStore.Get("Players", key)
+        #             print ''
+        #     else:
+        #         print "No player data found"
+        #
+        # if command == 'clearinvites':
+        #     player = str.join(' ', cmd.args)
+        #     playerD = Server.FindPlayer(player)
+        #     print "clearing invites for player", playerD.Name
+        #
+        #     playerd = DataStore.Get("Players", playerD.SteamID)
+        #     playerd['pendingInvites'] = 'No pending invites'
+        #
         if command == 'dtd':
             print 'TribeData'
             tribeDataKeys = DataStore.Keys("Tribes")
@@ -99,7 +99,15 @@ class TribesDebugger():
                 print "No tribes found"
 
         if command == "fixcortez":
-            player = Server.FindPlayer("COrt3z")
+            player = Server.FindPlayer("malimedo22")
             playerID = player.SteamID
             playerD = DataStore.Get("Players", playerID)
             playerD['tribe'] = "Survivors"
+
+        # if command == 'removeg':
+        #     tribeD = DataStore.Get("Tribes", "Geto")
+        #     for memberID in tribeD['tribeMembers']:
+        #         member = Server.FindPlayer(memberID)
+        #         playerD = DataStore.Get('Players', memberID)
+        #         playerD['tribe'] = "Survivors"
+        #         DataStore.Remove("Tribes", "Ghetto")

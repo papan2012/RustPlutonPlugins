@@ -70,9 +70,10 @@ class TribesStatistics():
         else:
             victimData = DataStore.Get("Players", victim.SteamID)
             Server.Broadcast(victim.Name + " died from " + str(pde.DamageType))
-            victimData['PVPstatistics']['deaths'] +=  1
             if str(pde.DamageType) == 'Suicide':
                 victimData['PVPstatistics']['suicides'] += 1
+            else:
+                victimData['PVPstatistics']['deaths'] +=  1
 
 
     # ResStatistics

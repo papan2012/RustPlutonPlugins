@@ -33,7 +33,6 @@ class GameBallancer():
 
         fpData = Plugin.CreateDict()
         fpData['location'] = location
-        # Util.Log("Creating timer for player "+str(player.Name)+' '+str(timerLenght))
         timer = Plugin.CreateParallelTimer("DestroyedBuildings", self.buildingTimerLenght*1000, fpData).Start()
         DataStore.Add("DestroyedBuildings", location, timer)
 
@@ -59,11 +58,5 @@ class GameBallancer():
         player = cmd.User
         command = cmd.cmd
 
-        if command == 'bptest':
-            buildingTable = DataStore.GetTable("DestroyedBuildings")
-            if buildingTable:
-                for key in buildingTable.Keys:
-                    player.Message(str(key))
-
-        if command == 'FlushBPT':
-            DataStore.Flush("DestroyedBuildings")
+        if command == 'ping':
+            player.Message('Your ping is '+str(player.Ping))

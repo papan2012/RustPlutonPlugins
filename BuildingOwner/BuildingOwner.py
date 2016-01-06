@@ -63,14 +63,11 @@ class BuildingOwner():
             DataStore.Remove("BuildingPartOwner", location)
 
 
-
-
     def On_BeingHammered(self, he):
         '''
         this is a dirty workaround when the doors are not placed in exact location with the frame
         and a helper function for determining ownership of building parts
         '''
-
         getOwnerObjects = ["BuildingBlock", "Door"]
 
         if he.Victim.baseEntity.GetType().ToString() in getOwnerObjects:
@@ -78,9 +75,6 @@ class BuildingOwner():
             player = he.Player
             location = str(he.Victim.Location)
             victimID = DataStore.Get("BuildingPartOwner", location)
-            if not victimID:
-                player.Message("Owner not found, type /owner in chat and hit the building part with a hammer")
-
 
             if player.SteamID in self.buildingOwnerInfo:
                 if not victimID:
@@ -92,8 +86,6 @@ class BuildingOwner():
                     for pl in Server.OfflinePlayers.Values:
                         if pl.SteamID == victimID:
                             victim = pl
-                #victimD = DataStore.Get("Players", player.SteamID)
-                #player.Message("This BuildingPart belongs to"+victimD['name'])
                 player.Message("This BuildingPart belongs to "+victim.Name)
 
 

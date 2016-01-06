@@ -342,21 +342,17 @@ class Tribes:
         else:
             if creator.SteamID == creatorTD.tribeData['creatorID']:
                 kickPlayer = Server.FindPlayer(kickPlayerName)
-                if not kickPlayer:
-                    for pl in Server.OfflinePlayers.Values:
-                        if pl.Name == kickPlayerName:
-                            kickPlayer = pl
-                            break
 
                 if kickPlayer:
                     kickPlayerD = PlayerData(kickPlayer)
                 elif not kickPlayer:
                     for pl in Server.OfflinePlayers.Values:
-                        if pl.Name.lower() == kickPlayerName.lower():
+                        if pl.Name.lower().startswith(kickPlayerName.lower()):
                             kickPlayer = pl
                             kickPlayerD = PlayerData(kickPlayer)
                             break
                     creator.MessageFrom("Tribes", "Player "+kickPlayerName+" not found.")
+
                 if creator.SteamID == kickPlayer.SteamID:
                     creator.MessageFrom("Tribes", "You can't kick yourself from the Tribe.")
                 elif kickPlayer.SteamID in creatorTD.tribeData['tribeMembers']:
