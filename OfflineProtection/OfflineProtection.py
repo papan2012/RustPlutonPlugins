@@ -24,17 +24,17 @@ except ImportError:
 flagmark = [
     {
         "name": "flagui",
-        "parent": "Overlay",
+        "parent": "HUD/Overlay",
         "components":
         [
             {
                 "type": "UnityEngine.UI.Image",
-                "color": "0.1 0.1 0.1 0.5",
+                "color": "0.1 0.3 0.1 0.6",
             },
             {
                 "type": "RectTransform",
-                "anchormin": "0.005 0.975",
-                "anchormax": "0.05 0.995"
+                "anchormin": "0.001 0.955",
+                "anchormax": "0.05 0.974"
             }
         ]
     },
@@ -452,7 +452,7 @@ class OfflineProtection():
         player = cmd.User
         command = cmd.cmd
         args = str.join(' ', cmd.args)
-        commands = ('flag', 'flags', 'clearflags1')
+        commands = ('flag', 'flags', 'clearflags1', 'flagme','unflagme')
 
         if command in commands:
             if command == 'flag':
@@ -498,3 +498,7 @@ class OfflineProtection():
             elif player.Name == 'PanDevas' and command == 'clearflags1':
                 # Need to implement timer kill as well
                 self.clearFlags()
+            elif command == 'flagme':
+                self._createNotification(player)
+            elif command == 'unflagme':
+                self._removeNotification(player)

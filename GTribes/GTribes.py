@@ -277,10 +277,8 @@ class cachedMenuData(InterfaceComponents):
         gui.append(self.componentUIText(text="Tribe and Player Info Panel", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.01 0.965", anchormax="0.5 0.99"))
 
         #close button text
-        gui.append(self.componentUIText(text="Close", parent="TribeBgUI", align="MiddleCenter", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.965 0.968", anchormax="0.995 0.995"))
-        gui.append(self.componentUIButton(command="tribeUI.close" ,parent="TribeBgUI", color="0.6 0.6 0.6 0.55", anchormin="0.965 0.968", anchormax="0.995 0.995"))
-
-        gui.append(self.componentUIText(text="Visit us on <color=blue>http//crohq.org</color>, facebook page <color=blue>'Croatian Gaming Headquarters'</color>, and join our Steam Group <color=blue>'CroHQ Rust TribeWars'</color>", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="15", anchormin="0.01 0.001", anchormax="0.99 0.05"))
+        gui.append(self.componentUIText(text="Close", parent="TribeBgUI", align="MiddleCenter", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.965 0.975", anchormax="0.995 0.995"))
+        gui.append(self.componentUIButton(command="tribeUI.close" ,parent="TribeBgUI", color="0.6 0.6 0.6 0.55", anchormin="0.965 0.975", anchormax="0.995 0.995"))
 
         tribesUI = json.to_json(gui)
         objectList = json.makepretty(tribesUI)
@@ -604,7 +602,7 @@ class cachedMenuData(InterfaceComponents):
         :param selection:
         :return:
         '''
-        helpButtons = [('Tribes', 'tribeUI.help.tribes'), ('Door System', 'tribeUI.help.doors'), ('Offline Protection', 'tribeUI.help.op'),('Server Info', 'tribeUI.help.server')]
+        helpButtons = [('Tribes', 'tribeUI.help.tribes'), ('Door System', 'tribeUI.help.doors'), ('Offline Protection', 'tribeUI.help.op'),('Server Info', 'tribeUI.help.server'), ('Commands', 'tribeUI.help.commands')]
         gui = []
 
         anchormin_x = 0.05
@@ -694,7 +692,13 @@ class cachedMenuData(InterfaceComponents):
                         " - when destroying a building part, another building part won't be placeable on that location for 2 minutes.\n"\
                         " - Incediary Rocket damage nulified for buildings (too many calculations for every flame). They still damage players, so you can use them as area deny.\n\n"\
                         "If you want to hide the menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n"\
-                        "You can also bind keys in F1 console to automate the process of openinng the UI:\n"\
+                        "You can vote for our server on http://rust-servers.net/server/51598/vote/\n"\
+                        "Ater you cast your vote come back here and type /vote in chat. You'll get 500 wood and 250 stone for each vote you make.\n\n"\
+                        "\nIf you have any other questions, ask in chat, someone will know the answer.\n" \
+                        "For any problems with the server plugins, contact the server owner, or plugin developer, Pan Devas on Steam.\n" \
+                        "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information.",
+         'tribeUI.help.commands':"<color=white>COMMANDS</color>\n\n" \
+                        "You can also bind keys in F1 console to automate the process of opening the UI:\n"\
                         " bind <key> <commmand>\n"\
                         " writecfg - to safe newly binded keys\n\n"\
                         "Commands:\n"\
@@ -702,10 +706,7 @@ class cachedMenuData(InterfaceComponents):
                         "- tribeUI.players - show online players\n"\
                         "- tribeUI.players.offline - show offline players\n"\
                         "- tribeUI.help - show help\n"\
-                        "- tribeUI.close - close the UI\n\n" \
-                        "\nIf you have any other questions, ask in chat, someone will know the answer.\n" \
-                        "For any problems with the server plugins, contact the server owner, or plugin developer, Pan Devas on Steam.\n" \
-                        "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information."}
+                        "- tribeUI.close - close the UI\n\n"}
 
         gui = []
 
@@ -892,7 +893,7 @@ class GTribes(cachedMenuData):
         commands = ['tribeUI.players', 'tribeUI.close', 'tribeUI.tribes', 'tribeUI.players.online',
                     'tribeUI.players.offline', 'tribeUI.you', 'tribe.members',
                     'tribeUI.help', 'tribeUI.help.doors', 'tribeUI.help.tribes','tribeUI.help.op',
-                    'tribeUI.help.server', 'tribe.details.close', 'tribe.player', 'tribe.player.close']
+                    'tribeUI.help.server','tribeUI.help.commands', 'tribe.details.close', 'tribe.player', 'tribe.player.close']
 
         if cce.cmd in commands:
             player = cce.User
@@ -946,6 +947,8 @@ class GTribes(cachedMenuData):
                 self.createGUI(player, "helpView", 'tribeUI.help.op')
             if cce.cmd == 'tribeUI.help.server':
                 self.createGUI(player, "helpView", 'tribeUI.help.server')
+            if cce.cmd == 'tribeUI.help.commands':
+                self.createGUI(player, "helpView", 'tribeUI.help.commands')
 
 
     def On_Command(self, cmd):
