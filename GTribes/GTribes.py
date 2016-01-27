@@ -280,6 +280,8 @@ class cachedMenuData(InterfaceComponents):
         gui.append(self.componentUIText(text="Close", parent="TribeBgUI", align="MiddleCenter", color="0.8 1.0 1.0 0.95", fontSize="13", anchormin="0.965 0.975", anchormax="0.995 0.995"))
         gui.append(self.componentUIButton(command="tribeUI.close" ,parent="TribeBgUI", color="0.6 0.6 0.6 0.55", anchormin="0.965 0.975", anchormax="0.995 0.995"))
 
+        gui.append(self.componentUIText(text="Visit us on <color=blue>http//crohq.org</color>, facebook page <color=blue>'Croatian Gaming Headquarters'</color>, and join our Steam Group <color=blue>'CroHQ Rust TribeWars'</color>", parent="TribeBgUI", color="0.8 1.0 1.0 0.95", fontSize="15", anchormin="0.01 0.001", anchormax="0.99 0.05"))
+
         tribesUI = json.to_json(gui)
         objectList = json.makepretty(tribesUI)
 
@@ -513,8 +515,8 @@ class cachedMenuData(InterfaceComponents):
         # windowSizeX=len(self.tribeMembers[tribeName])/10. * 0.25
         # #Util.Log(str(windowSizeX))
         self._getPlayerData("Players")
-        details = ['Member:', 'Kills:', 'Deaths:', 'Resources:']
-        data = ['name', 'kills', 'deaths', 'ResStatistics']
+        details = ['Member:', 'Kills:', 'Deaths:', 'Resources:', 'Last Online']
+        data = ['name', 'kills', 'deaths', 'ResStatistics', 'lastonline']
         tribeData = DataStore.Get('Tribes', tribeName)
         gui = []
         anchormin_x = 0.01
@@ -556,8 +558,14 @@ class cachedMenuData(InterfaceComponents):
                         gui.append(self.componentUIText(text=str(self.playerDetails[pl]['PVPstatistics'][item]), parent=tribeName, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
                     elif item == 'deaths':
                         gui.append(self.componentUIText(text=str(self.playerDetails[pl]['PVPstatistics'][item]), parent=tribeName, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
-                    else:
+                    elif item == 'ResStatistics':
                         gui.append(self.componentUIText(text=str(self.playerDetails[pl][item]), parent=tribeName, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
+                    elif item == 'lastonline':
+                        if Server.FindPlayer(pl):
+                            onlineStatus = 'Now'
+                        else:
+                            onlineStatus = str(round((time.time() - self.playerDetails[pl]['lastonline'])/3600, 2))+ ' hours ago'
+                        gui.append(self.componentUIText(text=str(onlineStatus), parent=tribeName, color="1.0 0.9 0.9 0.95", fontSize="13", anchormin=anchormin, anchormax=anchormax))
 
                     anchormin_x += 0.15
                     anchormax_x += 0.15
@@ -681,7 +689,8 @@ class cachedMenuData(InterfaceComponents):
                       "So there's no real need for code locks on doors any longer.\n" \
                       "IMPORTANT: \n"\
                       "  - owner of the door frame is the owner of the door\n" \
-                      "  - shutters are treated as doors, owner of the baars is the owner of the shutters, so to be able to open them you have to place window bars or open/close them right after placement.\n\n" \
+                      "  - shutters are treated as doors, owner of the baars is the owner of the shutters, so to be able to open them you have to place window bars or open/close them right after placement.\n" \
+                      "  - when placing High External Wood/Stone Gates be sure to open them after placement..\n\n" \
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n\n" \
                       "If you need some privacy, put code locks on chests. \n" \
                       "That will prevent anyone opening them without the code.\n\n",
@@ -992,7 +1001,7 @@ class GTribes(cachedMenuData):
         self._addToOnlinePlayers(player.SteamID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
-        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")
+        #self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")
 
     def On_PlayerDisconnected(self, player):
         try:
@@ -1004,7 +1013,7 @@ class GTribes(cachedMenuData):
         self._addToOfflinePlayers(player.SteamID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
-        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")
+        #self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")
         self.playersWithMenu.pop(player.SteamID, None)
         Server.Broadcast(player.Name+" is now sleeping.")
 
@@ -1015,3 +1024,6 @@ class GTribes(cachedMenuData):
                 int = GameUI(player)
                 self.playersWithMenu[player.SteamID] = int
                 int.createButtons()
+
+    def On_ServerSaved(self):
+        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")

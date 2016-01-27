@@ -15,11 +15,12 @@ class BuildingOwner():
     '''
     def __init__(self):
         self.admin = 'PanDevas'
+        self.remove = 0
         self.buildingOwnerInfo = []
 
     def On_ServerSaved(self):
         DataStore.Save()
-        Server.Broadcast("Server saved.")
+
 
     def On_Placement(self, buildingpart):
         player = buildingpart.Builder
@@ -33,12 +34,9 @@ class BuildingOwner():
                 alredayPlacedList.append(buildingPartName)
                 DataStore.Add("SharedBuildingLocations", location, alredayPlacedList)
             else:
-                DataStore.Add("SharedBuildingLocations", location, [buildingPartName])
+                    DataStore.Add("SharedBuildingLocations", location, [buildingPartName])
         else:
             DataStore.Add("BuildingPartOwner", location, player.SteamID)
-        # if not DataStore.Get("BuildingPartOwner", location):
-        #     player.Message("BuildingPart not in Datastore, hit it with a Hammer to add it!")
-
 
     def On_BuildingPartDemolished(self, bpde):
         self.removeFromDatastore(bpde)
@@ -56,9 +54,8 @@ class BuildingOwner():
         if sharedPlacements:
             if bpdeEntitiName in sharedPlacements:
                 sharedPlacements.remove(bpdeEntitiName)
-            else:
-                DataStore.Remove("SharedBuildingLocations", location)
-                DataStore.Remove("BuildingPartOwner", location)
+                if len(sharedPlacements) == 0:
+                    DataStore.Remove("SharedBuildingLocations", location)
         else:
             DataStore.Remove("BuildingPartOwner", location)
 
@@ -75,6 +72,7 @@ class BuildingOwner():
             player = he.Player
             location = str(he.Victim.Location)
             victimID = DataStore.Get("BuildingPartOwner", location)
+            playerD = DataStore.Get("Players", victimID)
 
             if player.SteamID in self.buildingOwnerInfo:
                 if not victimID:
@@ -86,7 +84,11 @@ class BuildingOwner():
                     for pl in Server.OfflinePlayers.Values:
                         if pl.SteamID == victimID:
                             victim = pl
-                player.Message("This BuildingPart belongs to "+victim.Name)
+                player.Message("This BuildingPart belongs to "+victim.Name+' ('+playerD['tribe']+')')
+
+            if self.remove == 1 and player.Name == self.admin:
+                DataStore.Remove("BuildingPartOwner", location)
+                player.Message("Building Part removed from datastore")
 
 
 
@@ -95,10 +97,19 @@ class BuildingOwner():
         command = cmd.cmd
         args = str.join(' ', cmd.args)
 
-        commands = ('owner', 'ownerme')
+        commands = ('owner', 'ownerme','remove')
         if command in commands:
             if command == 'owner':
                 if player.SteamID not in self.buildingOwnerInfo:
                     self.buildingOwnerInfo.append(player.SteamID)
                 else:
                     self.buildingOwnerInfo.remove(player.SteamID)
+
+            #Util.Log(player.Name == self.admin)
+            if command == 'remove' and player.Name == self.admin:
+                if self.remove:
+                    player.Message("Building removal off")
+                    self.remove = 0
+                else:
+                    player.Message("Hit with the hammer to remove the building from datastore")
+                    self.remove = 1

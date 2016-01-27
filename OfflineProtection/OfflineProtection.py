@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.72'
+__version__ = '1.8'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
@@ -248,22 +248,23 @@ class OfflineProtection():
         playerD = DataStore.Get('Players', playerID)
         tribeName = playerD['tribe']
 
-
-
         if playerD['tribe'] != 'Survivors':
             if tribeName not in DataStore.Keys('pvpTribeFlags'):
                 #Util.Log("Flaging tribe first time")
                 DataStore.Add('pvpTribeFlags', tribeName, time.time())
                 self.pvpTribeFlag(tribeName, self.timerLenght)
             else:
-                #Util.Log("Extending aggression")
-                DataStore.Add('pvpTribeFlags', tribeName, time.time())
+                if not self.checkTribeForOnlineMembers(tribeName):
+                    Util.Log("Extending timer for "+tribeName)
+                    DataStore.Add('pvpTribeFlags', tribeName, time.time())
         else:
             if not self.checkPVPFlag(playerID):
                 DataStore.Add('pvpFlags', playerID, time.time())
                 self.pvpPlayerFlag(playerID, self.timerLenght)
             else:
-                DataStore.Add('pvpFlags', playerID, time.time())
+                player = Server.FindPlayer(playerID)
+                if player:
+                    DataStore.Add('pvpFlags', playerID, time.time())
 
 
     # TRIBE FLAGGING
@@ -393,7 +394,7 @@ class OfflineProtection():
         tribeMembers = tribeData['tribeMembers']
         for tribeMemberID in tribeMembers:
             player = Server.FindPlayer(tribeMemberID)
-            if player in Server.ActivePlayers:
+            if player:
                 return False
                 break
             else:
@@ -447,6 +448,23 @@ class OfflineProtection():
                     Util.Log("creating notification for reconnected flagged player")
                     self._createNotification(player)
 
+    def On_ServerSaved(self):
+        for playerID in DataStore.Keys('pvpFlags'):
+            lastAggression = DataStore.Get("pvpFlags", playerID)
+            if lastAggression:
+                timediff = self.timerLenght - (time.time() - lastAggression)
+            if timediff < 0:
+                Util.Log("Removing Flag for player "+playerID)
+                DataStore.Remove("pvpFlags", playerID)
+        for tribe in DataStore.Keys("pvpTribeFlags"):
+            lastAggression = DataStore.Get("pvpTribeFlags", tribe)
+            if lastAggression:
+                timediff = self.timerLenght - (time.time() - lastAggression)
+            if timediff < 0:
+                Util.Log("Removing Flag for tribe "+tribe)
+                DataStore.Remove("pvpTribeFlags", tribe)
+
+
 
     def On_Command(self, cmd):
         player = cmd.User
@@ -470,6 +488,7 @@ class OfflineProtection():
                 else:
                     player.MessageFrom("OP", "You are not flagged")
 
+
             elif command == 'flags':
                 players = []
                 Util.Log("Flags:")
@@ -477,17 +496,15 @@ class OfflineProtection():
                     lastAggression = DataStore.Get("pvpFlags", playerID)
                     if lastAggression:
                         timediff = self.timerLenght - (time.time() - lastAggression)
-                    else:
-                        timediff = 0
                     player = Server.FindPlayer(playerID)
                     if player:
-                        players.append(player.Name)
+                        players.append((player.Name, timediff))
                     else:
                         for player in Server.OfflinePlayers.Values:
                             if playerID == player.SteamID:
-                                players.append(player.Name)
+                                players.append((player.Name, timediff))
                 for player in players:
-                    Util.Log(player)
+                    Util.Log(player[0]+' '+str(player[1]))
 
                 for tribe in DataStore.Keys("pvpTribeFlags"):
                     lastAggression = DataStore.Get("pvpTribeFlags", tribe)
