@@ -781,6 +781,8 @@ class GTribes(cachedMenuData):
         # dict for holding overlays with playerID keys
         self.overlays = {}
         self.playersWithMenu = {}
+        self.playerCmdTimer = {}
+        self.cmdTimer = 500
 
         # for cached data
         self.onlinePlayers = []
@@ -907,57 +909,70 @@ class GTribes(cachedMenuData):
         if cce.cmd in commands:
             player = cce.User
             playerID = player.SteamID
-            ##Util.Log(str(player.Name)+"detekcija " + str(cce.cmd))
-            #
-            if cce.cmd == 'tribeUI.players':
-                self.createGUI(player, "playersView", "Online")
 
-            if cce.cmd == 'tribeUI.close':
-                self.destroyGUI(player)
-
-            if cce.cmd == 'tribeUI.tribes':
-                self.createGUI(player, "tribesView")
-
-            if cce.cmd == 'tribeUI.players.online':
-                self.createGUI(player, "playersView", "Online")
-
-            if cce.cmd == 'tribeUI.players.offline':
-                self.createGUI(player, "playersView", "Offline")
-
-            if cce.cmd == 'tribeUI.you':
-                self.createGUI(player, "playerStats")
-
-            if cce.cmd == 'tribe.members':
-                tribeName = str.join('', cce.Args)
-                self.createGUI(player, "tribesView", tribeName)
-
-            if cce.cmd == 'tribe.details.close':
-                self.createGUI(player, "tribesView")
-
-            if cce.cmd == 'tribe.player':
-                playerDetailsID = str.join('', cce.Args)
-                ui = self.overlays[playerID]
-                self.createGUI(player, ui.currentView, ui.selection, playerDetailsID)
-
-            if cce.cmd == 'tribe.player.close':
-                playerDetailsID = str.join('', cce.Args)
-                ui = self.overlays[playerID]
-                ui.playerPopup = None
-                self.createGUI(player, ui.currentView, ui.selection)
+            if playerID not in self.playerCmdTimer.keys():
+                self.playerCmdTimer[playerID] = time.time()
+                pData = Plugin.CreateDict()
+                pData['playerID'] = playerID
+                Plugin.CreateParallelTimer('cmdTimer', self.cmdTimer, pData).Start()
 
 
+                ##Util.Log(str(player.Name)+"detekcija " + str(cce.cmd))
+                #
+                if cce.cmd == 'tribeUI.players':
+                    self.createGUI(player, "playersView", "Online")
 
-            # tribe menu & submenu
-            if cce.cmd == 'tribeUI.help' or cce.cmd == 'tribeUI.help.tribes':
-                self.createGUI(player, "helpView", 'tribeUI.help.tribes')
-            if cce.cmd == 'tribeUI.help.doors':
-                self.createGUI(player, "helpView", 'tribeUI.help.doors')
-            if cce.cmd == 'tribeUI.help.op':
-                self.createGUI(player, "helpView", 'tribeUI.help.op')
-            if cce.cmd == 'tribeUI.help.server':
-                self.createGUI(player, "helpView", 'tribeUI.help.server')
-            if cce.cmd == 'tribeUI.help.commands':
-                self.createGUI(player, "helpView", 'tribeUI.help.commands')
+                if cce.cmd == 'tribeUI.close':
+                    self.destroyGUI(player)
+
+                if cce.cmd == 'tribeUI.tribes':
+                    self.createGUI(player, "tribesView")
+
+                if cce.cmd == 'tribeUI.players.online':
+                    self.createGUI(player, "playersView", "Online")
+
+                if cce.cmd == 'tribeUI.players.offline':
+                    self.createGUI(player, "playersView", "Offline")
+
+                if cce.cmd == 'tribeUI.you':
+                    self.createGUI(player, "playerStats")
+
+                if cce.cmd == 'tribe.members':
+                    tribeName = str.join('', cce.Args)
+                    self.createGUI(player, "tribesView", tribeName)
+
+                if cce.cmd == 'tribe.details.close':
+                    self.createGUI(player, "tribesView")
+
+                if cce.cmd == 'tribe.player':
+                    playerDetailsID = str.join('', cce.Args)
+                    ui = self.overlays[playerID]
+                    self.createGUI(player, ui.currentView, ui.selection, playerDetailsID)
+
+                if cce.cmd == 'tribe.player.close':
+                    playerDetailsID = str.join('', cce.Args)
+                    ui = self.overlays[playerID]
+                    ui.playerPopup = None
+                    self.createGUI(player, ui.currentView, ui.selection)
+
+                # tribe menu & submenu
+                if cce.cmd == 'tribeUI.help' or cce.cmd == 'tribeUI.help.tribes':
+                    self.createGUI(player, "helpView", 'tribeUI.help.tribes')
+                if cce.cmd == 'tribeUI.help.doors':
+                    self.createGUI(player, "helpView", 'tribeUI.help.doors')
+                if cce.cmd == 'tribeUI.help.op':
+                    self.createGUI(player, "helpView", 'tribeUI.help.op')
+                if cce.cmd == 'tribeUI.help.server':
+                    self.createGUI(player, "helpView", 'tribeUI.help.server')
+                if cce.cmd == 'tribeUI.help.commands':
+                    self.createGUI(player, "helpView", 'tribeUI.help.commands')
+            else:
+                Util.Log("Player clicking the UI too fast "+player.Name)
+
+    def cmdTimerCallback(self, timer):
+        timer.Kill()
+        data = timer.Args
+        self.playerCmdTimer.pop(data['playerID'], None)
 
 
     def On_Command(self, cmd):

@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.0'
+__version__ = '1.2'
 
 import clr
 
@@ -15,15 +15,27 @@ import urllib2, json
 class VersionCheck():
 
     def On_PluginInit(self):
-        self.timer = 3600000
+        self.settings = self.loadIniSettings()
+
+        self.timer = self.settings.GetIntSetting('options', 'checkperiod')
+        self.pluginInfoURL = self.settings.GetSetting('options', 'pluginURL')
 
         self.plugins = self._getPlugins()
-        self.pluginInfoURL = "https://stats.pluton.team/all_plugins.php"
+
         self.curVersions = self._getCurVersions()
 
         self.checkVersions()
-        Plugin.CreateTimer("versionCheck", self.timer).Start()
-        Util.Log("Creating timer")
+        Plugin.CreateTimer("versionCheck", self.timer*1000).Start()
+
+
+    def loadIniSettings(self):
+        if not Plugin.IniExists('versioncheck'):
+            Plugin.CreateIni('versioncheck')
+            ini = Plugin.GetIni('versioncheck')
+            ini.AddSetting('options', 'checkperiod', '3600')
+            ini.AddSetting('options', 'pluginURL', 'https://stats.pluton.team/all_plugins.php')
+            ini.Save()
+        return Plugin.GetIni('versioncheck')
 
     def _getPlugins(self):
         plugins = {}
@@ -52,7 +64,7 @@ class VersionCheck():
                     Util.Log("PLUGIN UPDATE NEEDED: "+pluginName)
 
     def versionCheckCallback(self, timer):
-        Util.Log("timer callback")
+        self.curVersions = self._getCurVersions()
         self.checkVersions()
 
     def On_Command(self, cmd):
