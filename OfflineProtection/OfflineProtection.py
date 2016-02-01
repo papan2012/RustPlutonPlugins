@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.8'
+__version__ = '2.0'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")

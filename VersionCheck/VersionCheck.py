@@ -58,6 +58,7 @@ class VersionCheck():
         return curVersions
 
     def checkVersions(self):
+        self.plugins = self._getPlugins()
         for pluginName in self.plugins.keys():
             if pluginName in self.curVersions.keys():
                 if self.plugins[pluginName] != self.curVersions[pluginName]:

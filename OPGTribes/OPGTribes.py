@@ -698,6 +698,7 @@ class cachedMenuData(InterfaceComponents):
                         " - sulfur gather rate increesed 100%\n" \
                         " - decay lowered to 20% effectiveness\n" \
                         " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n" \
+                        " - crafting times halved in building priviledge radius\n" \
                         " - when destroying a building part, another building part won't be placeable on that location for 2 minutes.\n"\
                         " - Incediary Rocket damage nulified for buildings (too many calculations for every flame). They still damage players, so you can use them as area deny.\n\n"\
                         "If you want to hide the menu, write /hidemenu in chat. Type /showmenu to show it again.\n\n"\
