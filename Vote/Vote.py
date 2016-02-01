@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '0.1'
+__version__ = '1.0'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -16,14 +16,18 @@ import httplib, urllib, urllib2
 class Vote():
 
     def __init__(self):
-        self.serverKey = 'kx41a7h1dc2mvyyc59i6o22f19k5igunv7'
+        self.settings = self.loadIniSettings()
+        self.serverKey = self.settings.GetSetting('settings', 'serverKey')
+        self.wood = self.settings.GetIntSetting('settings', 'Wood')
+        self.stone = self.settings.GetIntSetting('settings', 'Stone')
+
 
     def On_Command(self, cmd):
         command = cmd.cmd
         player = cmd.User
         if command == 'vote':
             response = self.checkVote(player)
-            Util.Log("response"+response)
+            Util.Log(player.Name +" voted, response: "+response)
             if response == '0':
                 player.Message("You didn't vote in the last 24 hours.")
             elif response == '1':
@@ -34,13 +38,22 @@ class Vote():
                 player.Message("You already claimed your reward.")
 
 
+    def loadIniSettings(self):
+        if not Plugin.IniExists("vote"):
+            Plugin.CreateIni('vote')
+            ini = Plugin.GetIni('vote')
+            ini.AddSetting('settings', 'serverKey', 'YourServerKey')
+            ini.AddSetting('rewards', 'Wood', '500')
+            ini.AddSetting('rewards', 'Stone', '250')
+            ini.Save()
+        return Plugin.GetIni('vote')
+
     def checkVote(self, player):
         steamID = player.SteamID
 
         httpServer = httplib.HTTPConnection('rust-servers.net', 80)
         params = urllib.urlencode({'object': 'votes', 'element':'claim', 'key': self.serverKey, 'steamid': steamID})
         headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-        Util.Log(str(params))
         httpServer.request("POST", "/api/?", params, headers)
 
         response = httpServer.getresponse()
@@ -54,15 +67,11 @@ class Vote():
             httpServer = httplib.HTTPConnection('rust-servers.net', 80)
             params = urllib.urlencode({'action': 'post', 'object': 'votes', 'element':'claim', 'key': self.serverKey, 'steamid': steamID})
             headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
-            Util.Log(str(params))
             httpServer.request("POST", "/api/?", params, headers)
 
             response = httpServer.getresponse()
-            Util.Log(str(response.status)+' '+str(response.reason))
-            Util.Log(str(response.read()))
             httpServer.close()
 
     def rewardPlayer(self, player):
-        Util.Log(str(dir(player)))
-        player.Inventory.Add("Wood", 500)
-        player.Inventory.Add("Stones", 250)
+        player.Inventory.Add("Wood", self.wood)
+        player.Inventory.Add("Stones", self.stone)
