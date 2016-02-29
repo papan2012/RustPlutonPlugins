@@ -29,7 +29,7 @@ welcomegui = [
         [
             {
                 "type": "UnityEngine.UI.Image",
-                "color": "0.1 0.1 0.1 0.85",
+                "color": "0.1 0.1 0.1 0.95",
             },
             {
                 "type": "RectTransform",

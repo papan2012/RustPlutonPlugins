@@ -1,11 +1,13 @@
 __author__ = 'PanDevas'
-__version__ = '0.1'
+__version__ = '0.5'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton")
+clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp")
+
 import Pluton
 import sys
+#import MetabolismAttribute
 
 
 class OPGameBallancer():
@@ -13,24 +15,14 @@ class OPGameBallancer():
     def On_PluginInit(self):
         self.buildingTimerLenght = 120
 
-
+    # HOOKS
     def On_PlayerStartCrafting(self, ce):
-        #Util.Log(str(dir(DataStore)))
         player = ce.Crafter
-        fix_items = {
-            'wall.external.high.stone': 240,
-            'wall.external.high': 120,
-            'gates.external.high': 180
-        }
 
-        if ce.Target.shortname in fix_items.keys():
-            ce.CraftTime = fix_items[ce.Target.shortname]
-        else:
-            if not DataStore.GetTable("CraftingTimes"):
-                DataStore.Add("CraftingTimes", ce.Target.shortname, ce.CraftTime)
-            elif ce.Target.shortname not in DataStore.Keys("CraftingTimes"):
-                DataStore.Add("CraftingTimes", ce.Target.shortname, ce.CraftTime)
-
+        if not DataStore.GetTable("CraftingTimes"):
+            DataStore.Add("CraftingTimes", ce.Target.shortname, ce.CraftTime)
+        elif ce.Target.shortname not in DataStore.Keys("CraftingTimes"):
+            DataStore.Add("CraftingTimes", ce.Target.shortname, ce.CraftTime)
 
         if player.basePlayer.HasPlayerFlag(player.basePlayer.PlayerFlags.HasBuildingPrivilege):
             ce.CraftTime =  DataStore.Get("CraftingTimes", ce.Target.shortname) / 2

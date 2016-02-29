@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '2.1'
+__version__ = '2.16'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
@@ -64,6 +64,8 @@ flagged = json.makepretty(string)
 class OfflineProtection():
 
     def On_PluginInit(self):
+        #debug
+        self.start = time.time()
         DataStore.Add('pvpFlags', 'flagtableinit', time.time())
         # Items that are not building parts, but should be protected if offlline protection conditions
         self.protectedItems = ('Door')
@@ -113,6 +115,8 @@ class OfflineProtection():
 
 
     def On_CombatEntityHurt(self, HurtEvent):
+        #debug
+        self.start = time.time()
         '''
         :param CombatEntityHurtEvent:
         :return:
@@ -140,10 +144,6 @@ class OfflineProtection():
             victimID = DataStore.Get("BuildingPartOwner", victimLocation)
             victimData = DataStore.Get("Players", victimID)
             attackerData = DataStore.Get("Players", attackerID)
-
-            # victimID check for database debuging
-            if not victimID:
-                Util.Log("OP: Victim not found "+str(victimLocation))
 
             if (attackerID and victimID) and (attackerID != victimID) and not self.victInAttTribe(attackerID, victimID):
                 #Util.Log(attackerData['name'] + ' is attacking '+ victimData['name'])
@@ -196,7 +196,6 @@ class OfflineProtection():
             return True
         else:
             return False
-
 
     def checkPVPFlag(self, playerID):
         if playerID in DataStore.Keys('pvpFlags'):
@@ -255,7 +254,7 @@ class OfflineProtection():
                 self.pvpTribeFlag(tribeName, self.timerLenght)
             else:
                 if not self.checkTribeForOnlineMembers(tribeName):
-                    Util.Log("Extending timer for "+tribeName)
+                    #Util.Log("Extending timer for "+tribeName)
                     DataStore.Add('pvpTribeFlags', tribeName, time.time())
         else:
             if not self.checkPVPFlag(playerID):
@@ -281,13 +280,13 @@ class OfflineProtection():
             player = Server.FindPlayer(memberID)
             if player and memberID not in self.flaggedPlayers:
                 DataStore.Add('pvpFlags', memberID, time.time())
-                Util.Log(str(DataStore.Get('pvpFlags', memberID)))
+                #Util.Log(str(DataStore.Get('pvpFlags', memberID)))
                 self._createNotification(player)
 
 
         tmData = Plugin.CreateDict()
         tmData['tribe'] = (tribeName, tribeD)
-        Util.Log("creating timer for tribe "+tribeName+' '+str(timerLenght))
+        #Util.Log("creating timer for tribe "+tribeName+' '+str(timerLenght))
         Plugin.CreateParallelTimer("pvpTribeFlags", timerLenght*1000, tmData).Start()
 
         
@@ -303,11 +302,11 @@ class OfflineProtection():
 
         if timediff > 1:
             timer.Kill()
-            Util.Log("Extending timer for tribe "+tribeD['tribe'][0]+' '+str(timediff))
+            #Util.Log("Extending timer for tribe "+tribeD['tribe'][0]+' '+str(timediff))
             self.pvpTribeFlag(tribeD['tribe'][0], timediff)
         else:
             timer.Kill()
-            Util.Log("Clearing flag for tribe "+tribeD['tribe'][0])
+            #Util.Log("Clearing flag for tribe "+tribeD['tribe'][0])
             DataStore.Remove("pvpTribeFlags", tribeD['tribe'][0])
 
             for memberID in tribeD['tribe'][1]['tribeMembers']:

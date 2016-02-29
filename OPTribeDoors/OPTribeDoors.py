@@ -33,6 +33,7 @@ class OPTribeDoors():
         else:
             due.Deny("You're not the owner of this door, or member of door owner tribe")
 
+
     def isPlayerInTribe(self, doorUserID, doorOwnerID):
         doorUserTribe = DataStore.Get("Players", doorUserID)
         doorOwnerTribe = DataStore.Get("Players", doorOwnerID)

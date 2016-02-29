@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.0'
+__version__ = '1.2'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -18,6 +18,7 @@ class Vote():
     def __init__(self):
         self.settings = self.loadIniSettings()
         self.serverKey = self.settings.GetSetting('settings', 'serverKey')
+        self.voteURL = self.settings.GetSetting('settings', 'voteURL')
         self.wood = self.settings.GetIntSetting('settings', 'Wood')
         self.stone = self.settings.GetIntSetting('settings', 'Stone')
 
@@ -29,7 +30,7 @@ class Vote():
             response = self.checkVote(player)
             Util.Log(player.Name +" voted, response: "+response)
             if response == '0':
-                player.Message("You didn't vote in the last 24 hours.")
+                player.Message("You didn't vote in the last 24 hours. Please vote on "+self.voteURL)
             elif response == '1':
                 player.Message("You have voted. Thank you for your vote.")
                 self.Claim(player)
@@ -38,11 +39,13 @@ class Vote():
                 player.Message("You already claimed your reward.")
 
 
+
     def loadIniSettings(self):
         if not Plugin.IniExists("vote"):
             Plugin.CreateIni('vote')
             ini = Plugin.GetIni('vote')
             ini.AddSetting('settings', 'serverKey', 'YourServerKey')
+            ini.AddSetting('settings', 'VoteURL', 'YourVoteURL')
             ini.AddSetting('rewards', 'Wood', '500')
             ini.AddSetting('rewards', 'Stone', '250')
             ini.Save()
@@ -73,5 +76,7 @@ class Vote():
             httpServer.close()
 
     def rewardPlayer(self, player):
-        player.Inventory.Add("Wood", self.wood)
-        player.Inventory.Add("Stones", self.stone)
+        #Util.Log(str(self.wood))
+        #Util.Log(str(self.stone))
+        player.Inventory.Add("Wood", 500)
+        player.Inventory.Add("Stones", 250)

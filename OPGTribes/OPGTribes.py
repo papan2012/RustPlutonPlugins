@@ -610,7 +610,7 @@ class cachedMenuData(InterfaceComponents):
         :param selection:
         :return:
         '''
-        helpButtons = [('Tribes', 'tribeUI.help.tribes'), ('Door System', 'tribeUI.help.doors'), ('Offline Protection', 'tribeUI.help.op'),('Server Info', 'tribeUI.help.server'), ('Commands', 'tribeUI.help.commands')]
+        helpButtons = [('Tribes', 'tribeUI.help.tribes'), ('Door System', 'tribeUI.help.doors'), ('Offline Protection', 'tribeUI.help.op'),('Building takeover', 'tribeUI.help.take'),('Server Info', 'tribeUI.help.server'), ('Commands', 'tribeUI.help.commands')]
         gui = []
 
         anchormin_x = 0.05
@@ -694,10 +694,17 @@ class cachedMenuData(InterfaceComponents):
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n\n" \
                       "If you need some privacy, put code locks on chests. \n" \
                       "That will prevent anyone opening them without the code.\n\n",
+        'tribeUI.help.take':"<color=white>BUILDING TAKEOVER</color>\n\n"\
+                      "If you manage to get a hand of building permissions in a building from a player that has been offline for more then three days, you can claim his base for yourself.\n"\
+                      "You just need to type /take and hit every building block you see with a hammer.\n"\
+                      "That way all the parts you hit will be yours from the moment you hit them, and they will be protected when you go offline.\n\n"\
+                      "Soon there will be an option to take buildings from online players as well, if you manage to raid them. That option will be reserved for tribes and tribe wars mechanics.\n\n"\
+                      "COMMANDS:\n"\
+                      "/take - turns on/off building part takeover",
         'tribeUI.help.server':"<color=white>SERVER INFO</color>\n\n" \
                         " - sulfur gather rate increesed 100%\n" \
                         " - decay lowered to 20% effectiveness\n" \
-                        " - crafting times of External stone walls is increased to 2 minutes for wooden, and 4 minutes for stone walls\n" \
+                        " - metabolism rate incresed, so you'll be hungry and thirsty much more\n" \
                         " - crafting times halved in building priviledge radius\n" \
                         " - when destroying a building part, another building part won't be placeable on that location for 2 minutes.\n"\
                         " - Incediary Rocket damage nulified for buildings (too many calculations for every flame). They still damage players, so you can use them as area deny.\n\n"\
@@ -905,7 +912,7 @@ class OPGTribes(cachedMenuData):
         commands = ['tribeUI.players', 'tribeUI.close', 'tribeUI.tribes', 'tribeUI.players.online',
                     'tribeUI.players.offline', 'tribeUI.you', 'tribe.members',
                     'tribeUI.help', 'tribeUI.help.doors', 'tribeUI.help.tribes','tribeUI.help.op',
-                    'tribeUI.help.server','tribeUI.help.commands', 'tribe.details.close', 'tribe.player', 'tribe.player.close']
+                    'tribeUI.help.server','tribeUI.help.take','tribeUI.help.commands', 'tribe.details.close', 'tribe.player', 'tribe.player.close']
 
         if cce.cmd in commands:
             player = cce.User
@@ -963,6 +970,8 @@ class OPGTribes(cachedMenuData):
                     self.createGUI(player, "helpView", 'tribeUI.help.doors')
                 if cce.cmd == 'tribeUI.help.op':
                     self.createGUI(player, "helpView", 'tribeUI.help.op')
+                if cce.cmd == 'tribeUI.help.take':
+                    self.createGUI(player, "helpView", 'tribeUI.help.take')
                 if cce.cmd == 'tribeUI.help.server':
                     self.createGUI(player, "helpView", 'tribeUI.help.server')
                 if cce.cmd == 'tribeUI.help.commands':

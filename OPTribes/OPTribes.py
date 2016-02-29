@@ -256,11 +256,14 @@ class OPTribes:
             if playeri:
                 playerR = PlayerData(playerr)
                 playerI = PlayerData(playeri)
+                tribeD = TribeData(playerR.playerData['tribe'])
 
                 if playerI.playerData['tribe'] != 'Survivors':
                     playerr.MessageFrom("Tribes", playeri.Name+' is already in a tribe \"' + playerI.playerData['tribe']+"\"")
                 elif playerR.playerData['tribe'] == 'Survivors':
                     playerr.MessageFrom("Tribes", "You are not in a tribe.")
+                elif len(tribeD['tribeMembers']) >= 10:
+                    playerr.MessageFrom("Tribes", "You can't invite more people to your tribe, tribe too big.")
                 else:
                     playerr.MessageFrom("Tribes", "Player "+ playeri.Name+ "\" invited!")
                     playeri.MessageFrom("Tribes", playerr.Name+" invited you to his tribe \"" + playerR.playerData['tribe']+"\"")
