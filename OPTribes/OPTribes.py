@@ -3,8 +3,11 @@ __version__ = '1.2'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton")
-import Pluton
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
+
+import Pluton.Core
+import Pluton.Rust
+
 import sys
 import re
 

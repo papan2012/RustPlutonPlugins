@@ -2,9 +2,10 @@ __author__ = 'PanDevas'
 __version__ = '1.12'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
 import sys
 
 import Facepunch
