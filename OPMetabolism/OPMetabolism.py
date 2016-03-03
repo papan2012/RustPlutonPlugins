@@ -3,11 +3,12 @@ __version__ = '0.5'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
+
 import sys
-#import MetabolismAttribute
 
 
 class OPGameBallancer():
@@ -16,7 +17,6 @@ class OPGameBallancer():
         self.buildingTimerLenght = 120
 
         # METABOLISM VARIABLES
-
         self.metabolismRate = 30
         for player in Server.ActivePlayers:
             self.startMetabolismTimer(player)
@@ -27,7 +27,7 @@ class OPGameBallancer():
     def startMetabolismTimer(self, player):
         metabolismData = Plugin.CreateDict()
         metabolismData['player'] = player
-        #Util.Log('Starting metabolism timer for '+player.Name)
+        Util.Log('Starting metabolism timer for '+player.Name)
         Plugin.CreateParallelTimer("metabolism", self.metabolismRate*1000, metabolismData).Start()
 
     def metabolismCallback(self, timer):
@@ -50,4 +50,4 @@ class OPGameBallancer():
             Plugin.CreateParallelTimer("metabolism", self.metabolismRate*1000, metabolismData).Start()
         else:
             timer.Kill()
-            #Util.Log("destroying timer for player "+ player.Name)
+            Util.Log("destroying timer for player "+ player.Name)
