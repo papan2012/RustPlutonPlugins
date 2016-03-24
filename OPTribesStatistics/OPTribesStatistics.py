@@ -3,9 +3,9 @@ __version__ = '1.2'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
-import Pluton.Core
-import Pluton.Rust
+clr.AddReferenceByPartialName("Pluton")
+import Pluton
+
 
 
 class OPTribesStatistics():
@@ -80,8 +80,11 @@ class OPTribesStatistics():
     # ResStatistics
     def On_PlayerGathering(self, ge):
         playerID = ge.Gatherer.SteamID
-        if str(ge.ItemAmount.itemDef).split('.')[0] == 'sulfur_ore':
+        if str(ge.ItemAmount.itemDef).split('.')[0] == 'wood':
+            ge.Amount *= 1.5
+        elif str(ge.ItemAmount.itemDef).split('.')[0] == 'sulfur_ore':
            ge.Amount *= 2
+
         gatherAmount = ge.Amount
 
         playerData = DataStore.Get("Players", playerID)

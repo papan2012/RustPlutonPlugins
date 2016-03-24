@@ -702,7 +702,7 @@ class cachedMenuData(InterfaceComponents):
                       "COMMANDS:\n"\
                       "/take - turns on/off building part takeover",
         'tribeUI.help.server':"<color=white>SERVER INFO</color>\n\n" \
-                        " - sulfur gather rate increesed 100%\n" \
+                        " - sulfur gather rate increesed 100%, wood by 50%\n" \
                         " - decay lowered to 20% effectiveness\n" \
                         " - metabolism rate incresed, so you'll be hungry and thirsty much more\n" \
                         " - crafting times halved in building priviledge radius\n" \
@@ -715,6 +715,8 @@ class cachedMenuData(InterfaceComponents):
                         "For any problems with the server plugins, contact the server owner, or plugin developer, Pan Devas on Steam.\n" \
                         "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information.",
          'tribeUI.help.commands':"<color=white>COMMANDS</color>\n\n" \
+                        " - /sleep - slowers you metabolism to a default value, usefull if you go afk in the house, so you don't die from hunger or thirst:\n"\
+                        " - /ping  - test your ping\n\n"\
                         "You can also bind keys in F1 console to automate the process of opening the UI:\n"\
                         " bind <key> <commmand>\n"\
                         " writecfg - to safe newly binded keys\n\n"\

@@ -2,10 +2,10 @@ __author__ = 'PanDevas'
 __version__ = '0.1'
 
 import clr
-clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
+clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 
-import Pluton.Core
-import Pluton.Rust
+import Pluton
+
 import time
 import Facepunch
 import CommunityEntity
@@ -131,17 +131,11 @@ class OPBuildingChanger():
             playerTribeData = DataStore.Get('Tribes', playerTribe)
             tribeMembers = playerTribeData['tribeMembers']
             protect = False
-            if playerTribe in DataStore.Keys("pvpTribeFlags"):
-                return False
-            else:
-                for tribeMemberID in tribeMembers:
-                    playerD = DataStore.Get('Players', tribeMemberID)
-                    player = Server.FindPlayer(tribeMemberID)
-                    if player:
-                        return False
-                        break
-                    elif (time.time() - playerD['lastonline']) < self.takeoverProtection:
-                        protect = True
+            for tribeMemberID in tribeMembers:
+                playerD = DataStore.Get('Players', tribeMemberID)
+                player = Server.FindPlayer(tribeMemberID)
+                if (time.time() - playerD['lastonline']) < self.takeoverProtection:
+                    protect = True
             return protect
         else:
             return False

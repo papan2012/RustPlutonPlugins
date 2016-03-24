@@ -13,6 +13,7 @@ import sys
 class OPGameBallancer():
 
     def On_PluginInit(self):
+        DataStore.Flush("DestroyedBuildings")
         self.buildingTimerLenght = 120
 
     # HOOKS

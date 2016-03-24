@@ -3,10 +3,9 @@ __version__ = '1.2'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
+clr.AddReferenceByPartialName("Pluton")
 
-import Pluton.Core
-import Pluton.Rust
+import Pluton
 
 import sys
 import re
@@ -259,14 +258,15 @@ class OPTribes:
             if playeri:
                 playerR = PlayerData(playerr)
                 playerI = PlayerData(playeri)
-                tribeD = TribeData(playerR.playerData['tribe'])
+                recruitTribe = playerR.playerData['tribe']
+                tribeD = TribeData(recruitTribe)
 
                 if playerI.playerData['tribe'] != 'Survivors':
                     playerr.MessageFrom("Tribes", playeri.Name+' is already in a tribe \"' + playerI.playerData['tribe']+"\"")
                 elif playerR.playerData['tribe'] == 'Survivors':
                     playerr.MessageFrom("Tribes", "You are not in a tribe.")
-                elif len(tribeD['tribeMembers']) >= 10:
-                    playerr.MessageFrom("Tribes", "You can't invite more people to your tribe, tribe too big.")
+                elif len(tribeD.tribeData['tribeMembers']) >= 5:
+                     playerr.MessageFrom("Tribes", "You can't invite more people to your tribe, tribe too big.")
                 else:
                     playerr.MessageFrom("Tribes", "Player "+ playeri.Name+ "\" invited!")
                     playeri.MessageFrom("Tribes", playerr.Name+" invited you to his tribe \"" + playerR.playerData['tribe']+"\"")

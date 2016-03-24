@@ -4,6 +4,7 @@ __version__ = '1.0'
 import clr
 
 clr.AddReferenceByPartialName("Pluton")
+
 import Pluton
 
 class Notifications():

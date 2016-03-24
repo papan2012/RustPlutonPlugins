@@ -2,19 +2,19 @@ __author__ = 'PanDevas'
 __version__ = '1.12'
 
 import clr
-clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
+clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 
-import Pluton.Core
-import Pluton.Rust
+import Pluton
 import sys
 
 import Facepunch
 import CommunityEntity
 import Network
-
+import datetime
 
 path = Util.GetPublicFolder()
 sys.path.append(path + "\\Python\\Lib\\")
+
 
 try:
     import json
@@ -71,6 +71,7 @@ class OPBuildingOwner():
         self.buildingOwnerInfo = self.datastoreInit()
 
     def On_ServerSaved(self):
+        Util.Log(str(datetime.datetime.now()))
         DataStore.Save()
 
     def datastoreInit(self):

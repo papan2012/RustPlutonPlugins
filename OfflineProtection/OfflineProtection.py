@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '2.16'
+__version__ = '2.2'
 
 import clr
 clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
@@ -176,7 +176,7 @@ class OfflineProtection():
                 victimID = victim.SteamID
                 if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                     self.checkTribeBeforeFlag(attackerID)
-                    if victim in Server.ActivePlayers:
+                    if victim:# in Server.ActivePlayers:
                         self.checkTribeBeforeFlag(victimID)
 
 
@@ -443,7 +443,7 @@ class OfflineProtection():
                 self._createNotification(player)
         elif playerD['tribe'] != 'Survivors':
             if DataStore.ContainsKey("pvpTribeFlags", playerD['tribe']):
-                if player in Server.ActivePlayers and player.SteamID not in self.flaggedPlayers:
+                if player and player.SteamID not in self.flaggedPlayers:
                     Util.Log("creating notification for reconnected flagged player")
                     self._createNotification(player)
 
