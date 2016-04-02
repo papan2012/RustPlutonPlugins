@@ -2,9 +2,11 @@ __author__ = 'PanDevas'
 __version__ = '0.5'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp", "Facepunch.Network")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp", "Facepunch.Network")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
+
 import sys
 path = Util.GetPublicFolder()
 sys.path.append(path + "\\Python\\Lib\\")
@@ -24,7 +26,7 @@ except ImportError:
 welcomegui = [
     {
         "name": "welcomeUI",
-        #"parent": "overlay",
+        "parent": "HUD/Overlay",
         "components":
         [
             {
@@ -235,17 +237,17 @@ class OPWelcomeScreen():
                 CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
-        if cce.cmd != 'chat.say':
+        if cce.Cmd != 'chat.say':
             player = cce.User
             playerID = player.SteamID
-        if cce.cmd == 'close.welcome':
-            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", "welcomeUI")
-        if cce.cmd == "create.welcome":
+        if cce.Cmd == 'close.welcome':
+            CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeUI"))
+        if cce.Cmd == "create.welcome":
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
-        if cce.cmd == "welcome.dontshow":
+        if cce.Cmd == "welcome.dontshow":
             self.shown_players.append(player.SteamID)
-        if cce.cmd == 'clear.dontshow':
-            slef.shown_players = []
+        if cce.Cmd == 'clear.dontshow':
+            self.shown_players = []
 
     def On_PlayerDisconnected(self, player):
         if player:

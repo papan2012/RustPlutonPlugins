@@ -3,9 +3,10 @@ __version__ = '1.2'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton")
-import Pluton
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
 
+import Pluton.Core
+import Pluton.Rust
 
 
 class OPTribesStatistics():
@@ -28,6 +29,7 @@ class OPTribesStatistics():
         pass
 
     def On_PlayerDied(self, pde):
+        Util.Log(str(dir(pde)))
         attacker = pde.Attacker
         victim = pde.Victim
 
@@ -76,7 +78,6 @@ class OPTribesStatistics():
             else:
                 victimData['PVPstatistics']['deaths'] +=  1
 
-
     # ResStatistics
     def On_PlayerGathering(self, ge):
         playerID = ge.Gatherer.SteamID
@@ -95,7 +96,7 @@ class OPTribesStatistics():
 
 
     def On_Command(self, cmd):
-        command = cmd.cmd
+        command = cmd.Cmd
         player = cmd.User
 
         if command == 'stats':

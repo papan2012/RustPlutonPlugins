@@ -2,15 +2,18 @@ __author__ = 'PanDevas'
 __version__ = '1.12'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
+
 import sys
 
 import Facepunch
 import CommunityEntity
 import Network
 import datetime
+import BasePlayer
 
 path = Util.GetPublicFolder()
 sys.path.append(path + "\\Python\\Lib\\")
@@ -87,7 +90,6 @@ class OPBuildingOwner():
             if player:
                 self._removeNotification(player)
             ownerPlayers.remove(playerID)
-        Util.Log(str(ownerPlayers))
         return ownerPlayers
 
     def _createNotification(self, player):
@@ -152,37 +154,40 @@ class OPBuildingOwner():
         this is a dirty workaround when the doors are not placed in exact location with the frame
         and a helper function for determining ownership of building parts
         '''
-        getOwnerObjects = ["BuildingBlock", "Door"]
+        getOwnerObjects = ["BuildingBlock", "Door", "SimpleBuildingBlock", 'StabilityEntity', 'BuildingPrivlidge']
+        hurtEntity = he.Victim.baseEntity.GetType().ToString()
 
-        if he.Victim.baseEntity.GetType().ToString() in getOwnerObjects:
+        if hurtEntity in getOwnerObjects:
 
             player = he.Player
             location = str(he.Victim.Location)
-            victimID = DataStore.Get("BuildingPartOwner", location)
+            victimID = str(he.Victim.baseEntity.OwnerID)
+            # victimID = DataStore.Get("BuildingPartOwner", location)
+            # if not victimID:
+            #     victimID = str(he.Victim.baseEntity.OwnerID)
             playerD = DataStore.Get("Players", victimID)
 
             if player.SteamID in self.buildingOwnerInfo:
-                if not victimID:
-                    player.Message("BuildingPart not found, you are the new owner. Tell the admin what happened.")
-                    DataStore.Add("BuildingPartOwner", location, player.SteamID)
-                    victimID = player.SteamID
                 victim = Server.FindPlayer(victimID)
-                if not victim:
-                    for pl in Server.OfflinePlayers.Values:
-                        if pl.SteamID == victimID:
-                            victim = pl
-                player.Message("This BuildingPart belongs to "+victim.Name+' ('+playerD['tribe']+')')
 
-            if self.remove == 1 and player.Name == self.admin:
-                DataStore.Remove("BuildingPartOwner", location)
-                player.Message("Building Part removed from datastore")
+                if victim:
+                    victimName = victim.Name
+                else:
+                    victim = BasePlayer.FindSleeping(victimID)
+                    victimName = victim.displayName
 
+                player.Message("This belongs to "+victimName+' ('+playerD['tribe']+')')
+
+                if hurtEntity == 'BuildingPrivlidge':
+                    player.Message('Authorized players:')
+                    for authed in he.Victim.baseEntity.authorizedPlayers:
+                        player.Message(str(authed.username))
 
 
     def On_Command(self, cmd):
         player = cmd.User
-        command = cmd.cmd
-        args = str.join(' ', cmd.args)
+        command = cmd.Cmd
+        args = str.join(' ', cmd.Args)
 
         commands = ('owner', 'ownerme','remove')
         if command in commands:
@@ -194,8 +199,6 @@ class OPBuildingOwner():
                     player.Message("Building owner report OFF")
                     self._removeNotification(player)
 
-
-            #Util.Log(player.Name == self.admin)
             if command == 'remove' and player.Name == self.admin:
                 if self.remove:
                     player.Message("Building removal off")

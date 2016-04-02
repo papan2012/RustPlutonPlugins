@@ -3,9 +3,10 @@ __version__ = '1.2'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
 
 import sys
 import re
@@ -212,7 +213,7 @@ class OPTribes:
         creator = cmd.User
         playerD = PlayerData(creator)
 
-        tribeName = str.join('', cmd.args)
+        tribeName = str.join('', cmd.Args)
         tribeName = tribeName if len(tribeName) <=10 else tribeName[0:10]
 
         if creator.SteamID in DataStore.Keys('pvpFlags'):
@@ -250,7 +251,7 @@ class OPTribes:
 
     def invitToTribe(self, cmd):
         playerr = cmd.User
-        playeri = Server.FindPlayer(str.join(' ', cmd.args))
+        playeri = Server.FindPlayer(str.join(' ', cmd.Args))
 
         if playerr.SteamID in DataStore.Keys('pvpFlags'):
             playerr.MessageFrom("Tribes", "You can't invite to tribe while flaged!")
@@ -273,7 +274,7 @@ class OPTribes:
                     playerI.playerData['pendingInvites'] = playerR.playerData['tribe']
 
             else:
-                playerr.MessageFrom("Tribes", str.join(' ', cmd.args)+' not found')
+                playerr.MessageFrom("Tribes", str.join(' ', cmd.Args)+' not found')
 
 
     def acceptTribeInvite(self, cmd):
@@ -337,7 +338,7 @@ class OPTribes:
 
     def kickFromTribe(self, cmd):
         creator = cmd.User
-        kickPlayerName = ' '.join((cmd.args)[0:])
+        kickPlayerName = ' '.join((cmd.Args)[0:])
         survivorTribe = TribeData("Survivors")
         creatorD = PlayerData(creator)
         tribeName = creatorD.playerData['tribe']
@@ -389,7 +390,7 @@ class OPTribes:
             All function calls here need to accept cmd Instance
         '''
 
-        command = cmd.cmd
+        command = cmd.Cmd
 
         if command in self.commands.keys():
             self.commands[command][0](cmd)
@@ -403,7 +404,7 @@ class OPTribes:
             playerData = PlayerData(player)
             ptribe = playerData.playerData['tribe']
             pTribe = TribeData(ptribe)
-            message = ' '.join((cmd.args)[0:])
+            message = ' '.join((cmd.Args)[0:])
             pTribe.tribeMessages(player.Name, message)
 
 

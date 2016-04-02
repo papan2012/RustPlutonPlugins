@@ -3,7 +3,6 @@ __version__ = '1.2'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton")
 import sys
 path = Util.GetPublicFolder()
 sys.path.append(path + "\\Python\\Lib\\")
@@ -70,7 +69,7 @@ class VersionCheck():
 
     def On_Command(self, cmd):
         user = cmd.User
-        command = cmd.cmd
+        command = cmd.Cmd
 
 
         if command == 'versioncheck':

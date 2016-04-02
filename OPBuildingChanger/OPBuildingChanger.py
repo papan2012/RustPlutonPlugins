@@ -2,9 +2,10 @@ __author__ = 'PanDevas'
 __version__ = '0.1'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
 
 import time
 import Facepunch
@@ -62,6 +63,7 @@ takemark = json.makepretty(string)
 class OPBuildingChanger():
 
     def On_PluginInit(self):
+        self.takeoverItems = ("SimpleBuildingBlock", 'BuildingBlock')
         self.takeoverPlayers = self.datastoreInit()
 
         settings = self.loadIniSettings()
@@ -93,24 +95,32 @@ class OPBuildingChanger():
 
 
     def On_BeingHammered(self, he):
+        hurtEntity = he.Victim.baseEntity.GetType().ToString()
         player = he.Player
-        location = he.Victim.Location
-        victimID = DataStore.Get("BuildingPartOwner", str(location))
-        playerD = DataStore.Get("Players", player.SteamID)
-        victimD = DataStore.Get("Players", victimID)
 
-        if player.SteamID in player.SteamID in self.takeoverPlayers:
+        if hurtEntity == 'Door' and player.SteamID in player.SteamID in self.takeoverPlayers:
+            player.Message("You can't claim doors!")
+        elif hurtEntity in self.takeoverItems and player.SteamID in player.SteamID in self.takeoverPlayers:
+            location = he.Victim.Location
+
+            victimID = DataStore.Get("BuildingPartOwner", str(location))
+            if not victimID:
+                victimID = str(he.Victim.baseEntity.OwnerID)
+
+            playerD = DataStore.Get("Players", player.SteamID)
+            victimD = DataStore.Get("Players", victimID)
             if player.SteamID == victimID:
                 player.Message("This is already your building.")
             elif playerD['tribe'] != 'Survivors' and playerD['tribe'] == victimD['tribe']:
                 player.Message("You can't take buildings from your tribe members!")
-            elif self.protectFromTakeover(victimID):
-                player.Message("This player buildings can't be taken for now.")
+            # elif self.protectFromTakeover(victimID):
+            #     player.Message("This player buildings can't be taken for now.")
             elif not player.basePlayer.HasPlayerFlag(player.basePlayer.PlayerFlags.HasBuildingPrivilege):
                 player.Message("You need to have building permisions to make the takeover!")
             else:
                 DataStore.Remove("BuildingPartOwner", str(location))
                 DataStore.Add("BuildingPartOwner", str(location), player.SteamID)
+                he.Victim.baseEntity.OwnerID = player.GameID
                 player.Message("This building part now belongs to you.")
 
 
@@ -161,7 +171,7 @@ class OPBuildingChanger():
 
 
     def On_Command(self, cce):
-        command = cce.cmd
+        command = cce.Cmd
         player = cce.User
 
         if command == 'take':

@@ -3,9 +3,11 @@ __version__ = '0.5'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
+
 import sys
 #import MetabolismAttribute
 
@@ -59,7 +61,7 @@ class OPGameBallancer():
     # TEST METHODS
     def On_Command(self, cmd):
         player = cmd.User
-        command = cmd.cmd
+        command = cmd.Cmd
 
         if command == 'ping':
             player.Message('Your ping is '+str(player.Ping))

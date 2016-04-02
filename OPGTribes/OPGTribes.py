@@ -3,8 +3,12 @@ __version__ = '1.11'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
-import Pluton
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
+
+import Pluton.Core
+import Pluton.Rust
+import BasePlayer
+
 import sys
 path = Util.GetPublicFolder()
 sys.path.append(path + "\\Python\\Lib\\")
@@ -659,7 +663,7 @@ class cachedMenuData(InterfaceComponents):
                      "If you're playing with someone, join a Tribe to avoid any inconvenience and get some benefits.\n" \
                      "More about Tribe mechanism in Tribes help section.\n\n"\
                      "Usefull commands:.\n" \
-                     " - /owner - turns on/off building part ownnership reporting when hitting a building part with a hammer\n"\
+                     " - /owner - turns on/off building part ownnership reporting when hitting a building part with a hammer. Hit a cupboard to get a list of authed players.\n"\
                      " - /flag - tells you for how long you'll be flaged\n",
         'tribeUI.help.tribes':"<color=white>TRIBES</color>\n\n" \
                        "If you wan't to live with someone, or use his doors, you'll have to join the tribe with him.\n" \
@@ -687,18 +691,18 @@ class cachedMenuData(InterfaceComponents):
                       "   - this system prevents both problems.\n\n" \
                       "When you place a door, they are bound to your SteamID. Only you can open and close them.\n"\
                       "So there's no real need for code locks on doors any longer.\n" \
-                      "IMPORTANT: \n"\
-                      "  - owner of the door frame is the owner of the door\n" \
-                      "  - shutters are treated as doors, owner of the baars is the owner of the shutters, so to be able to open them you have to place window bars or open/close them right after placement.\n" \
-                      "  - when placing High External Wood/Stone Gates be sure to open them after placement..\n\n" \
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n\n" \
                       "If you need some privacy, put code locks on chests. \n" \
-                      "That will prevent anyone opening them without the code.\n\n",
+                      "That will prevent anyone opening them without the code.\n\n"\
+                      "IMPORTANT: \n"\
+                      "Until recently owners of the door frame were the owners of the doors. This has now changed and the player that places the door is now the real owner of the door, no matter who the owner of the door frame is!\n"\
+                      "This means you can actually squat, and/or close someone inside his base with your own doors!",
         'tribeUI.help.take':"<color=white>BUILDING TAKEOVER</color>\n\n"\
-                      "If you manage to get a hand of building permissions in a building from a player that has been offline for more then three days, you can claim his base for yourself.\n"\
+                      "If you manage to get a hand of building permissions in a building from a player you can claim his base for yourself.\n"\
                       "You just need to type /take and hit every building block you see with a hammer.\n"\
                       "That way all the parts you hit will be yours from the moment you hit them, and they will be protected when you go offline.\n\n"\
-                      "Soon there will be an option to take buildings from online players as well, if you manage to raid them. That option will be reserved for tribes and tribe wars mechanics.\n\n"\
+                      "Also, if you get griefed, that's the only way to get ungriefed if the griefing player is offline.\n\n"\
+                      "IMPORTANT: This makes protecting your cupboard more important then ever. If you suspect someone has taken the building ownership permisions, please clear the cupboard permissions.\n\n"\
                       "COMMANDS:\n"\
                       "/take - turns on/off building part takeover",
         'tribeUI.help.server':"<color=white>SERVER INFO</color>\n\n" \
@@ -716,7 +720,8 @@ class cachedMenuData(InterfaceComponents):
                         "\nJoin our Steam Group ''CroHQ Rust TribeWars'' for server updates and additional information.",
          'tribeUI.help.commands':"<color=white>COMMANDS</color>\n\n" \
                         " - /sleep - slowers you metabolism to a default value, usefull if you go afk in the house, so you don't die from hunger or thirst:\n"\
-                        " - /ping  - test your ping\n\n"\
+                        " - /ping  - test your ping\n"\
+                        " - /paint URL name - place images from web on signs\n\n"\
                         "You can also bind keys in F1 console to automate the process of opening the UI:\n"\
                         " bind <key> <commmand>\n"\
                         " writecfg - to safe newly binded keys\n\n"\
@@ -802,8 +807,9 @@ class OPGTribes(cachedMenuData):
         for player in Server.ActivePlayers:
             self._addToOnlinePlayers(player.SteamID)
 
-        for player in Server.OfflinePlayers.Values:
-            self._addToOfflinePlayers(player.SteamID)
+        for player in BasePlayer.sleepingPlayerList:
+            if str(player.userID) not in self.offlinePlayers:
+                self._addToOfflinePlayers(str(player.userID))
 
         self._sortListByKey(self.onlinePlayers, 1)
         self._sortListByKey(self.offlinePlayers, 1)
@@ -916,7 +922,7 @@ class OPGTribes(cachedMenuData):
                     'tribeUI.help', 'tribeUI.help.doors', 'tribeUI.help.tribes','tribeUI.help.op',
                     'tribeUI.help.server','tribeUI.help.take','tribeUI.help.commands', 'tribe.details.close', 'tribe.player', 'tribe.player.close']
 
-        if cce.cmd in commands:
+        if cce.Cmd in commands:
             player = cce.User
             playerID = player.SteamID
 
@@ -929,54 +935,54 @@ class OPGTribes(cachedMenuData):
 
                 ##Util.Log(str(player.Name)+"detekcija " + str(cce.cmd))
                 #
-                if cce.cmd == 'tribeUI.players':
+                if cce.Cmd == 'tribeUI.players':
                     self.createGUI(player, "playersView", "Online")
 
-                if cce.cmd == 'tribeUI.close':
+                if cce.Cmd == 'tribeUI.close':
                     self.destroyGUI(player)
 
-                if cce.cmd == 'tribeUI.tribes':
+                if cce.Cmd == 'tribeUI.tribes':
                     self.createGUI(player, "tribesView")
 
-                if cce.cmd == 'tribeUI.players.online':
+                if cce.Cmd == 'tribeUI.players.online':
                     self.createGUI(player, "playersView", "Online")
 
-                if cce.cmd == 'tribeUI.players.offline':
+                if cce.Cmd == 'tribeUI.players.offline':
                     self.createGUI(player, "playersView", "Offline")
 
-                if cce.cmd == 'tribeUI.you':
+                if cce.Cmd == 'tribeUI.you':
                     self.createGUI(player, "playerStats")
 
-                if cce.cmd == 'tribe.members':
+                if cce.Cmd == 'tribe.members':
                     tribeName = str.join('', cce.Args)
                     self.createGUI(player, "tribesView", tribeName)
 
-                if cce.cmd == 'tribe.details.close':
+                if cce.Cmd == 'tribe.details.close':
                     self.createGUI(player, "tribesView")
 
-                if cce.cmd == 'tribe.player':
+                if cce.Cmd == 'tribe.player':
                     playerDetailsID = str.join('', cce.Args)
                     ui = self.overlays[playerID]
                     self.createGUI(player, ui.currentView, ui.selection, playerDetailsID)
 
-                if cce.cmd == 'tribe.player.close':
+                if cce.Cmd == 'tribe.player.close':
                     playerDetailsID = str.join('', cce.Args)
                     ui = self.overlays[playerID]
                     ui.playerPopup = None
                     self.createGUI(player, ui.currentView, ui.selection)
 
                 # tribe menu & submenu
-                if cce.cmd == 'tribeUI.help' or cce.cmd == 'tribeUI.help.tribes':
+                if cce.Cmd == 'tribeUI.help' or cce.Cmd == 'tribeUI.help.tribes':
                     self.createGUI(player, "helpView", 'tribeUI.help.tribes')
-                if cce.cmd == 'tribeUI.help.doors':
+                if cce.Cmd == 'tribeUI.help.doors':
                     self.createGUI(player, "helpView", 'tribeUI.help.doors')
-                if cce.cmd == 'tribeUI.help.op':
+                if cce.Cmd == 'tribeUI.help.op':
                     self.createGUI(player, "helpView", 'tribeUI.help.op')
-                if cce.cmd == 'tribeUI.help.take':
+                if cce.Cmd == 'tribeUI.help.take':
                     self.createGUI(player, "helpView", 'tribeUI.help.take')
-                if cce.cmd == 'tribeUI.help.server':
+                if cce.Cmd == 'tribeUI.help.server':
                     self.createGUI(player, "helpView", 'tribeUI.help.server')
-                if cce.cmd == 'tribeUI.help.commands':
+                if cce.Cmd == 'tribeUI.help.commands':
                     self.createGUI(player, "helpView", 'tribeUI.help.commands')
             else:
                 Util.Log("Player clicking the UI too fast "+player.Name)
@@ -988,7 +994,7 @@ class OPGTribes(cachedMenuData):
 
 
     def On_Command(self, cmd):
-        command = cmd.cmd
+        command = cmd.Cmd
         player = cmd.User
         playerID = player.SteamID
         tribeDataRefreshCommands = ['trcreate', 'trleave', 'trkick', 'traccept']
@@ -1028,7 +1034,6 @@ class OPGTribes(cachedMenuData):
         self._addToOnlinePlayers(player.SteamID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
-        #self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")
 
     def On_PlayerDisconnected(self, player):
         try:
@@ -1040,7 +1045,6 @@ class OPGTribes(cachedMenuData):
         self._addToOfflinePlayers(player.SteamID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
-        #self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")
         self.playersWithMenu.pop(player.SteamID, None)
         Server.Broadcast(player.Name+" is now sleeping.")
 

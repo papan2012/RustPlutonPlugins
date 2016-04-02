@@ -1,11 +1,12 @@
 __author__ = 'PanDevas'
-__version__ = '1.0'
+__version__ = '1.1'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
 
 class Notifications():
     def On_PluginInit(self):

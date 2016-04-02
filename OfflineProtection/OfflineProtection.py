@@ -1,18 +1,21 @@
 __author__ = 'PanDevas'
-__version__ = '2.2'
+__version__ = '2.31'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
 
-import Pluton
+import Pluton.Core
+import Pluton.Rust
+
 import sys
 path = Util.GetPublicFolder()
 sys.path.append(path + "\\Python\\Lib\\")
-import time
+import time, datetime
 
 import Facepunch
 import CommunityEntity
 import Network
+import Decay
 
 try:
     import json
@@ -68,7 +71,8 @@ class OfflineProtection():
         self.start = time.time()
         DataStore.Add('pvpFlags', 'flagtableinit', time.time())
         # Items that are not building parts, but should be protected if offlline protection conditions
-        self.protectedItems = ('Door')
+        self.protectedItems = ('Door', "SimpleBuildingBlock", 'BuildingBlock', 'StabilityEntity')
+        self.ignoredDamagesList = ['Heat', 'Decay', "ElectricShock"]
 
         if not DataStore.GetTable("pvpTribeFlags"):
             DataStore.Add("pvpTribeFlags", 'system', time.time())
@@ -115,54 +119,57 @@ class OfflineProtection():
 
 
     def On_CombatEntityHurt(self, HurtEvent):
-        #debug
-        self.start = time.time()
         '''
         :param CombatEntityHurtEvent:
         :return:
         Detects if building part was damaged and get its location and owner
         '''
-        attacker = HurtEvent.Attacker
-        victimLocation = str(HurtEvent.Victim.Location)
-        hurtEntity = HurtEvent.Victim.baseEntity.GetType().ToString()
-
-        ignoredDamagesList = ['Heat', 'Decay']
-        # Have to nulify heat damage for calculations, taking 10 times longer (incendiary rockets and ammo)
-        # best solution for now is to have it do zero dmg to buildings and avoiding checks
-        # players and deployables will still get damaged
-        if str(HurtEvent.DamageType) == 'Heat' and (HurtEvent.Victim.IsBuildingPart() or hurtEntity in self.protectedItems):
-            damageAmounts = HurtEvent.DamageAmounts
-            for i, d in enumerate(damageAmounts):
-                if damageAmounts[i] != 0.0:
-                    damageAmounts[i] = 0.0
-                HurtEvent.DamageAmounts = damageAmounts
-
-
-        if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and (HurtEvent.Victim.IsBuildingPart() or hurtEntity in self.protectedItems):
-            attackerID = attacker.SteamID
+        if str(HurtEvent.DamageType) != 'Decay':
+            attacker = HurtEvent.Attacker
             victimLocation = str(HurtEvent.Victim.Location)
-            victimID = DataStore.Get("BuildingPartOwner", victimLocation)
-            victimData = DataStore.Get("Players", victimID)
-            attackerData = DataStore.Get("Players", attackerID)
+            hurtEntity = HurtEvent.Victim.baseEntity.GetType().ToString()
 
-            if (attackerID and victimID) and (attackerID != victimID) and not self.victInAttTribe(attackerID, victimID):
-                #Util.Log(attackerData['name'] + ' is attacking '+ victimData['name'])
-                victimData = DataStore.Get('Players', victimID)
-                victimName = victimData['name']
-                victim = Server.FindPlayer(victimID)
+            # Have to nulify heat damage for calculations, taking 10 times longer (incendiary rockets and ammo)
+            # best solution for now is to have it do zero dmg to buildings and avoiding checks
+            # players and deployables will still get damaged
+
+            if str(HurtEvent.DamageType) == 'Heat' and hurtEntity in self.protectedItems:
                 damageAmounts = HurtEvent.DamageAmounts
-
-
-                self.checkTribeBeforeFlag(attackerID)
-                if self.protectForOffline(victimID):
-                    for i, d in enumerate(damageAmounts):
-                        if damageAmounts[i] != 0.0:
-                            damageAmounts[i] = 0.0
+                for i, d in enumerate(damageAmounts):
+                    if damageAmounts[i] != 0.0:
+                        damageAmounts[i] = 0.0
                     HurtEvent.DamageAmounts = damageAmounts
-                    self.notifyPlayer(attackerID, victimName)
-                elif victim or victimData['tribe'] != "Survivors":
-                    #Util.Log("Flagging "+victimData['tribe']+', attacker '+attackerData['name'])
-                    self.checkTribeBeforeFlag(victimID)
+
+
+            #if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and (HurtEvent.Victim.IsBuildingPart() or hurtEntity in self.protectedItems):
+            if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in self.ignoredDamagesList and hurtEntity in self.protectedItems:
+                attackerID = attacker.SteamID
+                victimLocation = str(HurtEvent.Victim.Location)
+                victimID = DataStore.Get("BuildingPartOwner", victimLocation)
+                if not victimID:
+                    victimID = str(HurtEvent.Victim.baseEntity.OwnerID)
+
+                victimData = DataStore.Get("Players", victimID)
+                attackerData = DataStore.Get("Players", attackerID)
+
+                if (attackerID and victimID) and (attackerID != victimID) and not self.victInAttTribe(attackerID, victimID):
+                    #Util.Log(attackerData['name'] + ' is attacking '+ victimData['name'])
+                    victimData = DataStore.Get('Players', victimID)
+                    victimName = victimData['name']
+                    victim = Server.FindPlayer(victimID)
+                    damageAmounts = HurtEvent.DamageAmounts
+
+
+                    self.checkTribeBeforeFlag(attackerID)
+                    if self.protectForOffline(victimID):
+                        for i, d in enumerate(damageAmounts):
+                            if damageAmounts[i] != 0.0:
+                                damageAmounts[i] = 0.0
+                        HurtEvent.DamageAmounts = damageAmounts
+                        self.notifyPlayer(attackerID, victimName)
+                    elif victim or victimData['tribe'] != "Survivors":
+                        #Util.Log("Flagging "+victimData['tribe']+', attacker '+attackerData['name'])
+                        self.checkTribeBeforeFlag(victimID)
 
 
     def On_PlayerHurt(self, HurtEvent):
@@ -301,11 +308,11 @@ class OfflineProtection():
             timediff = 0
 
         if timediff > 1:
-            timer.Kill()
+            timer.Stop()
             #Util.Log("Extending timer for tribe "+tribeD['tribe'][0]+' '+str(timediff))
             self.pvpTribeFlag(tribeD['tribe'][0], timediff)
         else:
-            timer.Kill()
+            timer.Stop()
             #Util.Log("Clearing flag for tribe "+tribeD['tribe'][0])
             DataStore.Remove("pvpTribeFlags", tribeD['tribe'][0])
 
@@ -440,7 +447,8 @@ class OfflineProtection():
 
         if playerD['tribe'] == 'Survivors' and player.SteamID in DataStore.Keys("pvpFlags"):
             if player.SteamID not in self.flaggedPlayers:
-                self._createNotification(player)
+                if player:
+                    self._createNotification(player)
         elif playerD['tribe'] != 'Survivors':
             if DataStore.ContainsKey("pvpTribeFlags", playerD['tribe']):
                 if player and player.SteamID not in self.flaggedPlayers:
@@ -467,8 +475,8 @@ class OfflineProtection():
 
     def On_Command(self, cmd):
         player = cmd.User
-        command = cmd.cmd
-        args = str.join(' ', cmd.args)
+        command = cmd.Cmd
+        args = str.join(' ', cmd.Args)
         commands = ('flag', 'flags', 'clearflags1', 'flagme','unflagme')
 
         if command in commands:

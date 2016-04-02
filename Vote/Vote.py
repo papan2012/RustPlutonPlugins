@@ -1,9 +1,10 @@
 __author__ = 'PanDevas'
-__version__ = '1.2'
+__version__ = '1.21'
 
 import clr
-clr.AddReferenceByPartialName("Pluton", "Assembly-CSharp-firstpass", "Assembly-CSharp")
-import Pluton
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp")
+import Pluton.Core
+import Pluton.Rust
 import sys
 
 path = Util.GetPublicFolder()
@@ -24,7 +25,7 @@ class Vote():
 
 
     def On_Command(self, cmd):
-        command = cmd.cmd
+        command = cmd.Cmd
         player = cmd.User
         if command == 'vote':
             response = self.checkVote(player)
