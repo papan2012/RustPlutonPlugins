@@ -3,8 +3,9 @@ __version__ = '0.5'
 
 import clr
 
-clr.AddReferenceByPartialName("Pluton")
-import Pluton
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
+import Pluton.Core
+import Pluton.Rust
 import sys
 
 class DataInput():
@@ -36,8 +37,8 @@ class TribesDebugger():
         print ""
 
     def On_Command(self, cmd):
-        command = cmd.cmd
-        print cmd.cmd
+        command = cmd.Cmd
+        print cmd.Cmd
 
         # if command == 'test':
         #     dataInput = DataInput(cmd.User)

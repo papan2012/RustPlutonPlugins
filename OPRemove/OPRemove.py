@@ -10,6 +10,7 @@ import time
 class OPRemove():
     def On_PluginInit(self):
         DataStore.Add('lastRemove', 'system', time.time())
+        self.removableItems = ('Door', "SimpleBuildingBlock", 'BuildingBlock', 'StabilityEntity')
         self.remove = []
 
     def checkPVPFlag(self, playerID):
@@ -21,24 +22,25 @@ class OPRemove():
     def checkLastRemove(self, player):
         if player.SteamID in DataStore.Keys('lastRemove'):
             playerID = player.SteamID
-            lastRemove = (time.time() - DataStore.Get('lastRemove', playerID))/60
+            lastRemove = (time.time() - DataStore.Get('lastRemove', playerID))
             if lastRemove <= 3600:
-                player.Message("You removed your last object " + lastRemove + ' seconds ago.')
+                player.Message("You removed your last object " + str(lastRemove) + ' seconds ago.')
                 return False
             else:
                 return True
         else:
             return True
 
-    def On_CombatEntityHurt(self, HurtEvent):
+    def On_BeingHammered(self, HurtEvent):
         '''
         :param CombatEntityHurtEvent:
         :return:
         Detects if building part was damaged and get its location and owner
         '''
-        attacker = HurtEvent.Attacker
+        attacker = HurtEvent.Player
         victimLocation = str(HurtEvent.Victim.Location)
-        victimID = str(he.Victim.baseEntity.OwnerID)
+        victimID = str(HurtEvent.Victim.baseEntity.OwnerID)
+        hurtEntity = HurtEvent.Victim.baseEntity.GetType().ToString()
 
         if attacker and attacker.IsPlayer() and attacker.SteamID in self.remove:
             if self.checkPVPFlag(attacker.SteamID):
@@ -47,22 +49,18 @@ class OPRemove():
                 attacker.Message("You can remove one object awery 3600 seconds!")
             elif attacker.SteamID != victimID:
                 attacker.Message("You can only remove objects that you placed yourself!")
-            elif HurtEvent.Victim.IsBuildingPart() and attacker.SteamID == victimID:
+            elif hurtEntity in self.removableItems and attacker.SteamID == victimID:
                 HurtEvent.Victim.Kill()
-                HurtEvent.Weapon.Kill()
-                attacker.Message("You succesfully removed a building part. You damaged your tool in the process.")
-            player.Message("Remove OFF")
-            self.remove.remove(player.SteamID)
-        #Server.Broadcast(hurtEntity)
-
+                attacker.Message("You succesfully removed a building part. Remove is turned OFF.")
+                DataStore.Add('lastRemove', attacker.SteamID, time.time())
+            self.remove.remove(attacker.SteamID)
 
     def On_Command(self, cce):
         player = cce.User
 
-        if cce.cmd == 'remove':
-            if player.SteamID not in DataStore.
+        if cce.Cmd == 'remove':
             if player.SteamID not in self.remove:
-                player.Message("Remove ON, use a pickaxe to remove a building block")
+                player.Message("Remove ON, hit a building part with a hammer to destroy it.")
                 self.remove.append(player.SteamID)
             else:
                 player.Message("Remove OFF")
