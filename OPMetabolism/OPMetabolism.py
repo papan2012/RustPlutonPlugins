@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '0.5'
+__version__ = '0.7'
 
 import clr
 
@@ -24,6 +24,7 @@ class OPMetabolism():
         self.metabolismRate = 45
         self.values = {750: (4,3), 500: (3,2), 100: (1.5,1), 1: (1,1)}
 
+        self.playerTimers = {}
 
         for player in Server.ActivePlayers:
             self.startMetabolismTimer(player)
@@ -32,18 +33,24 @@ class OPMetabolism():
         self.startMetabolismTimer(player)
 
     def startMetabolismTimer(self, player):
-        if player.SteamID not in DataStore.Keys('PlayerMetabolism'):
+        if player.GameID not in DataStore.Keys('PlayerMetabolism'):
             metabolismData = Plugin.CreateDict()
-            metabolismData['playerID'] = player.SteamID
-            DataStore.Add('PlayerMetabolism', player.SteamID, time.time())
+            metabolismData['playerID'] = player.GameID
             Util.Log('Starting metabolism timer for '+player.Name)
-            Plugin.CreateParallelTimer("metabolism", self.metabolismRate*1000, metabolismData).Start()
+            DataStore.Add('PlayerMetabolism', player.GameID, time.time())
+            if player.GameID not in self.playerTimers.keys():
+                Util.Log("no in dict")
+                timer = Plugin.CreateParallelTimer("metabolism", self.metabolismRate, metabolismData)
+                self.playerTimers[player.GameID] = timer
+            else:
+                Util.Log("in dict")
+                timer = self.playerTimers[player.GameID]
+            timer.Start()
 
     def metabolismCallback(self, timer):
         playerID = timer.Args['playerID']
         player = Server.FindPlayer(playerID)
-
-        if player and player.SteamID not in DataStore.Keys('SleepingPlayers') and player.SteamID in DataStore.Keys('PlayerMetabolism'):
+        if player and player.GameID not in DataStore.Keys('SleepingPlayers') and player.GameID in DataStore.Keys('PlayerMetabolism'):
             timer.Stop()
             if player.basePlayer.metabolism.calories.value > 750:
                 player.basePlayer.metabolism.calories.value -= 8
@@ -62,10 +69,10 @@ class OPMetabolism():
                 player.basePlayer.metabolism.hydration.value -= 2
             else:
                 player.basePlayer.metabolism.hydration.value -= 1
-            metabolismData = Plugin.CreateDict()
-            metabolismData['playerID'] = player.SteamID
-
-            Plugin.CreateParallelTimer("metabolism", self.metabolismRate*1000, metabolismData).Start()
+            Util.Log("timer callback")
+            # metabolismData = Plugin.CreateDict()
+            # metabolismData['playerID'] = player.GameID
+            # Plugin.CreateParallelTimer("metabolism", self.metabolismRate*1000, metabolismData).Start()
         else:
             timer.Stop()
             DataStore.Remove('PlayerMetabolism', playerID)
