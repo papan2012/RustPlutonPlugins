@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.21'
+__version__ = '1.3'
 
 import clr
 clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp")
@@ -17,6 +17,7 @@ import httplib, urllib, urllib2
 class Vote():
 
     def __init__(self):
+        Commands.Register('vote').setCallback('response')
         self.settings = self.loadIniSettings()
         self.serverKey = self.settings.GetSetting('settings', 'serverKey')
         self.voteURL = self.settings.GetSetting('settings', 'voteURL')
@@ -24,22 +25,17 @@ class Vote():
         self.stone = self.settings.GetIntSetting('settings', 'Stone')
 
 
-    def On_Command(self, cmd):
-        command = cmd.Cmd
-        player = cmd.User
-        if command == 'vote':
-            response = self.checkVote(player)
-            Util.Log(player.Name +" voted, response: "+response)
-            if response == '0':
-                player.Message("You didn't vote in the last 24 hours. Please vote on "+self.voteURL)
-            elif response == '1':
-                player.Message("You have voted. Thank you for your vote.")
-                self.Claim(player)
-                self.rewardPlayer(player)
-            elif response == '2':
-                player.Message("You already claimed your reward.")
-
-
+    def response(self, Args, Player):
+        response = self.checkVote(Player)
+        Util.Log(Player.Name +" voted, response: "+response)
+        if response == '0':
+            Player.Message("You didn't vote in the last 24 hours. Please vote on "+self.voteURL)
+        elif response == '1':
+            Player.Message("You have voted. Thank you for your vote.")
+            self.Claim(Player)
+            self.rewardPlayer(Player)
+        elif response == '2':
+            Player.Message("You already claimed your reward.")
 
     def loadIniSettings(self):
         if not Plugin.IniExists("vote"):

@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '2.31'
+__version__ = '2.35'
 
 import clr
 clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust", "Assembly-CSharp-firstpass", "Assembly-CSharp","Facepunch.Network")
@@ -102,16 +102,15 @@ class OfflineProtection():
 
     def _createNotification(self, player):
         flagText = "PVPflag "
-        if player.SteamID not in self.flaggedPlayers:
-            self.flaggedPlayers.append(player.SteamID)
-        if player:
+        if player and player.GameID not in self.flaggedPlayers:
+            self.flaggedPlayers.append(player.GameID)
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(flagged.Replace("[TEXT]", flagText)))
         else:
             Util.Log("Unable to create flag"+str(player))
 
     def _removeNotification(self, player):
-        if player.SteamID in self.flaggedPlayers:
-            self.flaggedPlayers.remove(player.SteamID)
+        if player.GameID in self.flaggedPlayers:
+            self.flaggedPlayers.remove(player.GameID)
         if player:
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("flagui"))
         else:
@@ -124,9 +123,8 @@ class OfflineProtection():
         :return:
         Detects if building part was damaged and get its location and owner
         '''
-        if str(HurtEvent.DamageType) != 'Decay':
+        if str(HurtEvent.DamageType) not in ['Decay', "ElectricShock"]:
             attacker = HurtEvent.Attacker
-            victimLocation = str(HurtEvent.Victim.Location)
             hurtEntity = HurtEvent.Victim.baseEntity.GetType().ToString()
 
             # Have to nulify heat damage for calculations, taking 10 times longer (incendiary rockets and ammo)
@@ -143,11 +141,8 @@ class OfflineProtection():
 
             #if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in ignoredDamagesList and (HurtEvent.Victim.IsBuildingPart() or hurtEntity in self.protectedItems):
             if attacker and attacker.IsPlayer() and str(HurtEvent.DamageType) not in self.ignoredDamagesList and hurtEntity in self.protectedItems:
-                attackerID = attacker.SteamID
-                victimLocation = str(HurtEvent.Victim.Location)
-                victimID = DataStore.Get("BuildingPartOwner", victimLocation)
-                if not victimID:
-                    victimID = str(HurtEvent.Victim.baseEntity.OwnerID)
+                attackerID = attacker.GameID
+                victimID = HurtEvent.Victim.baseEntity.OwnerID
 
                 victimData = DataStore.Get("Players", victimID)
                 attackerData = DataStore.Get("Players", attackerID)
@@ -179,8 +174,8 @@ class OfflineProtection():
 
         if attacker and victim:
             if attacker.IsPlayer() and victim.IsPlayer():
-                attackerID = attacker.SteamID
-                victimID = victim.SteamID
+                attackerID = attacker.GameID
+                victimID = victim.GameID
                 if attackerID != victimID and not self.victInAttTribe(attackerID, victimID):
                     self.checkTribeBeforeFlag(attackerID)
                     if victim:# in Server.ActivePlayers:
@@ -308,11 +303,11 @@ class OfflineProtection():
             timediff = 0
 
         if timediff > 1:
-            timer.Stop()
+            timer.Kill()
             #Util.Log("Extending timer for tribe "+tribeD['tribe'][0]+' '+str(timediff))
             self.pvpTribeFlag(tribeD['tribe'][0], timediff)
         else:
-            timer.Stop()
+            timer.Kill()
             #Util.Log("Clearing flag for tribe "+tribeD['tribe'][0])
             DataStore.Remove("pvpTribeFlags", tribeD['tribe'][0])
 
@@ -340,14 +335,14 @@ class OfflineProtection():
         if player:
             self._createNotification(player)
             fpData = Plugin.CreateDict()
-            fpData['SteamID'] = playerID
+            fpData['GameID'] = playerID
             Plugin.CreateParallelTimer("pvpPlayerFlag", timerLenght*1000, fpData).Start()
 
 
     def pvpPlayerFlagCallback(self, timer):
         data = timer.Args
 
-        playerID = data['SteamID']
+        playerID = data['GameID']
         player = Server.FindPlayer(playerID)
         lastAggression = DataStore.Get("pvpFlags", playerID)
         if lastAggression:
@@ -359,15 +354,11 @@ class OfflineProtection():
             if player:
                 timer.Kill()
                 self.pvpPlayerFlag(playerID, timediff)
-            else:
-                DataStore.Add('pvpFlags', playerID, time.time())
         else:
             timer.Kill()
             DataStore.Remove('pvpFlags', playerID)
             if player:
                 self._removeNotification(player)
-
-
 
     # END PLAYER FLAGGING
 
@@ -430,7 +421,7 @@ class OfflineProtection():
 
     def On_PlayerDisconnected(self, player):
         now = time.time()
-        playerID = player.SteamID
+        playerID = player.GameID
         playerData = DataStore.Get('Players', playerID)
         tribeName = playerData['tribe']
         if tribeName != 'Survivors' and tribeName in DataStore.Keys("pvpTribeFlags"):
@@ -443,15 +434,15 @@ class OfflineProtection():
 
 
     def On_PlayerWakeUp(self, player):
-        playerD = DataStore.Get('Players', player.SteamID)
+        playerD = DataStore.Get('Players', player.GameID)
 
-        if playerD['tribe'] == 'Survivors' and player.SteamID in DataStore.Keys("pvpFlags"):
-            if player.SteamID not in self.flaggedPlayers:
+        if playerD['tribe'] == 'Survivors' and player.GameID in DataStore.Keys("pvpFlags"):
+            if player.GameID not in self.flaggedPlayers:
                 if player:
                     self._createNotification(player)
         elif playerD['tribe'] != 'Survivors':
             if DataStore.ContainsKey("pvpTribeFlags", playerD['tribe']):
-                if player and player.SteamID not in self.flaggedPlayers:
+                if player and player.GameID not in self.flaggedPlayers:
                     Util.Log("creating notification for reconnected flagged player")
                     self._createNotification(player)
 
@@ -461,7 +452,7 @@ class OfflineProtection():
             if lastAggression:
                 timediff = self.timerLenght - (time.time() - lastAggression)
             if timediff < 0:
-                Util.Log("Removing Flag for player "+playerID)
+                #Util.Log("Removing Flag for player "+playerID)
                 DataStore.Remove("pvpFlags", playerID)
         for tribe in DataStore.Keys("pvpTribeFlags"):
             lastAggression = DataStore.Get("pvpTribeFlags", tribe)
@@ -481,11 +472,11 @@ class OfflineProtection():
 
         if command in commands:
             if command == 'flag':
-                playerD = DataStore.Get('Players', player.SteamID)
+                playerD = DataStore.Get('Players', player.GameID)
                 tribeName = playerD['tribe']
 
                 if tribeName == 'Survivors':
-                    lastAggression = DataStore.Get("pvpFlags", player.SteamID)
+                    lastAggression = DataStore.Get("pvpFlags", player.GameID)
                 elif tribeName != 'Survivors':
                     lastAggression = DataStore.Get("pvpTribeFlags", tribeName)
 
@@ -508,7 +499,7 @@ class OfflineProtection():
                         players.append((player.Name, timediff))
                     else:
                         for player in Server.OfflinePlayers.Values:
-                            if playerID == player.SteamID:
+                            if playerID == player.GameID:
                                 players.append((player.Name, timediff))
                 for player in players:
                     Util.Log(player[0]+' '+str(player[1]))
@@ -517,7 +508,7 @@ class OfflineProtection():
                     lastAggression = DataStore.Get("pvpTribeFlags", tribe)
                     if lastAggression:
                         timediff = self.timerLenght - (time.time() - lastAggression)
-                    Util.Log('Tribe:'+tribe+str(timediff))
+                    Util.Log('Tribe: '+tribe+' '+str(timediff))
 
             elif player.Name == 'PanDevas' and command == 'clearflags1':
                 # Need to implement timer kill as well

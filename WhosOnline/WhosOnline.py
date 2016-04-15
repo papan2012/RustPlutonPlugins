@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.0'
+__version__ = '1.2'
 
 import clr
 
@@ -11,27 +11,22 @@ import sys
 class WhosOnline():
 
     def On_PluginInit(self):
-        print "'Whos online' initialised"
-        print ""
+        Commands.Register("who").setCallback("who")
 
-    def On_Command(self, cmd):
-        command = cmd.Cmd
-
-
-        if command == 'who' or command == 'players':
-            players = 'Active Players: '
-            for i, player in enumerate(Server.ActivePlayers):
-                playerData = DataStore.Get('Players', player.SteamID)
-                if (i%7) != 0 and (i != len(Server.ActivePlayers)-1):
-                    playerName = playerData['name']
-                    players += ' '+ playerName+','
-                elif i == (len(Server.ActivePlayers)-1):
-                    playerName = playerData['name']
-                    players += ' '+ playerName
-                    cmd.User.MessageFrom('', players)
-                elif (i%7) == 0:
-                    playerName = playerData['name']
-                    players += ' '+playerName
-                    cmd.User.Message(players)
-                    players = ''
-            cmd.User.Message(str(len(Server.ActivePlayers))+" online, "+str(len(Server.SleepingPlayers))+" sleepers.")
+    def who(self, Args, Player):
+        players = 'Active Players: '
+        for i, player in enumerate(Server.ActivePlayers):
+            playerData = DataStore.Get('Players', player.GameID)
+            if (i%7) != 0 and (i != len(Server.ActivePlayers)-1):
+                playerName = playerData['name']
+                players += ' '+ playerName+','
+            elif i == (len(Server.ActivePlayers)-1):
+                playerName = playerData['name']
+                players += ' '+ playerName
+                Player.MessageFrom('', players)
+            elif (i%7) == 0:
+                playerName = playerData['name']
+                players += ' '+playerName
+                Player.Message(players)
+                players = ''
+        Player.Message(str(len(Server.ActivePlayers))+" online, "+str(len(Server.SleepingPlayers))+" sleepers.")

@@ -63,6 +63,8 @@ takemark = json.makepretty(string)
 class OPBuildingChanger():
 
     def On_PluginInit(self):
+        Commands.Register('take').setCallback('take')
+
         self.takeoverItems = ("SimpleBuildingBlock", 'BuildingBlock')
         self.takeoverPlayers = self.datastoreInit()
 
@@ -98,18 +100,15 @@ class OPBuildingChanger():
         hurtEntity = he.Victim.baseEntity.GetType().ToString()
         player = he.Player
 
-        if hurtEntity == 'Door' and player.SteamID in player.SteamID in self.takeoverPlayers:
+        if hurtEntity == 'Door' and player.GameID in self.takeoverPlayers:
             player.Message("You can't claim doors!")
-        elif hurtEntity in self.takeoverItems and player.SteamID in player.SteamID in self.takeoverPlayers:
-            location = he.Victim.Location
+        elif hurtEntity in self.takeoverItems and player.GameID in self.takeoverPlayers:
+            victimID = he.Victim.baseEntity.OwnerID
 
-            victimID = DataStore.Get("BuildingPartOwner", str(location))
-            if not victimID:
-                victimID = str(he.Victim.baseEntity.OwnerID)
-
-            playerD = DataStore.Get("Players", player.SteamID)
+            playerD = DataStore.Get("Players", player.GameID)
             victimD = DataStore.Get("Players", victimID)
-            if player.SteamID == victimID:
+
+            if player.GameID == victimID:
                 player.Message("This is already your building.")
             elif playerD['tribe'] != 'Survivors' and playerD['tribe'] == victimD['tribe']:
                 player.Message("You can't take buildings from your tribe members!")
@@ -118,8 +117,6 @@ class OPBuildingChanger():
             elif not player.basePlayer.HasPlayerFlag(player.basePlayer.PlayerFlags.HasBuildingPrivilege):
                 player.Message("You need to have building permisions to make the takeover!")
             else:
-                DataStore.Remove("BuildingPartOwner", str(location))
-                DataStore.Add("BuildingPartOwner", str(location), player.SteamID)
                 he.Victim.baseEntity.OwnerID = player.GameID
                 player.Message("This building part now belongs to you.")
 
@@ -132,6 +129,7 @@ class OPBuildingChanger():
         :param player:
         :return: bool
         '''
+        #remove conversion to string
         playerData = DataStore.Get('Players', playerID)
         player = Server.FindPlayer(playerID)
         if not player and (playerData['tribe'] == 'Survivors') and ((time.time() - playerData['lastonline']) < self.takeoverProtection):
@@ -152,7 +150,7 @@ class OPBuildingChanger():
 
     def _createNotification(self, player):
         flagText = "Takeover "
-        self.takeoverPlayers.append(player.SteamID)
+        self.takeoverPlayers.append(player.GameID)
         if player:
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(takemark.Replace("[TEXT]", flagText)))
         else:
@@ -164,24 +162,20 @@ class OPBuildingChanger():
         else:
             Util.Log("Unable to remove flag"+str(player))
         try:
-            self.takeoverPlayers.remove(player.SteamID)
+            self.takeoverPlayers.remove(player.GameID)
         except:
             pass
 
 
 
-    def On_Command(self, cce):
-        command = cce.Cmd
-        player = cce.User
-
-        if command == 'take':
-            if player.SteamID in self.takeoverPlayers:
-                player.Message("Takeover OFF")
-                self._removeNotification(player)
-            else:
-                player.Message("Takeover ON")
-                self._createNotification(player)
+    def take(self, Args, Player):
+        if Player.GameID in self.takeoverPlayers:
+            Player.Message("Takeover OFF")
+            self._removeNotification(Player)
+        else:
+            Player.Message("Takeover ON")
+            self._createNotification(Player)
 
     def On_PlayerDisconnected(self, player):
-        if player.SteamID in self.takeoverPlayers:
-            self.takeoverPlayers.remove(player.SteamID)
+        if player.GameID in self.takeoverPlayers:
+            self.takeoverPlayers.remove(player.GameID)

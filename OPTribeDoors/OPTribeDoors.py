@@ -19,10 +19,8 @@ class OPTribeDoors():
 
 
     def On_DoorUse(self, due):
-        doorLocation = str(due.Door.Location)
-        #doorOwnerID = DataStore.Get("BuildingPartOwner", doorLocation)
-        doorOwnerID = str(due.Door.baseEntity.OwnerID)
-        doorUserID = due.Player.SteamID
+        doorOwnerID = due.Door.baseEntity.OwnerID
+        doorUserID = due.Player.GameID
 
         if doorOwnerID == doorUserID:
             due.Allow

@@ -69,6 +69,8 @@ class OPBuildingOwner():
     Mozda cu trebati podesiti cesci save zbog building checka u antiofflineraid pluginu
     '''
     def __init__(self):
+        Commands.Register('owner').setCallback('owner')
+
         self.admin = 'PanDevas'
         self.remove = 0
         self.buildingOwnerInfo = self.datastoreInit()
@@ -94,7 +96,7 @@ class OPBuildingOwner():
 
     def _createNotification(self, player):
         flagText = "Owner "
-        self.buildingOwnerInfo.append(player.SteamID)
+        self.buildingOwnerInfo.append(player.GameID)
         if player:
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(takemark.Replace("[TEXT]", flagText)))
         else:
@@ -106,48 +108,9 @@ class OPBuildingOwner():
         else:
             Util.Log("Unable to remove flag"+str(player))
         try:
-            self.buildingOwnerInfo.remove(player.SteamID)
+            self.buildingOwnerInfo.remove(player.GameID)
         except:
             pass
-
-
-    def On_Placement(self, buildingpart):
-        player = buildingpart.Builder
-        location = str(buildingpart.BuildingPart.Location)
-        buildingPartName = buildingpart.BuildingPart.baseEntity.LookupShortPrefabName().split('.')[0]
-        # for shared locations of buildingparts
-        locationCheck = DataStore.Get("BuildingPartOwner", location)
-        if locationCheck:
-            alredayPlacedList = DataStore.Get("SharedBuildingLocations", location)
-            if alredayPlacedList:
-                alredayPlacedList.append(buildingPartName)
-                DataStore.Add("SharedBuildingLocations", location, alredayPlacedList)
-            else:
-                    DataStore.Add("SharedBuildingLocations", location, [buildingPartName])
-        else:
-            DataStore.Add("BuildingPartOwner", location, player.SteamID)
-
-    def On_BuildingPartDemolished(self, bpde):
-        self.removeFromDatastore(bpde)
-
-    def On_BuildingPartDestroyed(self, bpde):
-        self.removeFromDatastore(bpde)
-
-
-    def removeFromDatastore(self, bpde):
-        bpdeEntitiName = bpde.BuildingPart.baseEntity.LookupShortPrefabName().split('.')[0]
-        location = str(bpde.BuildingPart.Location)
-
-        sharedPlacements = DataStore.Get("SharedBuildingLocations", location)
-
-        if sharedPlacements:
-            if bpdeEntitiName in sharedPlacements:
-                sharedPlacements.remove(bpdeEntitiName)
-                if len(sharedPlacements) == 0:
-                    DataStore.Remove("SharedBuildingLocations", location)
-        else:
-            DataStore.Remove("BuildingPartOwner", location)
-
 
     def On_BeingHammered(self, he):
         '''
@@ -160,22 +123,20 @@ class OPBuildingOwner():
         if hurtEntity in getOwnerObjects:
 
             player = he.Player
-            location = str(he.Victim.Location)
-            victimID = str(he.Victim.baseEntity.OwnerID)
-            # victimID = DataStore.Get("BuildingPartOwner", location)
-            # if not victimID:
-            #     victimID = str(he.Victim.baseEntity.OwnerID)
+            victimID = he.Victim.baseEntity.OwnerID
             playerD = DataStore.Get("Players", victimID)
 
-            if player.SteamID in self.buildingOwnerInfo:
+            if player.GameID in self.buildingOwnerInfo:
                 victim = Server.FindPlayer(victimID)
 
                 if victim:
                     victimName = victim.Name
                 else:
                     victim = BasePlayer.FindSleeping(victimID)
-                    victimName = victim.displayName
-
+                    if victim:
+                        victimName = victim.displayName
+                    else:
+                        victimName = playerD['name']
                 player.Message("This belongs to "+victimName+' ('+playerD['tribe']+')')
 
                 if hurtEntity == 'BuildingPrivlidge':
@@ -184,29 +145,14 @@ class OPBuildingOwner():
                         player.Message(str(authed.username))
 
 
-    def On_Command(self, cmd):
-        player = cmd.User
-        command = cmd.Cmd
-        args = str.join(' ', cmd.Args)
-
-        commands = ('owner', 'ownerme','remove')
-        if command in commands:
-            if command == 'owner':
-                if player.SteamID not in self.buildingOwnerInfo:
-                    player.Message("Building owner report ON")
-                    self._createNotification(player)
-                else:
-                    player.Message("Building owner report OFF")
-                    self._removeNotification(player)
-
-            if command == 'remove' and player.Name == self.admin:
-                if self.remove:
-                    player.Message("Building removal off")
-                    self.remove = 0
-                else:
-                    player.Message("Hit with the hammer to remove the building from datastore")
-                    self.remove = 1
+    def owner(self, Args, Player):
+        if Player.GameID not in self.buildingOwnerInfo:
+            Player.Message("Building owner report ON")
+            self._createNotification(Player)
+        else:
+            Player.Message("Building owner report OFF")
+            self._removeNotification(Player)
 
     def On_PlayerDisconnected(self, player):
-        if player.SteamID in self.buildingOwnerInfo:
-            self.buildingOwnerInfo.remove(player.SteamID)
+        if player.GameID in self.buildingOwnerInfo:
+            self.buildingOwnerInfo.remove(player.GameID)

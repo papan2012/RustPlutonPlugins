@@ -1,5 +1,5 @@
 __author__ = 'PanDevas'
-__version__ = '1.11'
+__version__ = '1.2'
 
 import clr
 
@@ -385,6 +385,8 @@ class cachedMenuData(InterfaceComponents):
         anchormax_x = 0.097
         anchormax_y = 0.995
 
+
+
         for i, pl in enumerate(playerList):
             if i!=0  and i%20 == 0:
                 anchormin_x += 0.1
@@ -408,11 +410,15 @@ class cachedMenuData(InterfaceComponents):
         # windowSizeX=len(self.tribeMembers[tribeName])/10. * 0.25
         # #Util.Log(str(windowSizeX))
         gui = []
-        playerData = DataStore.Get('Players', playerID)
 
-        if Server.FindPlayer(playerID):
+        player = Server.FindPlayer(playerID)
+
+        if player:
+            playerData = DataStore.Get('Players', player.GameID)
             onlineStatus = 'Now'
         else:
+            player = BasePlayer.FindSleeping(playerID)
+            playerData = DataStore.Get('Players', player.userID)
             onlineStatus = str(round((time.time() - playerData['lastonline'])/3600, 2))+ ' hours ago'
         if onlineStatus == 'Now' :
             timeOnline = str(round((playerData['timeonline'] + (time.time() - playerData['lastonline']))/3600,2))+' hours'
@@ -689,7 +695,7 @@ class cachedMenuData(InterfaceComponents):
                       " 1. We couldn't allow players using door on buildings whose owners were offline.\n" \
                       " 2. There's a rare glitch, or a hack, that lets people open doors without the code authorization.\n" \
                       "   - this system prevents both problems.\n\n" \
-                      "When you place a door, they are bound to your SteamID. Only you can open and close them.\n"\
+                      "When you place a door, they are bound to your GameID. Only you can open and close them.\n"\
                       "So there's no real need for code locks on doors any longer.\n" \
                       "If you're member of a Tribe, all tribe members will be able to access your doors automagically.\n\n" \
                       "If you need some privacy, put code locks on chests. \n" \
@@ -721,6 +727,7 @@ class cachedMenuData(InterfaceComponents):
          'tribeUI.help.commands':"<color=white>COMMANDS</color>\n\n" \
                         " - /sleep - slowers you metabolism to a default value, usefull if you go afk in the house, so you don't die from hunger or thirst:\n"\
                         " - /ping  - test your ping\n"\
+                        " - /remove - remove a building part you placed with a hammer (one remove in an hour, building priviledge required, can't be pvp flaged)\n"\
                         " - /paint URL name - place images from web on signs\n\n"\
                         "You can also bind keys in F1 console to automate the process of opening the UI:\n"\
                         " bind <key> <commmand>\n"\
@@ -797,7 +804,7 @@ class OPGTribes(cachedMenuData):
         self.overlays = {}
         self.playersWithMenu = {}
         self.playerCmdTimer = {}
-        self.cmdTimer = 500
+        self.cmdTimer = 250
 
         # for cached data
         self.onlinePlayers = []
@@ -805,11 +812,12 @@ class OPGTribes(cachedMenuData):
         self.tribeDetails = {}
 
         for player in Server.ActivePlayers:
-            self._addToOnlinePlayers(player.SteamID)
+            self._addToOnlinePlayers(player.GameID)
 
-        for player in BasePlayer.sleepingPlayerList:
-            if str(player.userID) not in self.offlinePlayers:
-                self._addToOfflinePlayers(str(player.userID))
+        for player in Server.SleepingPlayers:
+            if player.GameID not in self.offlinePlayers:
+                Util.Log(str(player.GameID))
+                self._addToOfflinePlayers(player.GameID)
 
         self._sortListByKey(self.onlinePlayers, 1)
         self._sortListByKey(self.offlinePlayers, 1)
@@ -830,16 +838,17 @@ class OPGTribes(cachedMenuData):
     def createGUI(self, player, currentView, selection=None, popup=None):
         views =  ["Tribes", "Players", "You"]
 
-        if player.SteamID in self.overlays.keys():
-            ui = self.overlays[player.SteamID]
-        elif player.SteamID not in self.overlays.keys():
+        if player.GameID in self.overlays.keys():
+            ui = self.overlays[player.GameID]
+        elif player.GameID not in self.overlays.keys():
             ui = CreateUI(player)
+            self.backGround = self._makeBackground()
             ui.makeBackground(self.backGround)
             ui.currentView = None
             ui.selection = None
             ui.playerPopup = None
 
-            self.overlays[player.SteamID] = ui
+        self.overlays[player.GameID] = ui
 
         if ui.selection != selection or ui.currentView != currentView or ui.playerPopup != popup:
             if ui.currentView != currentView and ui.currentView != None:
@@ -885,26 +894,26 @@ class OPGTribes(cachedMenuData):
 
     def destroyGUI(self, player):
         try:
-            ui = self.overlays[player.SteamID]
+            ui = self.overlays[player.GameID]
             ui.destroyOverlay("TribeBgUI")
             ui.currentView = None
-            self.overlays.pop(player.SteamID, None)
+            self.overlays.pop(player.GameID, None)
         except:
             pass
 
     def reload_menu(self):
         for pl in Server.ActivePlayers:
             int = GameUI(pl)
-            self.playersWithMenu[pl.SteamID] = int
+            self.playersWithMenu[pl.GameID] = int
             int.createButtons()
 
         for pl in Server.ActivePlayers:
-            int = self.playersWithMenu[pl.SteamID]
+            int = self.playersWithMenu[pl.GameID]
             int.destroyOverlay('TribeMenuButtons')
-            self.playersWithMenu.pop(pl.SteamID)
+            self.playersWithMenu.pop(pl.GameID)
         for pl in Server.ActivePlayers:
             int = GameUI(pl)
-            self.playersWithMenu[pl.SteamID] = int
+            self.playersWithMenu[pl.GameID] = int
             int.createButtons()
 
 
@@ -924,7 +933,7 @@ class OPGTribes(cachedMenuData):
 
         if cce.Cmd in commands:
             player = cce.User
-            playerID = player.SteamID
+            playerID = player.GameID
 
             if playerID not in self.playerCmdTimer.keys():
                 self.playerCmdTimer[playerID] = time.time()
@@ -996,7 +1005,7 @@ class OPGTribes(cachedMenuData):
     def On_Command(self, cmd):
         command = cmd.Cmd
         player = cmd.User
-        playerID = player.SteamID
+        playerID = player.GameID
         tribeDataRefreshCommands = ['trcreate', 'trleave', 'trkick', 'traccept']
 
         commands = ('gwho', 'help', 'ci!', 'di!', 'showmenu', 'hidemenu', 'reload_menu')
@@ -1018,7 +1027,7 @@ class OPGTribes(cachedMenuData):
                     int.createButtons()
 
             elif command == 'hidemenu':
-                int = self.playersWithMenu[player.SteamID]
+                int = self.playersWithMenu[player.GameID]
                 int.destroyOverlay('TribeMenuButtons')
                 self.playersWithMenu.pop(playerID)
 
@@ -1031,29 +1040,28 @@ class OPGTribes(cachedMenuData):
 
     def On_PlayerConnected(self, player):
         Server.Broadcast(player.Name+" connected.")
-        self._addToOnlinePlayers(player.SteamID)
+        self._addToOnlinePlayers(player.GameID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
 
     def On_PlayerDisconnected(self, player):
         try:
-            int = self.playersWithMenu[player.SteamID]
+            int = self.playersWithMenu[player.GameID]
             int.destroyOverlay('TribeMenuButtons')
         except:
             Util.Log("Unable to destroy overlay for "+ player.Name)
-        self.playersWithMenu.pop(player.SteamID, None)
-        self._addToOfflinePlayers(player.SteamID)
+        self.playersWithMenu.pop(player.GameID, None)
+        self._addToOfflinePlayers(player.GameID)
         self._sortListByKey(self.onlinePlayers, 1)
         self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
-        self.playersWithMenu.pop(player.SteamID, None)
+        self.playersWithMenu.pop(player.GameID, None)
         Server.Broadcast(player.Name+" is now sleeping.")
-
 
     def On_PlayerWakeUp(self, player):
         if player in Server.ActivePlayers:
-            if player.SteamID not in self.playersWithMenu.keys():
+            if player.GameID not in self.playersWithMenu.keys():
                 int = GameUI(player)
-                self.playersWithMenu[player.SteamID] = int
+                self.playersWithMenu[player.GameID] = int
                 int.createButtons()
 
     def On_ServerSaved(self):

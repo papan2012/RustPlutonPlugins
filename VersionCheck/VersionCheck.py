@@ -1,7 +1,10 @@
 __author__ = 'PanDevas'
-__version__ = '1.2'
+__version__ = '1.3'
 
 import clr
+clr.AddReferenceByPartialName("Pluton.Core", "Pluton.Rust")
+import Pluton.Core
+import Pluton.Rust
 
 import sys
 path = Util.GetPublicFolder()
@@ -14,6 +17,7 @@ import urllib2, json
 class VersionCheck():
 
     def On_PluginInit(self):
+        Commands.Register('versioncheck').setCallback('checkVersions')
         self.settings = self.loadIniSettings()
 
         self.timer = self.settings.GetIntSetting('options', 'checkperiod')
@@ -56,7 +60,7 @@ class VersionCheck():
             curVersions[resource['title']] = resource['version_string']
         return curVersions
 
-    def checkVersions(self):
+    def checkVersions(self, Arguments, Player):
         self.plugins = self._getPlugins()
         for pluginName in self.plugins.keys():
             if pluginName in self.curVersions.keys():
@@ -66,11 +70,3 @@ class VersionCheck():
     def versionCheckCallback(self, timer):
         self.curVersions = self._getCurVersions()
         self.checkVersions()
-
-    def On_Command(self, cmd):
-        user = cmd.User
-        command = cmd.Cmd
-
-
-        if command == 'versioncheck':
-            self.checkVersions()

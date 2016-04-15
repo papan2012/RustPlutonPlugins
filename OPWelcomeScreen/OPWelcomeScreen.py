@@ -232,24 +232,24 @@ class OPWelcomeScreen():
 
     def On_PlayerWakeUp(self, player):
         if player in Server.ActivePlayers:
-            if player.SteamID not in self.shown_players and player.SteamID not in self.thisSessionShown:
-                self.thisSessionShown.append(player.SteamID)
+            if player.GameID not in self.shown_players and player.GameID not in self.thisSessionShown:
+                self.thisSessionShown.append(player.GameID)
                 CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
 
     def On_ClientConsole(self, cce):
         if cce.Cmd != 'chat.say':
             player = cce.User
-            playerID = player.SteamID
+            playerID = player.GameID
         if cce.Cmd == 'close.welcome':
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "DestroyUI", Facepunch.ObjectList("welcomeUI"))
         if cce.Cmd == "create.welcome":
             CommunityEntity.ServerInstance.ClientRPCEx(Network.SendInfo(player.basePlayer.net.connection), None, "AddUI", Facepunch.ObjectList(broadcast.Replace("[TEXT]", self.flagText)))
         if cce.Cmd == "welcome.dontshow":
-            self.shown_players.append(player.SteamID)
+            self.shown_players.append(player.GameID)
         if cce.Cmd == 'clear.dontshow':
             self.shown_players = []
 
     def On_PlayerDisconnected(self, player):
         if player:
-            if player.SteamID in self.thisSessionShown:
-                self.thisSessionShown.remove(player.SteamID)
+            if player.GameID in self.thisSessionShown:
+                self.thisSessionShown.remove(player.GameID)

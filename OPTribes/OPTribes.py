@@ -29,7 +29,7 @@ import time
 class PlayerData():
     '''
             Creates player class with relevant information saved in datastore as key:value dictionary for every player attribute
-            steamID :   'name': self.playerName,
+            GameID :   'name': self.playerName,
                         'tribe': self.playerTribe,
                         'tribeRank': self.playerTribeRank,
                         'pendingInvites' : [],
@@ -47,8 +47,8 @@ class PlayerData():
            (Player) => void
         '''
 
-        if not DataStore.ContainsKey("Players", player.SteamID):
-            self.playerID = player.SteamID
+        if not DataStore.ContainsKey("Players", player.GameID):
+            self.playerID = player.GameID
             self.playerName = player.Name
             self.playerOnlineStatus = 1
             self.playerTribe = 'Survivors'
@@ -72,7 +72,7 @@ class PlayerData():
             DataStore.Save()
 
         else:
-            self.playerData = DataStore.Get('Players', player.SteamID)
+            self.playerData = DataStore.Get('Players', player.GameID)
 
     def changePlayerData(self, playerID, key, valuesToChange):
         '''
@@ -139,7 +139,7 @@ class TribeData():
 
     def removeMember(self, memberID):
         if memberID in self.tribeData['tribeMembers']:
-            self.tribeData['tribeMembers'].remove(str(memberID))
+            self.tribeData['tribeMembers'].remove(memberID)
             return True
         else:
             return False
@@ -216,7 +216,7 @@ class OPTribes:
         tribeName = str.join('', cmd.Args)
         tribeName = tribeName if len(tribeName) <=10 else tribeName[0:10]
 
-        if creator.SteamID in DataStore.Keys('pvpFlags'):
+        if creator.GameID in DataStore.Keys('pvpFlags'):
             creator.MessageFrom("Tribes", "You can't make a tribe while flaged!")
         else:
             if playerD.playerData['tribe'] != 'Survivors' or playerD.playerData['tribe'] not in tribeslist:
@@ -230,13 +230,13 @@ class OPTribes:
             else:
                 #removing player from Survivors tribe
                 SurvivorsTribe = TribeData('Survivors')
-                SurvivorsTribe.removeMember(creator.SteamID)
+                SurvivorsTribe.removeMember(creator.GameID)
 
                 #creating a new tribe
                 tribe = TribeData(tribeName)
                 playerD.playerData['tribe'] = tribeName
-                creatorID = cmd.User.SteamID
-                tribe.addTribeToDatastore(creator.SteamID)
+                creatorID = cmd.User.GameID
+                tribe.addTribeToDatastore(creator.GameID)
                 self._update_tribe_list()
 
                 creator.MessageFrom("Tribes", "Tribe \""+tribeName+"\" created!")
@@ -253,7 +253,7 @@ class OPTribes:
         playerr = cmd.User
         playeri = Server.FindPlayer(str.join(' ', cmd.Args))
 
-        if playerr.SteamID in DataStore.Keys('pvpFlags'):
+        if playerr.GameID in DataStore.Keys('pvpFlags'):
             playerr.MessageFrom("Tribes", "You can't invite to tribe while flaged!")
         else:
             if playeri:
@@ -281,18 +281,18 @@ class OPTribes:
         player = cmd.User
         playerD = PlayerData(player)
 
-        if player.SteamID in DataStore.Keys('pvpFlags'):
+        if player.GameID in DataStore.Keys('pvpFlags'):
             player.MessageFrom("Tribes", "You can't accept tribe invite while flaged!")
         else:
             if len(playerD.playerData['pendingInvites']) > 0:
                 newTribe = playerD.playerData['pendingInvites']
                 remCurTribe = TribeData('Survivors')
-                remCurTribe.removeMember(player.SteamID)
+                remCurTribe.removeMember(player.GameID)
                 tribeAccept = TribeData(newTribe)
                 playerD.playerData['tribe'] = newTribe
                 tribeAccept.tribeMessages(playerD.playerData['tribe'], "Player "+player.Name+" joined your Tribe")
                 player.Message("You have joined the tribe \""+str(newTribe)+"\"")
-                tribeAccept.addMember(player.SteamID)
+                tribeAccept.addMember(player.GameID)
             else:
                 player.MessageFrom("Tribes", "No pending invites!")
 
@@ -316,21 +316,21 @@ class OPTribes:
         currentTribe = playerD.playerData['tribe']
         playerTribeData = TribeData(currentTribe)
 
-        if player.SteamID in DataStore.Keys('pvpFlags'):
+        if player.GameID in DataStore.Keys('pvpFlags'):
             player.MessageFrom("Tribes", "You can't leave the tribe while flaged!")
         else:
             if currentTribe == 'Survivors':
                 player.MessageFrom("Tribes", "You're just a lone survivor! Where can you go?")
-            elif player.SteamID == playerTribeData.tribeData['creatorID'] and len(playerTribeData.tribeData['tribeMembers']) >1:
+            elif player.GameID == playerTribeData.tribeData['creatorID'] and len(playerTribeData.tribeData['tribeMembers']) >1:
                 player.MessageFrom("Tribes", "You can't leave you Tribe. Your tribe members need you!")
             else:
                 playerTD = TribeData(currentTribe)
-                playerTD.removeMember(player.SteamID)
+                playerTD.removeMember(player.GameID)
                 playerTD.tribeMessages(playerD.playerData['tribe'], "Player "+player.Name+" left your tribe!")
                 playerD = PlayerData(player)
                 playerD.playerData['tribe'] = 'Survivors'
                 playerNTD = TribeData('Survivors')
-                playerNTD.addMember(player.SteamID)
+                playerNTD.addMember(player.GameID)
                 player.MessageFrom("Tribes:", "You have left the tribe \""+currentTribe+"\"")
                 if len(playerTD.tribeData['tribeMembers']) == 0:
                     DataStore.Remove('Tribes', playerTD.tribeName)
@@ -344,10 +344,10 @@ class OPTribes:
         tribeName = creatorD.playerData['tribe']
         creatorTD = TribeData(tribeName)
 
-        if creator.SteamID in DataStore.Keys('pvpFlags'):
+        if creator.GameID in DataStore.Keys('pvpFlags'):
             creator.MessageFrom("Tribes", "You can't kick members of your tribe while flaged!")
         else:
-            if creator.SteamID == creatorTD.tribeData['creatorID']:
+            if creator.GameID == creatorTD.tribeData['creatorID']:
                 kickPlayer = Server.FindPlayer(kickPlayerName)
 
                 if kickPlayer:
@@ -360,14 +360,14 @@ class OPTribes:
                             break
                     creator.MessageFrom("Tribes", "Player "+kickPlayerName+" not found.")
 
-                if creator.SteamID == kickPlayer.SteamID:
+                if creator.GameID == kickPlayer.GameID:
                     creator.MessageFrom("Tribes", "You can't kick yourself from the Tribe.")
-                elif kickPlayer.SteamID in creatorTD.tribeData['tribeMembers']:
+                elif kickPlayer.GameID in creatorTD.tribeData['tribeMembers']:
                     if kickPlayer in Server.ActivePlayers:
                         kickPlayer.MessageFrom("Tribes", "You have been kicked from tribe "+tribeName)
                     creator.MessageFrom("Tribes", "You have kicked "+kickPlayer.Name+" from your tribe.")
-                    creatorTD.removeMember(kickPlayer.SteamID)
-                    survivorTribe.addMember(kickPlayer.SteamID)
+                    creatorTD.removeMember(kickPlayer.GameID)
+                    survivorTribe.addMember(kickPlayer.GameID)
                     kickPlayerD.playerData['tribe'] = 'Survivors'
                 else:
                     creator.MessageFrom("Tribes", "Member "+kickPlayerName +" is not part of the tribe")
@@ -419,6 +419,6 @@ class OPTribes:
 
 
     def On_PlayerDisconnected(self, player):
-        playerD = DataStore.Get("Players", player.SteamID)
+        playerD = DataStore.Get("Players", player.GameID)
         playerD['timeonline'] = playerD['timeonline']+(time.time()- playerD['lastonline'])
         playerD['lastonline'] = time.time()

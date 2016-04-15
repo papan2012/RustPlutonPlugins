@@ -58,10 +58,10 @@ class OPGameBallancer():
 
     # END PREVENTOR FOR BUILDING PLACEMENT
 
-    # TEST METHODS
-    def On_Command(self, cmd):
-        player = cmd.User
-        command = cmd.Cmd
-
-        if command == 'ping':
-            player.Message('Your ping is '+str(player.Ping))
+    # # TEST METHODS
+    # def On_Command(self, cmd):
+    #     player = cmd.User
+    #     command = cmd.Cmd
+    #
+    #     if command == 'ping':
+    #         player.Message('Your ping is '+str(player.Ping))
