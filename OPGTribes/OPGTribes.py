@@ -223,8 +223,9 @@ class cachedMenuData(InterfaceComponents):
         if playerD:
             playerName = playerD['name']
         else:
-            playerName = Server.FindPlayer(playerID)
-        if playerName and len(self.onlinePlayers) < 200:
+            playerName = Server.FindPlayer(playerID).Name
+
+        if playerName and (playerID, playerName) not in self.onlinePlayers and len(self.onlinePlayers) < 200:
             self.onlinePlayers.append((playerID, playerName))
             if (playerID, playerName) in self.offlinePlayers:
                 self.offlinePlayers.remove((playerID, playerName))
@@ -237,13 +238,18 @@ class cachedMenuData(InterfaceComponents):
         if playerD:
             playerName = playerD['name']
         else:
-            playerName = Server.FindPlayer(playerID)
+            player = Server.FindPlayer(playerID)
+            if player:
+                playerName = player.Name
+            else:
+                playerName = None
+
         if playerName and len(self.onlinePlayers) < 200:
             self.offlinePlayers.append((playerID, playerName))
             if (playerID, playerName) in self.onlinePlayers:
                 self.onlinePlayers.remove((playerID, playerName))
         else:
-            Util.Log("Unable to add player to offline "+playerID)
+            Util.Log("Unable to add player to offline "+str(playerID))
 
     def _getTribeData(self, tablename):
         tribesTable = DataStore.GetTable(tablename)
@@ -825,9 +831,8 @@ class OPGTribes(cachedMenuData):
         self.tribesData = self._getTribeData("Tribes")
 
         # cached object lists
-        self.backGround = self._makeBackground()
-        self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
-        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
+        self.backGround = super(OPGTribes, self)._makeBackground()
+        self.onlinePlayersObjectList, self.offlinePlayersObjectList = self.updatePlayerLists()
 
         self.tribesViewObjectList = self._createTribesView(self.tribesData)
 
@@ -863,20 +868,33 @@ class OPGTribes(cachedMenuData):
 
             if currentView == "tribesView":
                 ui.makeMenu(self._makeMenu("Tribes"))
-                ui.createTribesView(self.tribesViewObjectList)
+                try:
+                    ui.createTribesView(self.tribesViewObjectList)
+                except:
+                    self.tribesViewObjectList = self._createTribesView(self.tribesData)
+                    ui.createTribesView(self.tribesViewObjectList)
                 if selection:
                     ui.createTribePopup(self._createTribePopup(selection))
             if currentView == "playersView":
                 ui.makeMenu(self._makeMenu("Players"))
                 ui.createPlayersView(self._createPlayersView(selection))
+
                 if selection == 'Online':
-                    ui.createPlayerList(self.onlinePlayersObjectList)
+                    try:
+                        ui.createPlayerList(self.onlinePlayersObjectList)
+                    except:
+                        self.onlinePlayersObjectList = self._playerListObject(self.onlinePlayers, "Online")
+                        ui.createPlayerList(self.onlinePlayersObjectList)
                     if popup:
                         #ui.destroyOverlay(ui.playerPopup)
                         ui.playerPopup = popup
                         ui.createPlayerPopup(self._createPlayerPopup(popup))
                 elif selection == 'Offline':
-                    ui.createPlayerList(self.offlinePlayersObjectList)
+                    try:
+                        ui.createPlayerList(self.offlinePlayersObjectList)
+                    except:
+                        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
+                        ui.createPlayerList(self.offlinePlayersObjectList)
                     if popup:
                         ui.playerPopup = popup
                         ui.createPlayerPopup(self._createPlayerPopup(popup))
@@ -1008,7 +1026,7 @@ class OPGTribes(cachedMenuData):
         playerID = player.GameID
         tribeDataRefreshCommands = ['trcreate', 'trleave', 'trkick', 'traccept']
 
-        commands = ('gwho', 'help', 'ci!', 'di!', 'showmenu', 'hidemenu', 'reload_menu')
+        commands = ('gwho', 'help', 'ci!', 'di!', 'showmenu', 'hidemenu', 'reload_menu', 'test')
         if command in commands:
             if command == 'gwho':
                 self.createGUI(player, "playersView", "Online")
@@ -1030,13 +1048,24 @@ class OPGTribes(cachedMenuData):
                 int = self.playersWithMenu[player.GameID]
                 int.destroyOverlay('TribeMenuButtons')
                 self.playersWithMenu.pop(playerID)
+            elif command == 'test':
+                Util.Log(str(self.updatePlayerLists()))
 
 
         elif command in tribeDataRefreshCommands:
             self._getTribeData('Tribes')
             self.tribesViewObjectList = self._createTribesView(self.tribesData)
 
+    def updatePlayerLists(self):
+        for player in Server.ActivePlayers:
+            self._addToOnlinePlayers(player.GameID)
+            self._sortListByKey(self.onlinePlayers, 1)
+        for player in Server.SleepingPlayers:
+            self._addToOfflinePlayers(player.GameID)
+            self._sortListByKey(self.onlinePlayers, 1)
+        self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers, "Offline")
 
+        return self._playerListObject(self.onlinePlayers, "Online"), self._playerListObject(self.offlinePlayers, "Offline")
 
     def On_PlayerConnected(self, player):
         Server.Broadcast(player.Name+" connected.")

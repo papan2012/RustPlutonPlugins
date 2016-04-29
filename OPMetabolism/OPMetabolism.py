@@ -47,9 +47,7 @@ class OPMetabolism():
         playerID = timer.Args['playerID']
         player = Server.FindPlayer(playerID)
         if player and player.GameID not in DataStore.Keys('SleepingPlayers') and player.GameID in DataStore.Keys('PlayerMetabolism'):
-            if player.basePlayer.metabolism.calories.value > 750:
-                player.basePlayer.metabolism.calories.value -= 8
-            elif player.basePlayer.metabolism.calories.value > 500:
+            if player.basePlayer.metabolism.calories.value > 500:
                 player.basePlayer.metabolism.calories.value -= 5
             elif player.basePlayer.metabolism.calories.value > 150:
                 player.basePlayer.metabolism.calories.value -= 3
@@ -60,9 +58,7 @@ class OPMetabolism():
             else:
                 player.basePlayer.metabolism.calories.value -= 0
 
-            if player.basePlayer.metabolism.hydration.value > 750:
-                player.basePlayer.metabolism.hydration.value -= 8
-            elif player.basePlayer.metabolism.hydration.value > 500:
+            if player.basePlayer.metabolism.hydration.value > 500:
                 player.basePlayer.metabolism.hydration.value -= 5
             elif player.basePlayer.metabolism.hydration.value > 150:
                 player.basePlayer.metabolism.hydration.value -= 3

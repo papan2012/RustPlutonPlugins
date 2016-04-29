@@ -434,17 +434,16 @@ class OfflineProtection():
 
 
     def On_PlayerWakeUp(self, player):
-        playerD = DataStore.Get('Players', player.GameID)
-
-        if playerD['tribe'] == 'Survivors' and player.GameID in DataStore.Keys("pvpFlags"):
-            if player.GameID not in self.flaggedPlayers:
-                if player:
+        if player in Server.ActivePlayers():
+            playerD = DataStore.Get('Players', player.GameID)
+            if playerD['tribe'] == 'Survivors' and player.GameID in DataStore.Keys("pvpFlags"):
+                if player.GameID not in self.flaggedPlayers:
                     self._createNotification(player)
-        elif playerD['tribe'] != 'Survivors':
-            if DataStore.ContainsKey("pvpTribeFlags", playerD['tribe']):
-                if player and player.GameID not in self.flaggedPlayers:
-                    Util.Log("creating notification for reconnected flagged player")
-                    self._createNotification(player)
+            elif playerD['tribe'] != 'Survivors':
+                if DataStore.ContainsKey("pvpTribeFlags", playerD['tribe']):
+                    if player.GameID not in self.flaggedPlayers:
+                        Util.Log("creating notification for reconnected flagged player")
+                        self._createNotification(player)
 
     def On_ServerSaved(self):
         for playerID in DataStore.Keys('pvpFlags'):
