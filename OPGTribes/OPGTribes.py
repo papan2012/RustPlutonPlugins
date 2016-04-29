@@ -218,39 +218,6 @@ class cachedMenuData(InterfaceComponents):
         for key in playersTable.Keys:
             self.playerDetails[key] = playersTable[key]
 
-    def _addToOnlinePlayers(self, playerID):
-        playerD = DataStore.Get("Players", playerID)
-        if playerD:
-            playerName = playerD['name']
-        else:
-            playerName = Server.FindPlayer(playerID).Name
-
-        if playerName and (playerID, playerName) not in self.onlinePlayers and len(self.onlinePlayers) < 200:
-            self.onlinePlayers.append((playerID, playerName))
-            if (playerID, playerName) in self.offlinePlayers:
-                self.offlinePlayers.remove((playerID, playerName))
-        else:
-            Util.Log("Unable to add player to online "+playerID)
-
-
-    def _addToOfflinePlayers(self, playerID):
-        playerD = DataStore.Get("Players", playerID)
-        if playerD:
-            playerName = playerD['name']
-        else:
-            player = Server.FindPlayer(playerID)
-            if player:
-                playerName = player.Name
-            else:
-                playerName = None
-
-        if playerName and len(self.onlinePlayers) < 200:
-            self.offlinePlayers.append((playerID, playerName))
-            if (playerID, playerName) in self.onlinePlayers:
-                self.onlinePlayers.remove((playerID, playerName))
-        else:
-            Util.Log("Unable to add player to offline "+str(playerID))
-
     def _getTribeData(self, tablename):
         tribesTable = DataStore.GetTable(tablename)
         self.tribeNames = []
@@ -822,7 +789,6 @@ class OPGTribes(cachedMenuData):
 
         for player in Server.SleepingPlayers:
             if player.GameID not in self.offlinePlayers:
-                Util.Log(str(player.GameID))
                 self._addToOfflinePlayers(player.GameID)
 
         self._sortListByKey(self.onlinePlayers, 1)
@@ -839,6 +805,38 @@ class OPGTribes(cachedMenuData):
         # reload menu
         self.reload_menu()
 
+    def _addToOnlinePlayers(self, playerID):
+        playerD = DataStore.Get("Players", playerID)
+        if playerD:
+            playerName = playerD['name']
+        else:
+            playerName = Server.FindPlayer(playerID).Name
+
+        if playerName and (playerID, playerName) not in self.onlinePlayers and len(self.onlinePlayers) < 200:
+            self.onlinePlayers.append((playerID, playerName))
+            if (playerID, playerName) in self.offlinePlayers:
+                self.offlinePlayers.remove((playerID, playerName))
+        else:
+            Util.Log("Unable to add player to online "+playerID)
+
+
+    def _addToOfflinePlayers(self, playerID):
+        playerD = DataStore.Get("Players", playerID)
+        if playerD:
+            playerName = playerD['name']
+        else:
+            player = Server.FindPlayer(playerID)
+            if player:
+                playerName = player.Name
+            else:
+                playerName = None
+
+        if playerName and len(self.onlinePlayers) < 200:
+            self.offlinePlayers.append((playerID, playerName))
+            if (playerID, playerName) in self.onlinePlayers:
+                self.onlinePlayers.remove((playerID, playerName))
+        else:
+            Util.Log("Unable to add player to offline "+str(playerID))
 
     def createGUI(self, player, currentView, selection=None, popup=None):
         views =  ["Tribes", "Players", "You"]
@@ -1078,7 +1076,7 @@ class OPGTribes(cachedMenuData):
             int = self.playersWithMenu[player.GameID]
             int.destroyOverlay('TribeMenuButtons')
         except:
-            Util.Log("Unable to destroy overlay for "+ player.Name)
+            pass
         self.playersWithMenu.pop(player.GameID, None)
         self._addToOfflinePlayers(player.GameID)
         self._sortListByKey(self.onlinePlayers, 1)
@@ -1094,4 +1092,7 @@ class OPGTribes(cachedMenuData):
                 int.createButtons()
 
     def On_ServerSaved(self):
+        for player in Server.SleepingPlayers:
+            if player.GameID not in self.offlinePlayers:
+                self._addToOfflinePlayers(player.GameID)
         self.offlinePlayersObjectList = self._playerListObject(self.offlinePlayers[:200], "Offline")

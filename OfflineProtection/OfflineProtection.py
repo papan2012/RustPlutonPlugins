@@ -434,7 +434,7 @@ class OfflineProtection():
 
 
     def On_PlayerWakeUp(self, player):
-        if player in Server.ActivePlayers():
+        if player in Server.ActivePlayers:
             playerD = DataStore.Get('Players', player.GameID)
             if playerD['tribe'] == 'Survivors' and player.GameID in DataStore.Keys("pvpFlags"):
                 if player.GameID not in self.flaggedPlayers:
