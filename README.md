@@ -25,11 +25,15 @@ CroHQ Rust TribeWars
 
 ## Brief description of the relevant plugins:
 
-### Tribes Mechanism – allow you to play in a bigger group.
+### Tribes Mechanism 
+allow you to play in a bigger group.
 
-### Offline protection Mechanism – protects your buildings for 24 hour after you log out.
+### Offline protection Mechanism
+protects your buildings for 24 hour after you log out.
 
-### Door System - Doors are bound to your SteamID, and only you and your Tribe members can open them. There's no need for code locks, other then putting them on chests to get some privacy, if you need it, and to prevent doors to be picked up if you are caught off guard and killed with the doors open.
+### Door System
+Doors are bound to your SteamID, and only you and your Tribe members can open them. There's no need for code locks, other then putting them on chests to get some privacy, if you need it, and to prevent doors to be picked up if you are caught off guard and killed with the doors open.
+
 
 Everyone is a “Survivor” when they join the Server. No one can open your doors but you, even without the lock (handled via SteamID). If you want to share living spaces with someone, you'll have to form a Tribe.
 
